@@ -1,0 +1,29 @@
+# Python缓存文件
+__pycache__/
+*.py[cod]
+
+# 虚拟环境文件夹
+venv/
+
+# 环境变量文件
+.env
+
+# 本地数据库文件（如有 SQLite）
+*.sqlite3
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# 日志文件
+*.log
+
+# 生成的依赖清单
+# 如果你提交了 requirements.txt，这行可以注释掉
+# requirements.txt
+
+# 其他临时文件
+*.tmp
+*.bak
