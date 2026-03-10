@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+a,
+div,
+ul {
+    text-decoration: none;
+    margin: 0;
+    /* user-select: none;
+    list-style-type: none; */
+    /* 禁止文字选中 */
+}
+html {
+    overflow-y: auto; /* 自动显示纵向滚动条，当内容溢出时 */
+}
+
+/* 适用于 WebKit 浏览器：Chrome, Edge, Safari */
+::-webkit-scrollbar {
+    width: 5px; /* 滚动条宽度 */
+}
+
+::-webkit-scrollbar-track {
+    background: #abb0b2; /* 滚动条轨道背景 */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #66fcf1; /* 滚动块颜色 */
+    border-radius: 10px; /* 圆角 */
+    border: 2px solid #1f2833; /* 滚动块内边框 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #45a29e; /* 鼠标悬浮时颜色 */
+}

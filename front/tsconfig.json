@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".", // 必须有，否则 paths 不生效
+        "paths": {
+            "@/*": [
+                "src/*"
+            ] // @ 映射到 src
+        },
+        "target": "ESNext", // 或其他目标，确保符合你的项目需求
+        "module": "ESNext", // 通常用于 Vite
+        "moduleResolution": "Node", // 推荐
+        "strict": true, // 可选，启用严格模式
+        "jsx": "preserve", // Vue 项目中通常为 preserve
+        "esModuleInterop": true, // 推荐，兼容 CommonJS
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ],
+    "include": [
+        "src",
+        "env.d.ts"
+    ]
+}

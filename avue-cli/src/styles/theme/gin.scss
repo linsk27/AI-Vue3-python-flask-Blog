@@ -1,0 +1,107 @@
+.theme-gin {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1) !important;
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color) !important;
+  .el-table .el-table__row td .cell {
+    line-height: 32px;
+    --tw-text-opacity: 1;
+    color: rgb(75 85 99 / var(--tw-text-opacity));
+  }
+  .el-table tr th .cell {
+    line-height: 36px;
+    --tw-text-opacity: 1;
+    color: rgb(55 65 81 / var(--tw-text-opacity));
+  }
+
+
+  .avue-sidebar {
+    background:#fff !important;
+    .el-menu-item,
+    .el-sub-menu__title {
+      margin: 2px 0;
+      background:#fff !important;
+      border-radius: 3px;
+      height: 50px;
+      line-height: 50px;
+    }
+
+    .el-menu-item,
+    .el-sub-menu__title {
+
+      i,
+      span {
+        color: #000;
+      }
+
+      .is-active {
+        background:var(--el-color-primary) !important;
+      }
+
+      &:hover{
+        background: rgb(216,230,253) !important;
+      }
+      &.is-active {
+        background:var(--el-color-primary)!important;
+        i,
+        span {
+          color:#fff;
+          background: transparent !important;
+        }
+        &::before{
+          display: none;
+        }
+      }
+    }
+  }
+
+  .avue-logo {
+    width:100%;
+    background:#fff;
+    color:#333;
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+  }
+  .avue-menu{
+    margin-top: 1px;
+    padding: 0 6px;
+    height: calc(100% - 60px);
+  }
+  .avue-top{
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow) !important;
+    .el-menu--horizontal.el-menu{
+      border:none
+    }
+    .el-menu-item{
+      margin: 0 10px;
+      i,span{
+        font-size: 15px;
+      }
+    }
+  }
+  .avue-main{
+    background-color: rgb(249,250,251);
+  }
+  .avue-tags {
+    margin: 5px 6px 6px 6px;
+    padding-bottom: 5px;
+    .el-tabs__item {
+      font-size: 14px !important;
+      color: rgb(75,85,99) !important;
+      font-weight: 500 !important;
+      border: 1px solid rgb(205,218,214) !important;
+      border-radius: 3px;
+      height: 35px !important;
+      line-height: 35px !important;
+      margin: 5px 3px 8px 3px !important;
+
+      &:hover {
+        color: var(--el-color-primary) !important;
+        border-color: var(--el-color-primary) !important;
+      }
+    }
+
+    .is-active {
+      color: var(--el-color-primary) !important;
+      border-color: var(--el-color-primary) !important;
+    }
+  }
+
+}
