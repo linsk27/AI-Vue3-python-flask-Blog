@@ -426,3 +426,65 @@ def delete_article(current_user_id, article_id):
             return jsonify({'status': 0, 'msg': '删除成功'})
     except Exception as e:
         return jsonify({'status': 1, 'msg': '删除失败', 'error': str(e)}), 500
+
+@article_bp.route('/api/articles/<int:article_id>/comments', methods=['GET'])
+def get_article_comments(article_id):
+    """获取文章评论列表"""
+    try:
+        with engine.connect() as conn:
+            query = """
+                SELECT c.*, u.username as user_name, u.avatar as user_avatar
+                FROM comments c
+                LEFT JOIN users u ON c.user_id = u.id
+                WHERE c.article_id = :aid
+                ORDER BY c.created_at DESC
+            """
+            result = conn.execute(text(query), {"aid": article_id}).mappings().fetchall()
+            
+            comments_list = []
+            for row in result:
+                comment = dict(row)
+                if comment.get('created_at'):
+                    comment['created_at'] = comment['created_at'].isoformat()
+                comments_list.append(comment)
+                
+            return jsonify({'status': 0, 'data': comments_list})
+    except Exception as e:
+        print(f"Error getting comments: {e}")
+        return jsonify({'status': 1, 'msg': '获取评论失败', 'error': str(e)}), 500
+
+@article_bp.route('/api/articles/<int:article_id>/comments', methods=['POST'])
+@token_required
+def create_article_comment(current_user_id, article_id):
+    """发表文章评论"""
+    data = request.get_json()
+    content = data.get('content')
+    
+    if not content or not content.strip():
+        return jsonify({'status': 1, 'msg': '评论内容不能为空'}), 400
+        
+    try:
+        with engine.connect() as conn:
+            # 检查文章是否存在
+            article = conn.execute(
+                text("SELECT id FROM articles WHERE id = :aid"),
+                {"aid": article_id}
+            ).fetchone()
+            
+            if not article:
+                return jsonify({'status': 1, 'msg': '文章不存在'}), 404
+                
+            # 插入评论
+            conn.execute(
+                text("""
+                    INSERT INTO comments (article_id, user_id, content)
+                    VALUES (:aid, :uid, :content)
+                """),
+                {"aid": article_id, "uid": current_user_id, "content": content}
+            )
+            conn.commit()
+            
+            return jsonify({'status': 0, 'msg': '评论发表成功'})
+    except Exception as e:
+        print(f"Error creating comment: {e}")
+        return jsonify({'status': 1, 'msg': '发表评论失败', 'error': str(e)}), 500

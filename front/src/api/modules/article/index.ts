@@ -1,6 +1,16 @@
 import { IArticleParams, IArticle } from './interface'
-import { ARTICLE_CREATE, ARTICLE_DETAIL, ARTICLE_UPDATE, ARTICLE_LIST, ARTICLE_DELETE, ARTICLE_TOGGLE_LIKE, ARTICLE_INCREMENT_VIEW, ARTICLE_MY_LIKES } from './url.const'
+import { ARTICLE_CREATE, ARTICLE_DETAIL, ARTICLE_UPDATE, ARTICLE_LIST, ARTICLE_DELETE, ARTICLE_TOGGLE_LIKE, ARTICLE_INCREMENT_VIEW, ARTICLE_MY_LIKES, ARTICLE_COMMENTS } from './url.const'
 import http from '@/api'
+
+export interface IComment {
+    id: number
+    article_id: number
+    user_id: number
+    content: string
+    created_at: string
+    user_name: string
+    user_avatar: string
+}
 
 const articleApi = {
     create: (params: IArticleParams) => {
@@ -26,6 +36,12 @@ const articleApi = {
     },
     getMyLikes: () => {
         return http.get<IArticle[]>(ARTICLE_MY_LIKES)
+    },
+    getComments: (id: number | string) => {
+        return http.get<IComment[]>(ARTICLE_COMMENTS(id))
+    },
+    createComment: (id: number | string, content: string) => {
+        return http.post(ARTICLE_COMMENTS(id), { content })
     }
 }
 

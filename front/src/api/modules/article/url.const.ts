@@ -6,3 +6,4 @@ export const ARTICLE_LIST = '/articles'
 export const ARTICLE_TOGGLE_LIKE = (id: number | string) => `/articles/${id}/like`
 export const ARTICLE_INCREMENT_VIEW = (id: number | string) => `/articles/${id}/view`
 export const ARTICLE_MY_LIKES = '/articles/my-likes'
+export const ARTICLE_COMMENTS = (id: number | string) => `/articles/${id}/comments`

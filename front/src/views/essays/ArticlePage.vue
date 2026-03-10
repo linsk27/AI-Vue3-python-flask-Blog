@@ -33,6 +33,45 @@
 
                 <div v-else class="not-found">文章不存在</div>
             </div>
+
+            <!-- 评论模块 -->
+            <div class="comment-section" v-if="article">
+                <div class="section-title">
+                    <h3>全部评论 ({{ comments.length }})</h3>
+                </div>
+
+                <!-- 发表评论 -->
+                <div class="comment-input-box">
+                    <textarea v-model="commentContent" placeholder="写下你的评论..." class="comment-textarea"></textarea>
+                    <div class="input-footer">
+                        <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment">
+                            {{ submittingComment ? '提交中...' : '发表评论' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 评论列表 -->
+                <div class="comments-list">
+                    <div v-if="comments.length === 0" class="no-comments">
+                        暂无评论，快来抢沙发吧~
+                    </div>
+                    <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                        <div class="comment-user-avatar">
+                            <img :src="comment.user_avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+                                alt="用户头像">
+                        </div>
+                        <div class="comment-content-main">
+                            <div class="comment-user-info">
+                                <span class="comment-user-name">{{ comment.user_name }}</span>
+                                <span class="comment-time">{{ formatDate(comment.created_at) }}</span>
+                            </div>
+                            <div class="comment-text">
+                                {{ comment.content }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- AI 摘要悬浮按钮 -->
@@ -64,7 +103,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { ref, onMounted, shallowRef, defineAsyncComponent, nextTick, computed } from 'vue'
-import articleApi from '@/api/modules/article'
+import articleApi, { IComment } from '@/api/modules/article'
 import { aiSummaryService } from '@/api/modules/ai'
 import { IArticle } from '@/api/modules/article/interface'
 import { useElMessage } from '@/hooks/useMessage'
@@ -79,6 +118,43 @@ const { message } = useElMessage()
 const article = ref<IArticle | null>(null)
 const loading = ref(false)
 const activeComponent = shallowRef<any>(null)
+
+// 评论相关状态
+const comments = ref<IComment[]>([])
+const commentContent = ref('')
+const submittingComment = ref(false)
+
+const fetchComments = async () => {
+    const id = route.params.id as string
+    if (!id) return
+    try {
+        const res = await articleApi.getComments(id)
+        comments.value = res.data || res
+    } catch (error) {
+        console.error('获取评论失败', error)
+    }
+}
+
+const submitComment = async () => {
+    if (!commentContent.value.trim()) {
+        message.warning('请输入评论内容')
+        return
+    }
+
+    const id = route.params.id as string
+    submittingComment.value = true
+    try {
+        await articleApi.createComment(id, commentContent.value)
+        message.success('评论发表成功')
+        commentContent.value = ''
+        await fetchComments() // 刷新评论列表
+    } catch (error) {
+        console.error('发表评论失败', error)
+        message.error('发表评论失败，请先登录')
+    } finally {
+        submittingComment.value = false
+    }
+}
 
 // AI 摘要相关状态
 const showAiPanel = ref(false)
@@ -253,6 +329,9 @@ onMounted(async () => {
 
                 // 解析 Markdown 内容
                 await parseMarkdown()
+
+                // 获取评论列表
+                await fetchComments()
             }
         } catch (error) {
             console.error('Failed to load article:', error)
@@ -447,6 +526,141 @@ onMounted(async () => {
     border-radius: 16px;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
     min-height: 400px;
+    margin-bottom: 2rem;
+}
+
+/* 评论模块样式 */
+.comment-section {
+    background: #fff;
+    padding: 2.5rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f5f7fa;
+    padding-bottom: 1rem;
+
+    h3 {
+        font-size: 1.4rem;
+        color: #333;
+        margin: 0;
+    }
+}
+
+.comment-input-box {
+    margin-bottom: 3rem;
+}
+
+.comment-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    resize: vertical;
+    transition: all 0.3s;
+    background: #f9f9f9;
+
+    &:focus {
+        outline: none;
+        border-color: #ff7f50;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(255, 127, 80, 0.1);
+    }
+}
+
+.input-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.submit-comment-btn {
+    background: #ff7f50;
+    color: #fff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover:not(:disabled) {
+        background: #ff6a33;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 127, 80, 0.3);
+    }
+
+    &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.no-comments {
+    text-align: center;
+    color: #999;
+    padding: 3rem 0;
+    font-style: italic;
+}
+
+.comment-item {
+    display: flex;
+    gap: 1.2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.comment-user-avatar {
+    img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+}
+
+.comment-content-main {
+    flex: 1;
+}
+
+.comment-user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.comment-user-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.05rem;
+}
+
+.comment-time {
+    font-size: 0.85rem;
+    color: #999;
+}
+
+.comment-text {
+    line-height: 1.6;
+    color: #444;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .not-found {
