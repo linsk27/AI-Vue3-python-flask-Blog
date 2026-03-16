@@ -7,7 +7,7 @@
                     <h1 class="article-title">{{ article.title }}</h1>
                     <div class="article-meta">
                         <span class="article-date" v-if="article.created_at">发布于 {{ formatDate(article.created_at)
-                        }}</span>
+                            }}</span>
                         <span class="article-author" v-if="article.author_name"> · 作者: {{ article.author_name }}</span>
                         <span class="meta-item"> · {{ article.views }} 阅读</span>
                         <span class="meta-item like-btn" @click="toggleLike" :class="{ 'is-liked': article.is_liked }">
@@ -107,6 +107,7 @@ import articleApi, { IComment } from '@/api/modules/article'
 import { aiSummaryService } from '@/api/modules/ai'
 import { IArticle } from '@/api/modules/article/interface'
 import { useElMessage } from '@/hooks/useMessage'
+import { useCacheStore } from '@/store/cache'
 import 'quill/dist/quill.snow.css'
 import { articles as localArticles } from './articles/index'
 import { marked } from 'marked'
@@ -115,11 +116,11 @@ import 'highlight.js/styles/atom-one-dark.css'
 
 const route = useRoute()
 const { message } = useElMessage()
+const cacheStore = useCacheStore()
 const article = ref<IArticle | null>(null)
 const loading = ref(false)
 const activeComponent = shallowRef<any>(null)
 
-// 评论相关状态
 const comments = ref<IComment[]>([])
 const commentContent = ref('')
 const submittingComment = ref(false)
@@ -274,34 +275,21 @@ const generateAiSummary = async () => {
 }
 
 onMounted(async () => {
-    window.scrollTo(0, 0) // 解决跳转后页面停留在底部的问题
+    window.scrollTo(0, 0)
     const id = route.params.id as string
     if (id) {
-        // 增加阅读量
-        try {
-            await articleApi.incrementView(id)
-        } catch (e) {
-            console.error('更新阅读量失败', e)
-        }
-
-        loading.value = true
-
-        // 1. 优先检查是否为本地交互式文章
         const localArticle = localArticles.find(a => a.id === id)
         if (localArticle) {
-            // @ts-ignore
             article.value = {
                 ...localArticle,
                 tags: [...(localArticle.tags || []), '可交互文章'],
                 created_at: new Date().toISOString(),
                 author_name: '系统预置',
-                content: '' // 本地文章不使用content字段
+                content: ''
             }
 
-            // 加载对应组件
             if (localArticle.component) {
                 try {
-                    // component 是一个返回 Promise 的函数
                     const compModule = await localArticle.component()
                     activeComponent.value = compModule.default || compModule
                 } catch (err) {
@@ -313,24 +301,50 @@ onMounted(async () => {
             return
         }
 
-        // 2. 如果不是本地文章，请求后端
+        const cachedArticle = cacheStore.getArticleDetail(id)
+        if (cachedArticle) {
+            article.value = cachedArticle
+            if (typeof article.value.views !== 'number') {
+                article.value.views = 0
+            }
+            article.value.is_liked = !!article.value.is_liked
+            await parseMarkdown()
+            await fetchComments()
+            loading.value = false
+
+            try {
+                await articleApi.incrementView(id)
+                if (article.value) {
+                    article.value.views++
+                    cacheStore.setArticleDetail(id, article.value)
+                }
+            } catch (e) {
+                console.error('更新阅读量失败', e)
+            }
+            return
+        }
+
+        try {
+            await articleApi.incrementView(id)
+        } catch (e) {
+            console.error('更新阅读量失败', e)
+        }
+
+        loading.value = true
+
         try {
             const res = await articleApi.getDetail(id)
-            // @ts-ignore
             article.value = res.data || res
 
-            // 确保 views 是数字
             if (article.value) {
                 if (typeof article.value.views !== 'number') {
                     article.value.views = 0
                 }
-                // 确保 is_liked 是布尔值
                 article.value.is_liked = !!article.value.is_liked
 
-                // 解析 Markdown 内容
-                await parseMarkdown()
+                cacheStore.setArticleDetail(id, article.value)
 
-                // 获取评论列表
+                await parseMarkdown()
                 await fetchComments()
             }
         } catch (error) {

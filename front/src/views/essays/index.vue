@@ -160,9 +160,11 @@ import articleApi from '@/api/modules/article'
 import { IArticle } from '@/api/modules/article/interface'
 import { useElMessage } from '@/hooks/useMessage'
 import { articles as localArticles } from './articles/index'
+import { useCacheStore } from '@/store/cache'
 
 const router = useRouter()
 const { message } = useElMessage()
+const cacheStore = useCacheStore()
 
 // 搜索功能
 const search = ref('')
@@ -199,17 +201,23 @@ const processedLocalArticles = localArticles.map(article => ({
 }))
 
 // 获取文章列表
-const fetchArticles = async () => {
+const fetchArticles = async (forceRefresh = false) => {
+    if (!forceRefresh && !search.value) {
+        const cachedArticles = cacheStore.getCache<IArticle[]>('articles')
+        if (cachedArticles) {
+            articles.value = [...processedLocalArticles, ...cachedArticles]
+            return
+        }
+    }
+
     loading.value = true
     try {
         const params: any = {}
         if (search.value) params.search = search.value
 
-        // 获取后端文章
         const res = await articleApi.getList(params)
         const backendArticles = Array.isArray(res) ? res : (res as any).data || []
 
-        // 简单的本地搜索逻辑（因为后端不会返回本地文章）
         let filteredLocal = processedLocalArticles
         if (search.value) {
             const lowerSearch = search.value.toLowerCase()
@@ -220,21 +228,20 @@ const fetchArticles = async () => {
             )
         }
 
-        // 合并文章：本地文章在前
-        // @ts-ignore
         articles.value = [...filteredLocal, ...backendArticles]
 
-        // Add default values for new fields if missing
         articles.value.forEach(a => {
             a.views = a.views || 0
             a.likes = a.likes || 0
         })
 
+        if (!search.value) {
+            cacheStore.setCache('articles', backendArticles)
+        }
+
     } catch (error) {
         console.error('Failed to fetch articles:', error)
         message.error('获取文章列表失败')
-        // 即使后端失败，也显示本地文章
-        // @ts-ignore
         articles.value = processedLocalArticles
     } finally {
         loading.value = false

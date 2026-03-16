@@ -20,7 +20,9 @@
                 <div class="profile-info">
                     <h1 class="profile-name">{{ userInfo?.username || '用户' }}</h1>
                     <p class="profile-title">{{ userInfo?.role === 'admin' ? '管理员' : '普通用户' }}</p>
-                    <div class="profile-bio">专注于Web性能优化、Vue.js技术栈和用户体验设计</div>
+                    <div v-if="userInfo?.permissions && userInfo.permissions.length > 0" class="profile-bio">
+                        权限: {{ userInfo.permissions.join(', ') }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,11 +47,11 @@
                         </div>
                         <div class="info-item">
                             <span class="info-label">注册时间</span>
-                            <span class="info-value">{{ userInfo?.created_at || '2025-08-01' }}</span>
+                            <span class="info-value">{{ userInfo?.created_at || '未设置' }}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">所在地</span>
-                            <span class="info-value">中国 · 杭州</span>
+                            <span class="info-label">角色</span>
+                            <span class="info-value">{{ userInfo?.role || '未设置' }}</span>
                         </div>
                     </div>
                 </div>
@@ -62,46 +64,87 @@
                     </h2>
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-value">24</div>
+                            <div class="stat-value">{{ userStats.articles || 0 }}</div>
                             <div class="stat-label">发布文章</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">1.2k</div>
+                            <div class="stat-value">{{ userStats.views || 0 }}</div>
                             <div class="stat-label">文章阅读</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">89</div>
+                            <div class="stat-value">{{ userStats.likes || 0 }}</div>
                             <div class="stat-label">收到点赞</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">15</div>
-                            <div class="stat-label">技术分享</div>
+                            <div class="stat-value">{{ userStats.comments || 0 }}</div>
+                            <div class="stat-label">发表评论</div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- AI热点分析卡片 -->
+            <div class="profile-card ai-analysis-card">
+                <h2 class="card-title">
+                    <span class="title-icon">🤖</span>
+                    AI热点分析
+                </h2>
+                <div v-if="isLoading" class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <p>AI正在分析热点数据...</p>
+                </div>
+                <div v-else-if="aiAnalysis" class="ai-analysis-content">
+                    <div class="analysis-item">
+                        <h3>🔥 最热门文章</h3>
+                        <p>{{ aiAnalysis.topArticle || '暂无数据' }}</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h3>� 过去人们更关注</h3>
+                        <p>{{ aiAnalysis.pastFocus || '暂无数据' }}</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h3>🏷️ 文章热门标签</h3>
+                        <p>{{ aiAnalysis.hotTags || '暂无数据' }}</p>
+                    </div>
+                    <div class="analysis-item">
+                        <h3>🔮 未来热点</h3>
+                        <p>{{ aiAnalysis.futureTrends || '暂无数据' }}</p>
+                    </div>
+                </div>
+                <div v-else class="error-message">
+                    <p>AI分析失败，请稍后重试</p>
+                </div>
+            </div>
+
             <div class="content-wrapper">
-                <!-- 左侧：技能标签卡片 -->
-                <div class="profile-card skills-card">
+                <!-- 左侧：用户文章列表 -->
+                <div class="profile-card articles-card">
                     <h2 class="card-title">
-                        <span class="title-icon">🛠️</span>
-                        技术技能
+                        <span class="title-icon">📝</span>
+                        我的文章
                     </h2>
-                    <div class="skills-grid">
-                        <div class="skill-tag" v-for="skill in skills" :key="skill">
-                            {{ skill }}
+                    <div v-if="userArticles.length > 0" class="articles-list">
+                        <div class="article-item" v-for="article in userArticles" :key="article.id">
+                            <h3 class="article-title">{{ article.title }}</h3>
+                            <div class="article-meta">
+                                <span class="article-date">{{ formatDate(article.created_at) }}</span>
+                                <span class="article-likes">👍 {{ article.likes || 0 }}</span>
+                                <span class="article-views">👁️ {{ article.views || 0 }}</span>
+                            </div>
                         </div>
+                    </div>
+                    <div v-else class="empty-message">
+                        <p>暂无文章</p>
                     </div>
                 </div>
 
                 <!-- 右侧：最近活动卡片 -->
                 <div class="profile-card activity-card">
                     <h2 class="card-title">
-                        <span class="title-icon">📝</span>
+                        <span class="title-icon">📅</span>
                         最近活动
                     </h2>
-                    <div class="activity-list">
+                    <div v-if="recentActivities.length > 0" class="activity-list">
                         <div class="activity-item" v-for="(activity, index) in recentActivities" :key="index">
                             <div class="activity-icon">{{ activity.icon }}</div>
                             <div class="activity-content">
@@ -110,36 +153,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- 底部：贡献展示卡片 -->
-            <div class="profile-card contributions-card">
-                <h2 class="card-title">
-                    <span class="title-icon">🌟</span>
-                    平台贡献
-                </h2>
-                <div class="contributions-grid">
-                    <div class="contribution-item">
-                        <div class="contribution-icon">📚</div>
-                        <div class="contribution-content">
-                            <h3>知识库文章</h3>
-                            <p>撰写技术文章，分享前端开发经验和性能优化技巧</p>
-                        </div>
-                    </div>
-                    <div class="contribution-item">
-                        <div class="contribution-icon">⚡</div>
-                        <div class="contribution-content">
-                            <h3>性能优化示例</h3>
-                            <p>创建交互式性能优化演示，帮助开发者理解优化原理</p>
-                        </div>
-                    </div>
-                    <div class="contribution-item">
-                        <div class="contribution-icon">💡</div>
-                        <div class="contribution-content">
-                            <h3>技术讨论</h3>
-                            <p>参与技术讨论，解答社区问题，分享最佳实践</p>
-                        </div>
+                    <div v-else class="empty-message">
+                        <p>暂无活动记录</p>
                     </div>
                 </div>
             </div>
@@ -148,44 +163,176 @@
 </template>
 
 <script setup lang="ts">
-// 引入 IconPark 图标
 import { ref, onMounted } from 'vue'
-import { User as IconUser } from '@icon-park/vue-next'
 import { useGlobalStore } from '@/store'
+import { useCacheStore } from '@/store/cache'
 import authApi from '@/api/modules/auth'
+import articleApi from '@/api/modules/article'
+import { aiChatService } from '@/api/modules/ai'
 
 const globalStore = useGlobalStore()
+const cacheStore = useCacheStore()
 const userInfo = ref(globalStore.userInfo)
+const userStats = ref({
+    articles: 0,
+    views: 0,
+    likes: 0,
+    comments: 0
+})
+const userArticles = ref<any[]>([])
+const recentActivities = ref<any[]>([])
+const aiAnalysis = ref<any>(null)
+const isLoading = ref(false)
+
+const formatDate = (dateString: string) => {
+    if (!dateString) return '未知'
+    const date = new Date(dateString)
+    return date.toLocaleDateString('zh-CN')
+}
+
+const getUserStats = async (forceRefresh = false) => {
+    try {
+        if (!forceRefresh) {
+            const cachedArticles = cacheStore.getCache<any[]>('userArticles')
+            const cachedStats = cacheStore.getCache<{
+                articles: number
+                views: number
+                likes: number
+                comments: number
+            }>('userStats')
+
+            if (cachedArticles && cachedStats) {
+                userArticles.value = cachedArticles.slice(0, 5)
+                userStats.value = cachedStats
+                return
+            }
+        }
+
+        const articles = await articleApi.getList({ author_id: userInfo.value.id })
+        if (articles && Array.isArray(articles)) {
+            userArticles.value = articles.slice(0, 5)
+
+            let totalViews = 0
+            let totalLikes = 0
+
+            articles.forEach((article: any) => {
+                totalViews += article.views || 0
+                totalLikes += article.likes || 0
+            })
+
+            userStats.value = {
+                articles: articles.length,
+                views: totalViews,
+                likes: totalLikes,
+                comments: 0
+            }
+
+            cacheStore.setCache('userArticles', articles)
+            cacheStore.setCache('userStats', userStats.value)
+        }
+    } catch (e) {
+        console.error('获取用户统计数据失败:', e)
+    }
+}
+
+const getRecentActivities = async () => {
+    recentActivities.value = [
+        { icon: '✍️', text: '发布了新文章', time: '2天前' },
+        { icon: '❤️', text: '收到了新点赞', time: '3天前' },
+        { icon: '💬', text: '发表了评论', time: '1周前' },
+        { icon: '📖', text: '阅读了文章', time: '2周前' }
+    ]
+}
+
+const analyzeHotTopics = async (forceRefresh = false) => {
+    if (!forceRefresh) {
+        const cachedAnalysis = cacheStore.getCache<{
+            topArticle: string
+            pastFocus: string
+            hotTags: string
+            futureTrends: string
+        }>('aiAnalysis')
+
+        if (cachedAnalysis) {
+            aiAnalysis.value = cachedAnalysis
+            return
+        }
+    }
+
+    isLoading.value = true
+    try {
+        let articles = cacheStore.getCache<any[]>('articles')
+
+        if (!articles) {
+            const articlesRes = await articleApi.getList()
+            if (articlesRes && Array.isArray(articlesRes)) {
+                articles = articlesRes
+                cacheStore.setCache('articles', articles)
+            }
+        }
+
+        if (articles && Array.isArray(articles)) {
+            const topArticles = articles
+                .sort((a: any, b: any) => (b.likes || 0) - (a.likes || 0))
+                .slice(0, 5)
+
+            const articleTitles = topArticles.map((article: any) => article.title).join('\n')
+
+            const aiPrompt = `请对以下热门文章标题进行简单分析，输出四个方面：
+1. 最热门文章（直接输出标题）
+2. 过去人们更关注的主题
+3. 文章热门标签
+4. 未来可能的热点趋势
+
+文章标题：
+${articleTitles}
+
+请简洁回答，每个方面不超过一句话。`
+
+            const aiResponse = await aiChatService.sendMessage({
+                message: aiPrompt,
+                max_tokens: 300,
+                temperature: 0.3,
+                user_id: String(userInfo.value.id),
+                reset_context: true
+            })
+
+            if (aiResponse && aiResponse.reply) {
+                const reply = aiResponse.reply
+                const lines = reply.split('\n').filter((line: string) => line.trim())
+
+                aiAnalysis.value = {
+                    topArticle: lines[0]?.replace(/^1\.\s*/, '') || '暂无数据',
+                    pastFocus: lines[1]?.replace(/^2\.\s*/, '') || '暂无数据',
+                    hotTags: lines[2]?.replace(/^3\.\s*/, '') || '暂无数据',
+                    futureTrends: lines[3]?.replace(/^4\.\s*/, '') || '暂无数据'
+                }
+
+                cacheStore.setCache('aiAnalysis', aiAnalysis.value, 10 * 60 * 1000)
+            }
+        }
+    } catch (e) {
+        console.error('AI分析失败:', e)
+    } finally {
+        isLoading.value = false
+    }
+}
 
 onMounted(async () => {
     try {
         const res = await authApi.getUserInfo()
         if (res) {
             userInfo.value = res
-            // Update store
             globalStore.setLoginInfo(globalStore.token, res)
+
+            await getUserStats()
+            await getRecentActivities()
+            await analyzeHotTopics()
         }
     } catch (e) {
         console.error(e)
     }
 })
-
-// 技能列表
-const skills = ref([
-    'HTML5', 'CSS3', 'JavaScript', 'TypeScript',
-    'Vue.js', 'React', 'Node.js', 'Webpack',
-    'Vite', 'Tailwind CSS', '性能优化', '响应式设计',
-    'Git', 'UI/UX设计', '单元测试', 'CI/CD'
-])
-
-// 最近活动
-const recentActivities = ref([
-    { icon: '✍️', text: '发布了新文章：《Vue3 性能优化实战》', time: '2天前' },
-    { icon: '⚡', text: '更新了性能优化示例：虚拟列表实现', time: '5天前' },
-    { icon: '💬', text: '回复了讨论：《CSS 动画性能优化》', time: '1周前' },
-    { icon: '📊', text: '分享了性能测试报告：大型列表渲染对比', time: '2周前' },
-    { icon: '🌟', text: '获得了 "最佳贡献者" 称号', time: '3周前' }
-])
 </script>
 
 <style scoped>
@@ -386,33 +533,105 @@ const recentActivities = ref([
     color: #666;
 }
 
-/* 技能卡片 */
-.skills-card {
+/* AI分析卡片 */
+.ai-analysis-card {
+    margin-bottom: 2rem;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 127, 80, 0.1);
+    border-left-color: #FF7F50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ai-analysis-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.analysis-item {
+    padding: 1rem;
+    background: rgba(255, 127, 80, 0.05);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background: rgba(255, 127, 80, 0.1);
+    }
+}
+
+.analysis-item h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem;
+}
+
+.analysis-item p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.error-message {
+    text-align: center;
+    padding: 2rem;
+    color: #ff4757;
+}
+
+/* 文章卡片 */
+.articles-card {
     flex: 1;
 }
 
-.skills-grid {
+.articles-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.skill-tag {
-    padding: 0.6rem 1.2rem;
-    background: rgba(255, 127, 80, 0.1);
-    color: #FF7F50;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
+.article-item {
+    padding: 1rem;
+    background: rgba(255, 127, 80, 0.05);
+    border-radius: 12px;
     transition: all 0.3s ease;
-    border: 2px solid transparent;
 
     &:hover {
-        background: #FF7F50;
-        color: white;
-        transform: translateY(-2px);
-        border-color: #FF7F50;
+        background: rgba(255, 127, 80, 0.1);
     }
+}
+
+.article-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem;
+}
+
+.article-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: #999;
 }
 
 /* 活动卡片 */
@@ -466,56 +685,11 @@ const recentActivities = ref([
     color: #999;
 }
 
-/* 贡献卡片 */
-.contributions-card {
-    margin-bottom: 2rem;
-}
-
-.contributions-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-}
-
-.contribution-item {
-    display: flex;
-    gap: 1rem;
-    padding: 1.5rem;
-    background: rgba(255, 127, 80, 0.05);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-
-    &:hover {
-        background: rgba(255, 127, 80, 0.1);
-        transform: translateY(-3px);
-        border-color: rgba(255, 127, 80, 0.3);
-    }
-}
-
-.contribution-icon {
-    font-size: 2rem;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 127, 80, 0.15);
-    border-radius: 10px;
-}
-
-.contribution-content h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 0.5rem;
-}
-
-.contribution-content p {
-    font-size: 0.9rem;
-    color: #666;
-    margin: 0;
-    line-height: 1.5;
+/* 空状态 */
+.empty-message {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
 }
 
 /* 动画 */
@@ -549,7 +723,7 @@ const recentActivities = ref([
         flex-direction: column;
     }
 
-    .contributions-grid {
+    .ai-analysis-content {
         grid-template-columns: 1fr;
     }
 }
@@ -601,11 +775,6 @@ const recentActivities = ref([
     }
 
     .activity-item {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .contribution-item {
         flex-direction: column;
         text-align: center;
     }
