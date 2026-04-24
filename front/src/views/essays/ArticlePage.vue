@@ -284,7 +284,7 @@ onMounted(async () => {
                 ...localArticle,
                 tags: [...(localArticle.tags || []), '可交互文章'],
                 created_at: new Date().toISOString(),
-                author_name: '系统预置',
+                author_name: '智汇编辑部',
                 content: ''
             }
 

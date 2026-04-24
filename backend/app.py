@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'your-very-secret-key-123!@#'  # 必须是字符串
 
 @app.route('/')
 def home():
-    return '✅ Flask 启动成功，数据库已连接！'
+    return 'Flask started successfully.'
 
 # 注册蓝图
 app.register_blueprint(auth_bp)

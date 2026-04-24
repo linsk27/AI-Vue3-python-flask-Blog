@@ -1,73 +1,58 @@
 <template>
-    <footer class="modern-footer">
-        <div class="footer-content">
-            <!-- 左侧功能图标区域 -->
-            <div class="footer-features">
-                <div class="feature-item" @click="changeBackground()">
-                    <div class="feature-icon">
-                        <IconPicture theme="outline" size="24" fill="#FF7F50" />
-                    </div>
-                    <span class="feature-text">更换背景</span>
-                </div>
-                <div class="feature-item" @click="changeStar()">
-                    <div class="feature-icon">
-                        <IconStar theme="outline" size="24" fill="#FF7F50" />
-                    </div>
-                    <span class="feature-text">星星特效</span>
+    <footer class="site-footer">
+        <div class="footer-shell">
+            <div class="footer-brand">
+                <span class="footer-mark" aria-hidden="true"></span>
+                <div>
+                    <h2>智汇博客</h2>
+                    <p>面向开发者的 AI 知识创作与阅读工作台。</p>
                 </div>
             </div>
 
-            <!-- 中间文字内容区域 -->
-            <div class="footer-text">
-                <h3 class="footer-title">智汇博客</h3>
-                <p class="copyright">© 2026 智汇博客. 保留所有权利.</p>
-                <div class="footer-description">
-                    <p>专注于性能优化、技术分享和创作交流的数字平台</p>
-                </div>
+            <div class="footer-actions" aria-label="显示设置">
+                <button class="footer-button" type="button" @click="changeBackground">
+                    <Picture class="footer-icon" />
+                    <span>切换背景</span>
+                </button>
+                <button class="footer-button" type="button" @click="changeStar">
+                    <MagicStick class="footer-icon" />
+                    <span>星空效果</span>
+                </button>
             </div>
 
-            <!-- 右侧链接区域 -->
             <div class="footer-links">
-                <a href="https://lindablog.xyz" class="link-item" target="_blank" rel="noopener noreferrer">
-                    <span class="link-icon">🌐</span>
-                    <span>官方博客</span>
-                </a>
-                <a href="#" class="link-item">
-                    <span class="link-icon">📧</span>
-                    <span>联系我们</span>
-                </a>
-                <a href="#" class="link-item">
-                    <span class="link-icon">📝</span>
-                    <span>投稿指南</span>
-                </a>
+                <a href="https://lindablog.xyz" target="_blank" rel="noopener noreferrer">线上站点</a>
+                <router-link to="/essays">文章库</router-link>
+                <router-link to="/ai-center">AI 中心</router-link>
             </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 智汇博客</span>
+            <span class="mono">VUE3 / FLASK / AI</span>
         </div>
     </footer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { NewPicture as IconPicture, StarOne as IconStar } from '@icon-park/vue-next'
+import { MagicStick, Picture } from '@element-plus/icons-vue'
 import { useImgStore } from '@/store/backgroundImg'
+
 const imgStore = useImgStore()
 const index = ref(0)
 
-// 背景图片数据
 const imgUrlData = ref([
-    "https://s2.loli.net/2025/08/27/XkKHlSEcUIvafWd.jpg",
-    "https://s2.loli.net/2025/08/27/ygncYMIGHK1NAaT.jpg",
-    "https://s2.loli.net/2025/08/27/wUVaC94WNfsFrcP.jpg"
+    'https://s2.loli.net/2025/08/27/XkKHlSEcUIvafWd.jpg',
+    'https://s2.loli.net/2025/08/27/ygncYMIGHK1NAaT.jpg',
+    'https://s2.loli.net/2025/08/27/wUVaC94WNfsFrcP.jpg'
 ])
 
 if (imgStore.url) {
     index.value = imgUrlData.value.findIndex(item => item === imgStore.url) + 1
 }
 
-// 更换背景图片
-const changeBackground = async () => {
+const changeBackground = () => {
     if (index.value >= imgUrlData.value.length) index.value = 0
-
-    // 预加载图片优化体验
     const img = new Image()
     img.src = imgUrlData.value[index.value]
     img.onload = () => {
@@ -76,188 +61,129 @@ const changeBackground = async () => {
     index.value++
 }
 
-// 切换星星状态
 const changeStar = () => {
     imgStore.toggleStar()
 }
 </script>
 
 <style scoped>
-.modern-footer {
-    background: linear-gradient(135deg, #fff 0%, #fff8f5 100%);
-    box-shadow: 0 -4px 20px rgba(255, 127, 80, 0.15);
-    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    padding: 3rem 0 2rem;
-    animation: fadeUp 0.8s ease-out;
+.site-footer {
+    background: var(--surface);
+    box-shadow: rgba(0, 0, 0, 0.08) 0 -1px 0 0;
 }
 
-@keyframes fadeUp {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.footer-content {
+.footer-shell {
     max-width: 1200px;
     margin: 0 auto;
-    display: flex;
-    flex-direction: column;
+    padding: 32px 16px;
+    display: grid;
+    grid-template-columns: 1.2fr auto auto;
     align-items: center;
-    gap: 2.5rem;
-    padding: 0 20px;
+    gap: 32px;
 }
 
-/* 功能图标区域 */
-.footer-features {
+.footer-brand {
     display: flex;
-    gap: 3rem;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
+    gap: 14px;
 }
 
-.feature-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 1rem;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    background-color: white;
-    box-shadow: 0 2px 8px rgba(255, 127, 80, 0.1);
-
-    &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(255, 127, 80, 0.2);
-        background-color: #fff;
-    }
-}
-
-.feature-icon {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 127, 80, 0.1);
+.footer-mark {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
     border-radius: 50%;
-    transition: all 0.3s ease;
-
-    .feature-item:hover & {
-        background-color: rgba(255, 127, 80, 0.2);
-        transform: scale(1.1);
-    }
+    background: linear-gradient(135deg, var(--button-bg) 0%, var(--text-secondary) 100%);
+    box-shadow: var(--ring);
 }
 
-.feature-text {
-    color: #FF7F50;
-    font-size: 14px;
-    font-weight: 500;
-    text-align: center;
-}
-
-/* 文字内容区域 */
-.footer-text {
-    text-align: center;
-    max-width: 400px;
-}
-
-.footer-title {
-    color: #FF7F50;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-    letter-spacing: 1px;
-}
-
-.copyright {
-    color: #666;
-    font-size: 14px;
-    margin: 0 0 1rem;
-}
-
-.footer-description p {
-    color: #888;
-    font-size: 13px;
+.footer-brand h2 {
     margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.32px;
+}
+
+.footer-brand p {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
     line-height: 1.5;
 }
 
-/* 链接区域 */
+.footer-actions,
 .footer-links {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
     align-items: center;
+    gap: 8px;
 }
 
-.link-item {
+.footer-button,
+.footer-links a {
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    box-shadow: var(--ring);
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 180ms ease, background 180ms ease;
+}
+
+.footer-button:hover,
+.footer-links a:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+}
+
+.footer-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 16px 28px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: #666;
-    text-decoration: none;
-    font-size: 14px;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    background-color: white;
-    box-shadow: 0 2px 8px rgba(255, 127, 80, 0.1);
-
-    &:hover {
-        color: #FF7F50;
-        transform: translateX(5px);
-        box-shadow: 0 4px 12px rgba(255, 127, 80, 0.15);
-        background-color: #fff;
-    }
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
-.link-icon {
-    font-size: 16px;
+.mono {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-weight: 500;
+    letter-spacing: 0;
 }
 
-/* 响应式设计 */
-@media (min-width: 768px) {
-    .footer-content {
-        flex-direction: row;
-        justify-content: space-between;
+@media (max-width: 900px) {
+    .footer-shell {
+        grid-template-columns: 1fr;
         align-items: flex-start;
-        gap: 2rem;
+        gap: 20px;
     }
 
-    .footer-text {
-        text-align: center;
-    }
-
+    .footer-actions,
     .footer-links {
-        align-items: flex-start;
+        flex-wrap: wrap;
     }
 }
 
-@media (max-width: 767px) {
-    .footer-features {
-        gap: 1.5rem;
-    }
-
-    .feature-item {
-        padding: 0.8rem;
-    }
-
-    .feature-icon {
-        width: 40px;
-        height: 40px;
-    }
-
-    .footer-title {
-        font-size: 20px;
+@media (max-width: 520px) {
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }
 </style>

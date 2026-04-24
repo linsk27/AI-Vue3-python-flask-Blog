@@ -1,75 +1,69 @@
 <template>
-    <nav class="elegant-header">
-        <div class="container">
-            <!-- 左侧Logo和公司名称 -->
-            <div class="brand" @click="goToHome">
-                <div class="logo">
-                    <svg width="48" height="48" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="20" cy="20" r="18" fill="url(#headerGradient)" stroke="white" stroke-width="2" />
-                        <path d="M12 20 L20 12 L28 20 L20 28 Z" fill="white" />
-                        <defs>
-                            <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#FF7F50;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <span class="company-name">智汇博客</span>
-            </div>
+    <header class="site-header">
+        <nav class="nav-shell" aria-label="主导航">
+            <button class="brand" type="button" aria-label="回到首页" @click="goToHome">
+                <span class="brand-mark" aria-hidden="true">
+                    <span class="brand-mark-inner"></span>
+                </span>
+                <span class="brand-copy">
+                    <span class="brand-name">智汇博客</span>
+                    <span class="brand-subtitle">AI Knowledge Lab</span>
+                </span>
+            </button>
 
-            <!-- 主导航菜单 -->
             <ul class="nav-menu">
-                <li class="nav-item" v-for="item in navItems" :key="item.path">
+                <li v-for="item in navItems" :key="item.path">
                     <router-link :to="item.path" class="nav-link">
-                        <span class="link-text">{{ item.label }}</span>
-                        <span class="link-underline"></span>
+                        {{ item.label }}
                     </router-link>
                 </li>
             </ul>
 
-            <!-- 右侧用户区域 -->
-            <div class="user-area">
-                <el-dropdown trigger="hover" @command="handleCommand" placement="bottom">
-                    <div class="user-profile">
-                        <el-avatar :size="40" :src="userAvatar" class="avatar" />
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" :aria-label="themeLabel" @click="toggleTheme">
+                    <Sunny v-if="theme === 'dark'" class="action-icon" />
+                    <Moon v-else class="action-icon" />
+                </button>
+                <router-link to="/essays/write" class="write-link">
+                    <EditPen class="action-icon" />
+                    <span>写作</span>
+                </router-link>
+                <el-dropdown trigger="hover" @command="handleCommand" placement="bottom-end">
+                    <button class="user-profile" type="button" aria-label="打开用户菜单">
+                        <el-avatar :size="28" :src="userAvatar" class="avatar" />
                         <span class="username">{{ userName }}</span>
-                        <span class="dropdown-icon">▼</span>
-                    </div>
+                        <ArrowDown class="chevron" />
+                    </button>
                     <template #dropdown>
-                        <el-dropdown-menu class="elegant-dropdown">
-                            <el-dropdown-item command="profile" class="dropdown-item">
-                                <span class="item-icon">👤</span>
+                        <el-dropdown-menu class="profile-menu">
+                            <el-dropdown-item command="profile">
+                                <User class="menu-icon" />
                                 <span>个人中心</span>
                             </el-dropdown-item>
-                            <el-dropdown-item command="my-works" class="dropdown-item">
-                                <span class="item-icon">📚</span>
+                            <el-dropdown-item command="my-works">
+                                <Document class="menu-icon" />
                                 <span>我的作品</span>
                             </el-dropdown-item>
-                            <el-dropdown-item command="my-likes" class="dropdown-item">
-                                <span class="item-icon">❤️</span>
+                            <el-dropdown-item command="my-likes">
+                                <Star class="menu-icon" />
                                 <span>我的喜欢</span>
                             </el-dropdown-item>
-                            <el-dropdown-item command="settings" class="dropdown-item">
-                                <span class="item-icon">⚙️</span>
-                                <span>账号设置</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item divided command="logout" class="dropdown-item" v-if="globalStore.token">
-                                <span class="item-icon">🚪</span>
+                            <el-dropdown-item divided command="logout" v-if="globalStore.token">
+                                <SwitchButton class="menu-icon" />
                                 <span>退出登录</span>
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </header>
 </template>
 
 <script lang="ts" setup>
-
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ArrowDown, Document, EditPen, Moon, Star, Sunny, SwitchButton, User } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
 import { useGlobalStore } from '@/store'
 
@@ -77,25 +71,28 @@ const { message } = useElMessage()
 const router = useRouter()
 const globalStore = useGlobalStore()
 
-// 用户信息
-const userName = globalStore.userInfo?.username || '游客'
+const userName = computed(() => globalStore.userInfo?.username || '访客')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
 
-// 导航菜单
+const theme = ref(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
+const themeLabel = computed(() => theme.value === 'dark' ? '切换到白色主题' : '切换到黑色主题')
+
 const navItems = [
     { path: '/', label: '首页' },
     { path: '/essays', label: '文章' },
-    // { path: '/performance', label: '性能优化' },
-    { path: '/ai-center', label: 'AI中心' },
-    // { path: '/dashboard', label: '数据分析看板' }
+    { path: '/ai-center', label: 'AI 中心' }
 ]
 
-// 跳转到首页
 const goToHome = () => {
     router.push('/')
 }
 
-// 处理下拉菜单命令
+const toggleTheme = () => {
+    theme.value = theme.value === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = theme.value
+    localStorage.setItem('theme', theme.value)
+}
+
 const handleCommand = (command: string) => {
     switch (command) {
         case 'profile':
@@ -107,265 +104,231 @@ const handleCommand = (command: string) => {
         case 'my-likes':
             router.push('/essays/my-likes')
             break
-        case 'settings':
-            router.push('/settings')
-            break
         case 'logout':
-            logOut()
+            globalStore.clearLoginInfo()
+            message.success('已退出登录')
+            router.push('/login')
             break
     }
-}
-
-// 退出登录
-const logOut = () => {
-    globalStore.clearLoginInfo()
-    message.success('退出登录成功')
-    router.push('/login')
 }
 </script>
 
 <style scoped lang="scss">
-.elegant-header {
-    width: 100%;
-    background: linear-gradient(135deg, #FF7F50 0%, #FF6347 100%);
-    box-shadow: 0 8px 32px rgba(255, 127, 80, 0.25), 0 2px 8px rgba(255, 127, 80, 0.15);
-    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    position: relative;
+.site-header {
+    position: sticky;
+    top: 0;
     z-index: 1000;
-    animation: headerSlideDown 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
-    backdrop-filter: blur(10px);
-    overflow-x: hidden;
-
-    .container {
-        max-width: 100%;
-        margin: 0 auto;
-        padding: 0 15px;
-        display: flex;
-        align-items: center;
-        height: 80px;
-        justify-content: space-between;
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--header-bg);
+    backdrop-filter: blur(18px);
 }
 
-@keyframes headerSlideDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+.nav-shell {
+    max-width: 1200px;
+    height: 56px;
+    margin: 0 auto;
+    padding: 0 8px 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--ring), rgba(0, 0, 0, 0.04) 0 2px 2px;
 }
 
 .brand {
-    display: flex;
+    min-width: 0;
+    display: inline-flex;
     align-items: center;
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    color: var(--text-primary);
     cursor: pointer;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 180ms ease;
 
     &:hover {
-        transform: translateY(-2px);
+        background: var(--surface-hover);
     }
+}
 
-    .logo {
-        margin-right: 16px;
-        transition: transform 0.3s ease;
-    }
+.brand-mark {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--button-bg);
+}
 
-    &:hover .logo {
-        transform: rotate(5deg) scale(1.05);
-    }
+.brand-mark-inner {
+    width: 11px;
+    height: 11px;
+    display: block;
+    background: var(--button-fg);
+    transform: rotate(45deg);
+}
 
-    .company-name {
-        font-size: 22px;
-        font-weight: 700;
-        color: white;
-        letter-spacing: 1px;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    }
+.brand-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.05;
+}
+
+.brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.32px;
+}
+
+.brand-subtitle {
+    margin-top: 3px;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
 }
 
 .nav-menu {
     display: flex;
+    align-items: center;
+    gap: 4px;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 48px;
-}
-
-.nav-item {
-    position: relative;
 }
 
 .nav-link {
-    color: white;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 16px;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 
-    .link-text {
-        position: relative;
-        z-index: 1;
-    }
-
-    .link-underline {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 0;
-        height: 3px;
-        background: white;
-        border-radius: 2px;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    &:hover {
-        transform: translateY(-2px);
-    }
-
-    &:hover .link-underline,
-    &.router-link-active .link-underline {
-        width: 100%;
-    }
-
+    &:hover,
     &.router-link-active {
-        font-weight: 700;
+        color: var(--text-primary);
+        background: var(--surface-hover);
+        box-shadow: var(--ring);
     }
 }
 
-.user-area {
+.nav-actions {
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+.theme-toggle,
+.write-link,
+.user-profile {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.write-link {
+    padding: 0 12px;
+    color: var(--button-fg);
+    background: var(--button-bg);
+    box-shadow: var(--ring);
+
+    &:hover {
+        background: var(--button-hover);
+    }
+}
+
+.theme-toggle {
+    width: 36px;
+    justify-content: center;
+    padding: 0;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 0;
+    box-shadow: var(--ring);
+
+    &:hover {
+        background: var(--surface-hover);
+    }
 }
 
 .user-profile {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 24px;
-    background-color: rgba(255, 255, 255, 0.15);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    max-width: 180px;
+    padding: 0 10px 0 6px;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 0;
+    box-shadow: var(--ring);
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.25);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
-        border-color: rgba(255, 255, 255, 0.3);
+        background: var(--surface-hover);
     }
 }
 
 .avatar {
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    transition: transform 0.3s ease;
-}
-
-.user-profile:hover .avatar {
-    transform: scale(1.1);
+    box-shadow: var(--ring);
 }
 
 .username {
-    margin: 0 12px 0 16px;
-    font-size: 15px;
-    color: white;
-    font-weight: 600;
-    max-width: 120px;
+    max-width: 84px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dropdown-icon {
-    color: white;
-    font-size: 16px;
-    transition: transform 0.3s ease;
+.action-icon,
+.chevron,
+.menu-icon {
+    width: 16px;
+    height: 16px;
 }
 
-.user-profile:hover .dropdown-icon {
-    transform: rotate(180deg) scale(1.1);
+.chevron {
+    color: var(--text-muted);
 }
 
-.elegant-dropdown {
-    border-radius: 12px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-    border: none;
-    padding: 8px 0;
-    background: white;
-    backdrop-filter: blur(10px);
+.profile-menu :deep(.el-dropdown-menu__item) {
+    gap: 8px;
+    font-size: 14px;
 }
 
-.dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    transition: all 0.2s ease;
-    border-radius: 8px;
-    margin: 2px 8px;
-
-    &:hover {
-        background: linear-gradient(135deg, rgba(255, 127, 80, 0.05), rgba(255, 99, 71, 0.05));
-        color: #FF7F50;
+@media (max-width: 760px) {
+    .site-header {
+        padding: 8px;
     }
 
-    .item-icon {
-        font-size: 18px;
-    }
-}
-
-// 响应式设计
-@media (max-width: 1024px) {
-    .nav-menu {
-        gap: 32px;
+    .nav-shell {
+        height: 54px;
     }
 
-    .company-name {
-        font-size: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .nav-menu {
-        display: none;
-    }
-
-    .elegant-header .container {
-        padding: 0 15px;
-        height: 70px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .company-name {
-        font-size: 18px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-    }
-
-    .logo {
-        margin-right: 10px;
-    }
-
+    .brand-subtitle,
+    .nav-menu,
+    .write-link span,
     .username {
         display: none;
     }
 
+    .write-link,
     .user-profile {
-        padding: 6px 12px;
+        width: 36px;
+        justify-content: center;
+        padding: 0;
     }
 }
 </style>

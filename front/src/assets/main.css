@@ -1,35 +1,148 @@
-body {
-    margin: 0;
-    padding: 0;
-}
-a,
-div,
-ul {
-    text-decoration: none;
-    margin: 0;
-    /* user-select: none;
-    list-style-type: none; */
-    /* 禁止文字选中 */
-}
-html {
-    overflow-y: auto; /* 自动显示纵向滚动条，当内容溢出时 */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+    font-family: Geist, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text-primary);
+    background: var(--page-bg);
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    --geist-black: #171717;
+    --geist-gray-600: #4d4d4d;
+    --geist-gray-500: #666666;
+    --geist-gray-100: #ebebeb;
+    --geist-gray-50: #fafafa;
+    --geist-blue: #0072f5;
+    --develop-blue: #0a72ef;
+    --preview-pink: #de1d8d;
+    --ship-red: #ff5b4f;
+    --focus-blue: hsla(212, 100%, 48%, 1);
+    --page-bg: #ffffff;
+    --surface: #ffffff;
+    --surface-subtle: #fafafa;
+    --surface-hover: #fafafa;
+    --text-primary: #171717;
+    --text-secondary: #4d4d4d;
+    --text-muted: #808080;
+    --text-inverse: #ffffff;
+    --line: #ebebeb;
+    --button-bg: #171717;
+    --button-fg: #ffffff;
+    --button-hover: #000000;
+    --badge-bg: #ebf5ff;
+    --badge-fg: #0068d6;
+    --header-bg: rgba(255, 255, 255, 0.82);
+    --ring: rgba(0, 0, 0, 0.08) 0 0 0 1px;
+    --card-shadow: rgba(0, 0, 0, 0.08) 0 0 0 1px,
+        rgba(0, 0, 0, 0.04) 0 2px 2px,
+        rgba(0, 0, 0, 0.04) 0 8px 8px -8px,
+        #fafafa 0 0 0 1px inset;
 }
 
-/* 适用于 WebKit 浏览器：Chrome, Edge, Safari */
+html[data-theme="dark"] {
+    --page-bg: #000000;
+    --surface: #0a0a0a;
+    --surface-subtle: #111111;
+    --surface-hover: #171717;
+    --text-primary: #ededed;
+    --text-secondary: #b5b5b5;
+    --text-muted: #858585;
+    --text-inverse: #000000;
+    --line: #242424;
+    --button-bg: #ffffff;
+    --button-fg: #171717;
+    --button-hover: #ededed;
+    --badge-bg: #0f1f33;
+    --badge-fg: #63a7ff;
+    --header-bg: rgba(0, 0, 0, 0.78);
+    --ring: rgba(255, 255, 255, 0.14) 0 0 0 1px;
+    --card-shadow: rgba(255, 255, 255, 0.14) 0 0 0 1px,
+        rgba(255, 255, 255, 0.03) 0 2px 2px,
+        rgba(0, 0, 0, 0.48) 0 12px 18px -12px,
+        rgba(255, 255, 255, 0.04) 0 0 0 1px inset;
+}
+
+html {
+    overflow-y: scroll;
+    background: var(--page-bg);
+    scrollbar-gutter: stable;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: var(--page-bg);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+a,
+[role="button"] {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+.el-button:focus-visible {
+    outline: 2px solid var(--focus-blue);
+    outline-offset: 2px;
+}
+
+::selection {
+    color: var(--text-primary);
+    background: var(--badge-bg);
+}
+
 ::-webkit-scrollbar {
-    width: 5px; /* 滚动条宽度 */
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #abb0b2; /* 滚动条轨道背景 */
+    background: var(--surface-subtle);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #66fcf1; /* 滚动块颜色 */
-    border-radius: 10px; /* 圆角 */
-    border: 2px solid #1f2833; /* 滚动块内边框 */
+    background-color: color-mix(in srgb, var(--text-muted) 55%, transparent);
+    border: 2px solid var(--surface-subtle);
+    border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #45a29e; /* 鼠标悬浮时颜色 */
+    background-color: #a3a3a3;
+}
+
+#nprogress .bar {
+    background: var(--text-primary) !important;
+    height: 2px !important;
+}
+
+.el-dropdown-menu,
+.el-popper.is-light {
+    border: 0 !important;
+    box-shadow: var(--card-shadow) !important;
+    border-radius: 8px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }

@@ -106,6 +106,8 @@ body {
     left: 0;
     object-fit: cover;
     z-index: -10;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .fade-enter-active {
@@ -139,11 +141,15 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background: var(--page-bg);
 }
 
 /* 主内容区域 */
 .app-container main {
     flex: 1;
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--surface-subtle) 72%, transparent) 0%, transparent 360px),
+        var(--page-bg);
 }
 
 /* 确保footer固定在底部 */

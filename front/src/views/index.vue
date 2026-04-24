@@ -1,955 +1,527 @@
 <template>
-    <div class="home-container">
-        <!-- 英雄区域 -->
+    <div class="home-page">
         <section class="hero-section">
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    <span class="title-accent">智汇博客</span>
-                </h1>
-                <p class="hero-subtitle">智慧汇聚，洞见未来 —— 与全球开发者一起成长</p>
+            <div class="hero-copy">
+                <span class="eyebrow">AI-native developer blog</span>
+                <h1>智汇博客</h1>
+                <p>
+                    一个面向开发者的知识创作空间。把文章、AI 摘要、阅读上下文和个人作品管理放在同一个干净工作台里。
+                </p>
                 <div class="hero-actions">
-                    <router-link to="/essays" class="primary-btn">
-                        浏览文章
-                        <span class="btn-icon">→</span>
-                    </router-link>
+                    <router-link to="/essays" class="primary-action">浏览文章</router-link>
+                    <router-link to="/ai-center" class="secondary-action">打开 AI 中心</router-link>
                 </div>
             </div>
-            <div class="hero-visual">
-                <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="200" cy="200" r="180" fill="rgba(255, 127, 80, 0.1)" />
-                    <path d="M100 200 L200 100 L300 200 L200 300 Z" fill="#FF7F50" opacity="0.8" />
-                    <path d="M150 150 L250 150 L250 250 L150 250 Z" fill="white" opacity="0.7" />
-                    <circle cx="200" cy="180" r="15" fill="#FF7F50" />
-                    <path d="M185 210 L215 210" stroke="#FF7F50" stroke-width="5" stroke-linecap="round" />
-                </svg>
-            </div>
-        </section>
 
-        <!-- 平台特色 -->
-        <section class="features-section">
-            <h2 class="section-title">
-                <span class="title-icon">✨</span>
-                平台特色
-            </h2>
-            <div class="features-grid">
-                <div class="feature-card" data-aos="fade-up">
-                    <div class="feature-icon">📚</div>
-                    <h3 class="feature-title">丰富的知识内容</h3>
-                    <p class="feature-description">涵盖前端开发、性能优化、UI/UX设计等多个领域的优质文章</p>
+            <div class="console-card" aria-label="平台预览">
+                <div class="console-topbar">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <strong>knowledge.run</strong>
                 </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-icon">🤝</div>
-                    <h3 class="feature-title">活跃的社区</h3>
-                    <p class="feature-description">与全球开发者交流经验，共同成长</p>
-                </div>
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-icon">🎨</div>
-                    <h3 class="feature-title">创意展示平台</h3>
-                    <p class="feature-description">展示你的作品和创意，获得反馈和认可</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 案例预览 -->
-        <section class="cases-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <span class="title-icon">📊</span>
-                    精选案例
-                </h2>
-                <router-link to="/essays" class="view-all-link">
-                    查看全部
-                    <span class="link-icon">→</span>
-                </router-link>
-            </div>
-            <div class="cases-grid">
-                <div class="case-card" v-for="(caseItem, index) in featuredCases" :key="index" data-aos="fade-up">
-                    <div class="case-header">
-                        <div class="case-category">{{ caseItem.category }}</div>
+                <div class="console-body">
+                    <div class="pipeline">
+                        <div v-for="step in workflow" :key="step.name" class="pipeline-step">
+                            <span class="step-dot" :style="{ background: step.color }"></span>
+                            <span class="step-label" :style="{ color: step.color }">{{ step.name }}</span>
+                            <strong>{{ step.title }}</strong>
+                        </div>
                     </div>
-                    <h3 class="case-title">{{ caseItem.title }}</h3>
-                    <p class="case-description">{{ caseItem.description }}</p>
+                    <div class="terminal">
+                        <p><span>$</span> summarize latest/vue-performance.md</p>
+                        <p class="muted">AI context loaded · 18 notes indexed</p>
+                        <p><span>→</span> Ship a sharper article in 42s</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="metrics-row" aria-label="平台能力">
+            <article v-for="metric in metrics" :key="metric.label" class="metric-card">
+                <strong>{{ metric.value }}</strong>
+                <span>{{ metric.label }}</span>
+            </article>
+        </section>
+
+        <section class="section-block">
+            <div class="section-heading">
+                <span class="eyebrow">Workflow</span>
+                <h2>从阅读到创作，保持同一种节奏。</h2>
+            </div>
+            <div class="feature-grid">
+                <article v-for="feature in features" :key="feature.title" class="feature-card">
+                    <span class="feature-index">{{ feature.index }}</span>
+                    <h3>{{ feature.title }}</h3>
+                    <p>{{ feature.description }}</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-block">
+            <div class="section-heading inline">
+                <div>
+                    <span class="eyebrow">Selected writing</span>
+                    <h2>精选内容</h2>
+                </div>
+                <router-link to="/essays" class="text-link">查看全部</router-link>
+            </div>
+            <div class="case-grid">
+                <article v-for="caseItem in featuredCases" :key="caseItem.title" class="case-card">
+                    <span class="case-category">{{ caseItem.category }}</span>
+                    <h3>{{ caseItem.title }}</h3>
+                    <p>{{ caseItem.description }}</p>
                     <div class="case-tags">
-                        <span class="case-tag" v-for="tag in caseItem.tags" :key="tag">{{ tag }}</span>
+                        <span v-for="tag in caseItem.tags" :key="tag">{{ tag }}</span>
                     </div>
-                    <router-link :to="caseItem.link" class="case-link">
-                        阅读更多
-                        <span class="link-icon">→</span>
-                    </router-link>
-                </div>
+                    <router-link :to="caseItem.link" class="card-link">阅读全文</router-link>
+                </article>
             </div>
         </section>
 
-        <!-- 贡献者展示 -->
-        <section class="contributors-section">
-            <h2 class="section-title">
-                <span class="title-icon">👥</span>
-                社区贡献者
-            </h2>
-            <div class="contributors-grid">
-                <div class="contributor-card" v-for="(contributor, index) in contributors" :key="index"
-                    data-aos="fade-up">
-                    <div class="contributor-avatar">
-                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="40" cy="40" r="38" fill="#FF7F50" stroke="white" stroke-width="3" />
-                            <path
-                                d="M25 50 C25 40 35 35 40 35 C45 35 55 40 55 50 C55 60 45 65 40 65 C35 65 25 60 25 50 Z"
-                                fill="white" />
-                            <path d="M32 45 C32 48 38 48 38 45 C38 42 32 42 32 45 Z" fill="#FF7F50" />
-                            <path d="M42 45 C42 48 48 48 48 45 C48 42 42 42 42 45 Z" fill="#FF7F50" />
-                            <path d="M32 58 L48 58" stroke="#FF7F50" stroke-width="3" stroke-linecap="round" />
-                        </svg>
-                    </div>
-                    <h3 class="contributor-name">{{ contributor.name }}</h3>
-                    <p class="contributor-role">{{ contributor.role }}</p>
-                    <div class="contributor-stats">
-                        <span class="stat-item">{{ contributor.articles }}篇文章</span>
-                        <span class="stat-item">{{ contributor.contributions }}次贡献</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 行动召唤 -->
         <section class="cta-section">
-            <div class="cta-content">
-                <h2 class="cta-title">准备好加入我们了吗？</h2>
-                <p class="cta-description">成为知识创作平台的一员，分享你的知识和经验</p>
-                <div class="cta-actions">
-                    <router-link to="/login" class="primary-btn">
-                        注册账号
-                        <span class="btn-icon">→</span>
-                    </router-link>
-                    <router-link to="/profile" class="secondary-btn">
-                        了解更多
-                        <span class="btn-icon">ℹ️</span>
-                    </router-link>
-                </div>
-            </div>
+            <span class="eyebrow">Start writing</span>
+            <h2>把零散想法变成可沉淀的技术资产。</h2>
+            <router-link to="/essays/write" class="primary-action">写一篇文章</router-link>
         </section>
     </div>
 </template>
 
 <script setup lang="ts">
-// 示例数据
+const workflow = [
+    { name: 'Develop', title: '整理上下文', color: '#0a72ef' },
+    { name: 'Preview', title: 'AI 生成摘要', color: '#de1d8d' },
+    { name: 'Ship', title: '发布文章', color: '#ff5b4f' }
+]
+
+const metrics = [
+    { value: 'Vue 3', label: '前端体验' },
+    { value: 'Flask', label: '内容接口' },
+    { value: 'AI', label: '阅读与创作辅助' }
+]
+
+const features = [
+    {
+        index: '01',
+        title: '文章库',
+        description: '用清晰的标签、列表和搜索组织技术内容，减少读者在信息之间来回切换的成本。'
+    },
+    {
+        index: '02',
+        title: 'AI 中心',
+        description: '面向摘要、问答和上下文解释的智能入口，让阅读不只停留在浏览。'
+    },
+    {
+        index: '03',
+        title: '创作工作台',
+        description: '保留写作、作品、喜欢和个人数据入口，让知识生产有完整闭环。'
+    }
+]
+
 const featuredCases = [
     {
-        title: "Vue3 性能优化实战",
-        category: "前端开发",
-        description: "深入探讨Vue3中的性能优化技术，包括虚拟列表、按需加载等",
-        tags: ["Vue3", "性能优化", "实战"],
-        link: "/essays/vue3-performance"
+        title: 'Vue3 性能优化实战',
+        category: 'Frontend',
+        description: '从虚拟列表、组件缓存到按需加载，梳理大型前端页面的性能优化路径。',
+        tags: ['Vue3', 'Performance', 'Practice'],
+        link: '/essays/vue2-vs-vue3'
     },
     {
-        title: "CSS 动画性能优化指南",
-        category: "UI/UX",
-        description: "学习如何创建高性能的CSS动画，提升用户体验",
-        tags: ["CSS", "动画", "性能"],
-        link: "/essays/css-animation-optimization"
+        title: 'CSS 伪元素高级用法',
+        category: 'UI Engineering',
+        description: '用更少 DOM 构建状态、装饰和交互细节，让页面保持轻盈。',
+        tags: ['CSS', 'UI', 'Detail'],
+        link: '/essays/pseudo-elements'
     },
     {
-        title: "虚拟列表实现原理",
-        category: "性能优化",
-        description: "详细解析虚拟列表的实现原理和优化策略",
-        tags: ["虚拟列表", "性能", "实现原理"],
-        link: "/essays/virtual-list-implementation"
+        title: '虚拟列表实现原理',
+        category: 'Architecture',
+        description: '解析长列表渲染的窗口化策略，找到体验和性能之间的平衡点。',
+        tags: ['Virtual List', 'Render', 'UX'],
+        link: '/performance'
     }
-];
-
-const contributors = [
-    {
-        name: "Lin",
-        role: "前端开发工程师",
-        articles: 24,
-        contributions: 150
-    },
-    {
-        name: "Zhang",
-        role: "UI/UX设计师",
-        articles: 18,
-        contributions: 120
-    },
-    {
-        name: "Wang",
-        role: "全栈开发者",
-        articles: 32,
-        contributions: 200
-    },
-    {
-        name: "Li",
-        role: "性能优化专家",
-        articles: 28,
-        contributions: 180
-    }
-];
+]
 </script>
 
 <style scoped>
-.home-container {
-    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background: linear-gradient(135deg, #fff 0%, #fff8f5 100%);
-}
-
-/* 英雄区域 */
-.hero-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4rem 1rem;
-    max-width: 100%;
-    margin: 0 auto;
-    gap: 2rem;
-    min-height: 85vh;
-    position: relative;
-    overflow: hidden;
+.home-page {
     width: 100%;
-    box-sizing: border-box;
+    background: var(--page-bg);
+    color: var(--text-primary);
 }
 
-.hero-visual svg {
-    max-width: 100%;
-    height: auto;
-    box-sizing: border-box;
-}
-
-/* 添加背景装饰 */
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    background: radial-gradient(circle at 100% 50%, rgba(255, 127, 80, 0.1) 0%, transparent 70%);
-    z-index: -1;
-    animation: pulse 4s ease-in-out infinite;
-}
-
-.hero-section::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 30%;
-    height: 60%;
-    background: radial-gradient(circle at 0% 100%, rgba(255, 127, 80, 0.05) 0%, transparent 60%);
-    z-index: -1;
-    animation: pulse 3s ease-in-out infinite reverse;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.1);
-    }
-}
-
-.hero-content {
-    flex: 1;
-    animation: slideLeft 0.8s ease-out;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.hero-section {
+    max-width: 1200px;
+    min-height: calc(100vh - 96px);
+    margin: 0 auto;
+    padding: 96px 16px 56px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
     align-items: center;
-    z-index: 1;
+    gap: 48px;
 }
 
-.hero-title {
-    font-size: 4rem;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 1.5rem;
-    line-height: 1.1;
-    background: linear-gradient(135deg, #333 0%, #FF7F50 50%, #333 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    background-size: 200% 100%;
-    animation: gradientShift 3s ease-in-out infinite;
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: #ebf5ff;
+    color: #0068d6;
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-@keyframes gradientShift {
-
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
+.hero-copy h1 {
+    margin: 18px 0 20px;
+    color: var(--text-primary);
+    font-size: clamp(48px, 8vw, 88px);
+    font-weight: 600;
+    line-height: 0.96;
+    letter-spacing: -2.4px;
 }
 
-.title-accent {
-    color: #FF7F50;
-    -webkit-text-fill-color: #FF7F50;
-    display: inline-block;
-    animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    color: #666;
-    margin: 0 0 2.5rem;
-    font-weight: 400;
-    animation: fadeInUp 0.8s ease-out 0.3s both;
+.hero-copy p {
+    max-width: 620px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 20px;
+    line-height: 1.8;
 }
 
 .hero-actions {
+    margin-top: 32px;
     display: flex;
-    gap: 1.5rem;
     flex-wrap: wrap;
-    animation: fadeInUp 0.8s ease-out 0.6s both;
+    gap: 12px;
 }
 
-.primary-btn,
-.secondary-btn {
+.primary-action,
+.secondary-action,
+.text-link,
+.card-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem 2rem;
+    justify-content: center;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.primary-action {
+    color: var(--button-fg);
+    background: var(--button-bg);
+    box-shadow: var(--ring);
+}
+
+.primary-action:hover {
+    background: var(--button-hover);
+}
+
+.secondary-action,
+.text-link,
+.card-link {
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--ring);
+}
+
+.secondary-action:hover,
+.text-link:hover,
+.card-link:hover {
+    background: var(--surface-hover);
+}
+
+.console-card {
     border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    position: relative;
+    background: var(--surface);
+    box-shadow: var(--card-shadow);
     overflow: hidden;
 }
 
-.primary-btn::before,
-.secondary-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.primary-btn:hover::before,
-.secondary-btn:hover::before {
-    left: 100%;
-}
-
-.primary-btn {
-    background: linear-gradient(135deg, #FF7F50 0%, #FF6347 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3), 0 2px 5px rgba(255, 127, 80, 0.2);
-}
-
-.primary-btn:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4), 0 4px 10px rgba(255, 127, 80, 0.3);
-}
-
-.secondary-btn {
-    background: white;
-    color: #FF7F50;
-    border: 2px solid #FF7F50;
-    box-shadow: 0 2px 10px rgba(255, 127, 80, 0.1);
-}
-
-.secondary-btn:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.2), 0 2px 5px rgba(255, 127, 80, 0.1);
-    background: rgba(255, 127, 80, 0.05);
-}
-
-.btn-icon {
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
-}
-
-.primary-btn:hover .btn-icon,
-.secondary-btn:hover .btn-icon {
-    transform: translateX(5px) scale(1.2);
-}
-
-.hero-visual {
-    flex: 1;
+.console-topbar {
+    height: 42px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    animation: slideRight 0.8s ease-out;
-    position: relative;
+    gap: 8px;
+    padding: 0 14px;
+    box-shadow: var(--ring);
 }
 
-.hero-visual svg {
-    animation: float 6s ease-in-out infinite;
-    filter: drop-shadow(0 10px 30px rgba(255, 127, 80, 0.2));
+.console-topbar span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ebebeb;
 }
 
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0px) rotate(0deg);
-    }
-
-    33% {
-        transform: translateY(-20px) rotate(5deg);
-    }
-
-    66% {
-        transform: translateY(10px) rotate(-5deg);
-    }
+.console-topbar strong {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-/* 平台特色 */
-.features-section {
-    padding: 4rem 2rem;
-    background: white;
-    text-align: center;
+.console-body {
+    padding: 24px;
 }
 
-.section-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.title-icon {
-    font-size: 2rem;
-}
-
-.features-grid {
+.pipeline {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+    gap: 12px;
+}
+
+.pipeline-step {
+    min-height: 72px;
+    display: grid;
+    grid-template-columns: 12px 92px 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+}
+
+.step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.step-label {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.pipeline-step strong {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.32px;
+}
+
+.terminal {
+    margin-top: 16px;
+    padding: 18px;
+    border-radius: 8px;
+    color: var(--button-fg);
+    background: var(--button-bg);
+    font-family: "Geist Mono", ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.terminal p {
+    margin: 0;
+}
+
+.terminal span {
+    color: #0a72ef;
+}
+
+.terminal .muted {
+    color: #a3a3a3;
+}
+
+.metrics-row,
+.section-block {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 56px 16px;
 }
 
-.feature-card {
-    background: linear-gradient(135deg, #fff 0%, #fff8f5 100%);
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(255, 127, 80, 0.1);
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(255, 127, 80, 0.15);
-    border-color: #FF7F50;
-}
-
-.feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1.5rem;
-}
-
-.feature-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 1rem;
-}
-
-.feature-description {
-    font-size: 1rem;
-    color: #666;
-    margin: 0;
-    line-height: 1.6;
-}
-
-/* 案例预览 */
-.cases-section {
-    padding: 4rem 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.cases-section::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba(255, 127, 80, 0.1) 0%, transparent 70%);
-    z-index: -1;
-    animation: float 8s ease-in-out infinite reverse;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-    animation: fadeInDown 0.8s ease-out;
-}
-
-.view-all-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #FF7F50;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    background: rgba(255, 127, 80, 0.05);
-}
-
-.view-all-link:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 127, 80, 0.1);
-    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.15);
-}
-
-.view-all-link:hover .link-icon {
-    transform: translateX(5px) scale(1.2);
-}
-
-.cases-grid {
+.metrics-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 0;
 }
 
-.case-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(255, 127, 80, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-top: 4px solid #FF7F50;
-    position: relative;
-    overflow: hidden;
+.metric-card,
+.feature-card,
+.case-card,
+.cta-section {
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
 }
 
-.case-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(255, 127, 80, 0.05) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.metric-card {
+    min-height: 128px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.case-card:hover::before {
-    opacity: 1;
-}
-
-.case-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(255, 127, 80, 0.2);
-}
-
-.case-header {
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 1;
-}
-
-.case-category {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 127, 80, 0.1);
-    color: #FF7F50;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.case-card:hover .case-category {
-    background: rgba(255, 127, 80, 0.2);
-    transform: translateX(5px);
-}
-
-.case-title {
-    font-size: 1.5rem;
+.metric-card strong {
+    font-size: 40px;
     font-weight: 600;
-    color: #333;
-    margin: 0 0 1rem;
-    line-height: 1.4;
-    position: relative;
-    z-index: 1;
-    transition: color 0.3s ease;
+    line-height: 1;
+    letter-spacing: -2.4px;
 }
 
-.case-card:hover .case-title {
-    color: #FF7F50;
+.metric-card span {
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
-.case-description {
-    font-size: 1rem;
-    color: #666;
-    margin: 0 0 1.5rem;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
+.section-heading {
+    max-width: 760px;
+    margin-bottom: 32px;
+}
+
+.section-heading.inline {
+    max-width: none;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.section-heading h2,
+.cta-section h2 {
+    margin: 14px 0 0;
+    color: var(--text-primary);
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -2.4px;
+}
+
+.feature-grid,
+.case-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.feature-card,
+.case-card {
+    padding: 24px;
+}
+
+.feature-index {
+    font-family: "Geist Mono", ui-monospace, monospace;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.feature-card h3,
+.case-card h3 {
+    margin: 18px 0 10px;
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.96px;
+}
+
+.feature-card p,
+.case-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.case-category,
+.case-tags span {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    box-shadow: var(--ring);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .case-tags {
+    margin: 18px 0;
     display: flex;
-    gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
+    gap: 8px;
 }
 
-.case-tag {
-    padding: 0.3rem 0.8rem;
-    background: rgba(255, 127, 80, 0.1);
-    color: #FF7F50;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.card-link {
+    width: fit-content;
 }
 
-.case-card:hover .case-tag {
-    background: rgba(255, 127, 80, 0.2);
-    transform: translateY(-2px);
-}
-
-.case-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #FF7F50;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    background: rgba(255, 127, 80, 0.05);
-    position: relative;
-    z-index: 1;
-}
-
-.case-link:hover {
-    transform: translateX(5px);
-    background: rgba(255, 127, 80, 0.1);
-    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.15);
-}
-
-.link-icon {
-    font-size: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.case-link:hover .link-icon {
-    transform: translateX(5px) scale(1.2);
-}
-
-/* 贡献者展示 */
-.contributors-section {
-    padding: 4rem 2rem;
-    background: white;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.contributors-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, transparent 0%, rgba(255, 127, 80, 0.05) 50%, transparent 100%);
-    z-index: -1;
-}
-
-.contributors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.contributor-card {
-    background: linear-gradient(135deg, #fff 0%, #fff8f5 100%);
-    padding: 2rem 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(255, 127, 80, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    border: 2px solid transparent;
-    overflow: hidden;
-}
-
-.contributor-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(255, 127, 80, 0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 0;
-}
-
-.contributor-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(255, 127, 80, 0.15);
-    border-color: #FF7F50;
-}
-
-.contributor-card:hover::after {
-    opacity: 1;
-}
-
-.contributor-avatar {
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-    transition: transform 0.3s ease;
-}
-
-.contributor-card:hover .contributor-avatar {
-    transform: scale(1.1) rotate(5deg);
-}
-
-.contributor-avatar svg {
-    filter: drop-shadow(0 4px 10px rgba(255, 127, 80, 0.2));
-}
-
-.contributor-name {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 0.5rem;
-    position: relative;
-    z-index: 1;
-    transition: color 0.3s ease;
-}
-
-.contributor-card:hover .contributor-name {
-    color: #FF7F50;
-}
-
-.contributor-role {
-    font-size: 0.95rem;
-    color: #666;
-    margin: 0 0 1rem;
-    position: relative;
-    z-index: 1;
-}
-
-.contributor-stats {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    font-size: 0.9rem;
-    color: #999;
-    position: relative;
-    z-index: 1;
-}
-
-.contributor-card:hover .contributor-stats {
-    color: #666;
-}
-
-.stat-item {
-    transition: all 0.3s ease;
-}
-
-.contributor-card:hover .stat-item {
-    transform: translateY(-2px);
-}
-
-/* 行动召唤 */
 .cta-section {
-    padding: 4rem 2rem;
-    background: linear-gradient(135deg, #FF7F50 0%, #FF6347 100%);
+    max-width: 1200px;
+    margin: 56px auto 80px;
+    padding: 48px 16px;
     text-align: center;
 }
 
-.cta-content {
-    max-width: 800px;
-    margin: 0 auto;
-    color: white;
+.cta-section h2 {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 28px;
 }
 
-.cta-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0 0 1rem;
-}
-
-.cta-description {
-    font-size: 1.2rem;
-    margin: 0 0 2.5rem;
-    opacity: 0.9;
-}
-
-.cta-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-}
-
-.cta-actions .primary-btn {
-    background: white;
-    color: #FF7F50;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.cta-actions .primary-btn:hover {
-    background: rgba(255, 255, 255, 0.95);
-}
-
-.cta-actions .secondary-btn {
-    background: transparent;
-    color: white;
-    border-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.cta-actions .secondary-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* 动画效果 */
-@keyframes slideLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-50px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideRight {
-    from {
-        opacity: 0;
-        transform: translateX(50px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 980px) {
     .hero-section {
-        flex-direction: column;
-        text-align: center;
-        padding: 3rem 1.5rem;
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding-top: 72px;
     }
 
-    .hero-title {
-        font-size: 2.5rem;
+    .console-card {
+        max-width: 640px;
     }
 
-    .hero-subtitle {
-        font-size: 1.2rem;
+    .feature-grid,
+    .case-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .hero-section,
+    .metrics-row,
+    .section-block {
+        padding-left: 12px;
+        padding-right: 12px;
     }
 
-    .hero-actions {
-        justify-content: center;
-    }
-
-    .hero-visual {
-        margin-top: 2rem;
-    }
-
-    .section-title {
-        font-size: 2rem;
-    }
-
-    .section-header {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .cases-grid,
-    .features-grid,
-    .contributors-grid {
+    .metrics-row {
         grid-template-columns: 1fr;
     }
 
-    .cta-title {
-        font-size: 2rem;
-    }
-
-    .cta-description {
-        font-size: 1.1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero-title {
-        font-size: 2rem;
-    }
-
-    .section-title {
-        font-size: 1.75rem;
+    .section-heading.inline {
+        align-items: flex-start;
         flex-direction: column;
-        gap: 0.5rem;
     }
 
-    .primary-btn,
-    .secondary-btn {
-        padding: 0.875rem 1.5rem;
-        font-size: 1rem;
+    .hero-copy h1 {
+        letter-spacing: -1.6px;
     }
 
-    .features-grid,
-    .cases-grid,
-    .contributors-grid {
-        gap: 1.5rem;
+    .hero-copy p {
+        font-size: 17px;
+        line-height: 1.7;
     }
 
-    .feature-card,
-    .case-card,
-    .contributor-card {
-        padding: 1.5rem 1rem;
+    .pipeline-step {
+        grid-template-columns: 12px 1fr;
+    }
+
+    .pipeline-step strong {
+        grid-column: 2;
     }
 }
 </style>
