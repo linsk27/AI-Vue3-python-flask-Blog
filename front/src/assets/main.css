@@ -1,66 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap');
 
 :root {
-    font-family: Geist, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: var(--font-sans);
     color: var(--text-primary);
     background: var(--page-bg);
     font-synthesis: none;
-    text-rendering: geometricPrecision;
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    --geist-black: #171717;
-    --geist-gray-600: #4d4d4d;
-    --geist-gray-500: #666666;
-    --geist-gray-100: #ebebeb;
-    --geist-gray-50: #fafafa;
-    --geist-blue: #0072f5;
-    --develop-blue: #0a72ef;
-    --preview-pink: #de1d8d;
-    --ship-red: #ff5b4f;
-    --focus-blue: hsla(212, 100%, 48%, 1);
-    --page-bg: #ffffff;
-    --surface: #ffffff;
-    --surface-subtle: #fafafa;
-    --surface-hover: #fafafa;
-    --text-primary: #171717;
-    --text-secondary: #4d4d4d;
-    --text-muted: #808080;
-    --text-inverse: #ffffff;
-    --line: #ebebeb;
-    --button-bg: #171717;
-    --button-fg: #ffffff;
-    --button-hover: #000000;
-    --badge-bg: #ebf5ff;
-    --badge-fg: #0068d6;
-    --header-bg: rgba(255, 255, 255, 0.82);
-    --ring: rgba(0, 0, 0, 0.08) 0 0 0 1px;
-    --card-shadow: rgba(0, 0, 0, 0.08) 0 0 0 1px,
-        rgba(0, 0, 0, 0.04) 0 2px 2px,
-        rgba(0, 0, 0, 0.04) 0 8px 8px -8px,
-        #fafafa 0 0 0 1px inset;
+    --font-serif: "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
+    --font-sans: "Noto Sans SC", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-mono: "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+    --anthropic-black: #141413;
+    --terracotta: #c96442;
+    --terracotta-hover: #b95739;
+    --coral: #d97757;
+    --focus-blue: #3898ec;
+    --page-bg: #f5f4ed;
+    --surface: #faf9f5;
+    --surface-subtle: #f0eee6;
+    --surface-hover: #e8e6dc;
+    --text-primary: #141413;
+    --text-secondary: #4d4c48;
+    --text-muted: #87867f;
+    --text-inverse: #faf9f5;
+    --line: #e8e6dc;
+    --button-bg: #c96442;
+    --button-fg: #faf9f5;
+    --button-hover: #b95739;
+    --badge-bg: #e8e6dc;
+    --badge-fg: #4d4c48;
+    --header-bg: rgba(245, 244, 237, 0.84);
+    --page-max: 1200px;
+    --page-gutter: 16px;
+    --page-width: min(var(--page-max), calc(100vw - (var(--page-gutter) * 2)));
+    --ring: #d1cfc5 0 0 0 1px;
+    --card-shadow: #f0eee6 0 0 0 1px,
+        rgba(20, 20, 19, 0.05) 0 4px 24px;
+}
+
+@media (max-width: 640px) {
+    :root {
+        --page-gutter: 12px;
+    }
 }
 
 html[data-theme="dark"] {
-    --page-bg: #000000;
-    --surface: #0a0a0a;
-    --surface-subtle: #111111;
-    --surface-hover: #171717;
-    --text-primary: #ededed;
-    --text-secondary: #b5b5b5;
-    --text-muted: #858585;
-    --text-inverse: #000000;
-    --line: #242424;
-    --button-bg: #ffffff;
-    --button-fg: #171717;
-    --button-hover: #ededed;
-    --badge-bg: #0f1f33;
-    --badge-fg: #63a7ff;
-    --header-bg: rgba(0, 0, 0, 0.78);
-    --ring: rgba(255, 255, 255, 0.14) 0 0 0 1px;
-    --card-shadow: rgba(255, 255, 255, 0.14) 0 0 0 1px,
-        rgba(255, 255, 255, 0.03) 0 2px 2px,
-        rgba(0, 0, 0, 0.48) 0 12px 18px -12px,
-        rgba(255, 255, 255, 0.04) 0 0 0 1px inset;
+    --page-bg: #141413;
+    --surface: #242421;
+    --surface-subtle: #30302e;
+    --surface-hover: #3d3d3a;
+    --text-primary: #faf9f5;
+    --text-secondary: #d1cfc5;
+    --text-muted: #b0aea5;
+    --text-inverse: #141413;
+    --line: #30302e;
+    --button-bg: #d97757;
+    --button-fg: #141413;
+    --button-hover: #e8a184;
+    --badge-bg: #30302e;
+    --badge-fg: #e8e6dc;
+    --header-bg: rgba(20, 20, 19, 0.82);
+    --ring: #30302e 0 0 0 1px;
+    --card-shadow: #30302e 0 0 0 1px,
+        rgba(0, 0, 0, 0.36) 0 12px 30px -18px;
 }
 
 html {
@@ -73,7 +76,15 @@ body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
-    background: var(--page-bg);
+    background-color: var(--page-bg);
+    background:
+        radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--surface-subtle) 72%, transparent) 0 18%, transparent 34%),
+        radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--coral) 18%, transparent) 0 12%, transparent 28%),
+        radial-gradient(circle at 55% 95%, color-mix(in srgb, var(--terracotta) 12%, transparent) 0 16%, transparent 38%),
+        linear-gradient(var(--page-bg), var(--page-bg));
+    background-attachment: fixed;
+    background-size: 120% 120%, 130% 130%, 140% 140%, 100% 100%;
+    animation: ambient-page-drift 24s ease-in-out infinite alternate;
 }
 
 * {
@@ -83,6 +94,27 @@ body {
 a {
     color: inherit;
     text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+.el-dialog__title {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+p,
+span,
+button,
+input,
+textarea,
+.el-button,
+.el-input,
+.el-textarea,
+.el-select {
+    font-family: var(--font-sans);
 }
 
 button,
@@ -144,5 +176,19 @@ textarea:focus-visible,
         animation-iteration-count: 1 !important;
         scroll-behavior: auto !important;
         transition-duration: 0.01ms !important;
+    }
+
+    body {
+        animation: none;
+    }
+}
+
+@keyframes ambient-page-drift {
+    from {
+        background-position: 0% 0%, 100% 0%, 50% 100%, 0 0;
+    }
+
+    to {
+        background-position: 8% 4%, 92% 10%, 58% 88%, 0 0;
     }
 }

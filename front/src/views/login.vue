@@ -195,11 +195,12 @@ const guestLogin = () => {
     grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
     gap: 48px;
     align-items: center;
-    max-width: 1180px;
+    width: var(--page-width);
+    max-width: var(--page-max);
     margin: 0 auto;
-    padding: 48px 16px;
+    padding: 48px 0;
     color: var(--text-primary);
-    background: var(--page-bg);
+    background: transparent;
 }
 
 .auth-intro {
@@ -220,11 +221,11 @@ const guestLogin = () => {
     color: var(--text-primary);
     cursor: pointer;
     padding: 6px;
-    border-radius: 6px;
+    border-radius: 10px;
     font: inherit;
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: -0.32px;
+    letter-spacing: 0;
 }
 
 .brand:hover {
@@ -260,7 +261,7 @@ const guestLogin = () => {
     border-radius: 9999px;
     background: var(--badge-bg);
     color: var(--badge-fg);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -275,7 +276,7 @@ const guestLogin = () => {
     font-size: clamp(52px, 8vw, 86px);
     font-weight: 600;
     line-height: 0.96;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
 .intro-copy p,
@@ -290,7 +291,7 @@ const guestLogin = () => {
 .workflow-card,
 .auth-card {
     background: var(--surface);
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
 }
 
@@ -308,13 +309,13 @@ const guestLogin = () => {
     align-items: center;
     gap: 12px;
     padding: 0 14px;
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
 
 .workflow-row span:not(.dot) {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
@@ -360,7 +361,7 @@ const guestLogin = () => {
     font-size: 32px;
     font-weight: 600;
     line-height: 1.15;
-    letter-spacing: -1.28px;
+    letter-spacing: 0;
 }
 
 .auth-header p {
@@ -391,7 +392,7 @@ const guestLogin = () => {
     align-items: center;
     gap: 10px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--surface);
     box-shadow: var(--ring);
     transition: box-shadow 180ms ease;
@@ -437,7 +438,7 @@ const guestLogin = () => {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
 }
@@ -472,7 +473,7 @@ const guestLogin = () => {
     background: transparent;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 .text-button:hover {
@@ -509,7 +510,7 @@ const guestLogin = () => {
 
 @media (max-width: 520px) {
     .auth-page {
-        padding: 28px 12px;
+        padding: 28px 0;
     }
 
     .auth-card {
@@ -517,7 +518,22 @@ const guestLogin = () => {
     }
 
     .intro-copy h1 {
-        letter-spacing: -1.6px;
+        letter-spacing: 0;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

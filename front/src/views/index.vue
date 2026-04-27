@@ -24,14 +24,13 @@
                     <div class="pipeline">
                         <div v-for="step in workflow" :key="step.name" class="pipeline-step">
                             <span class="step-dot" :style="{ background: step.color }"></span>
-                            <span class="step-label" :style="{ color: step.color }">{{ step.name }}</span>
+                            <span class="step-label">{{ step.name }}</span>
                             <strong>{{ step.title }}</strong>
                         </div>
                     </div>
-                    <div class="terminal">
-                        <p><span>$</span> summarize latest/vue-performance.md</p>
-                        <p class="muted">AI context loaded · 18 notes indexed</p>
-                        <p><span>→</span> Ship a sharper article in 42s</p>
+                    <div class="insight-panel">
+                        <span>智能写作工作台</span>
+                        <p>围绕阅读、摘要、创作和作品管理建立完整流程，帮助内容稳定沉淀。</p>
                     </div>
                 </div>
             </div>
@@ -58,27 +57,6 @@
             </div>
         </section>
 
-        <section class="section-block">
-            <div class="section-heading inline">
-                <div>
-                    <span class="eyebrow">Selected writing</span>
-                    <h2>精选内容</h2>
-                </div>
-                <router-link to="/essays" class="text-link">查看全部</router-link>
-            </div>
-            <div class="case-grid">
-                <article v-for="caseItem in featuredCases" :key="caseItem.title" class="case-card">
-                    <span class="case-category">{{ caseItem.category }}</span>
-                    <h3>{{ caseItem.title }}</h3>
-                    <p>{{ caseItem.description }}</p>
-                    <div class="case-tags">
-                        <span v-for="tag in caseItem.tags" :key="tag">{{ tag }}</span>
-                    </div>
-                    <router-link :to="caseItem.link" class="card-link">阅读全文</router-link>
-                </article>
-            </div>
-        </section>
-
         <section class="cta-section">
             <span class="eyebrow">Start writing</span>
             <h2>把零散想法变成可沉淀的技术资产。</h2>
@@ -89,9 +67,9 @@
 
 <script setup lang="ts">
 const workflow = [
-    { name: 'Develop', title: '整理上下文', color: '#0a72ef' },
-    { name: 'Preview', title: 'AI 生成摘要', color: '#de1d8d' },
-    { name: 'Ship', title: '发布文章', color: '#ff5b4f' }
+    { name: '阅读', title: '整理上下文', color: 'var(--terracotta)' },
+    { name: '摘要', title: 'AI 生成摘要', color: 'var(--coral)' },
+    { name: '发布', title: '发布文章', color: '#4d4c48' }
 ]
 
 const metrics = [
@@ -118,43 +96,20 @@ const features = [
     }
 ]
 
-const featuredCases = [
-    {
-        title: 'Vue3 性能优化实战',
-        category: 'Frontend',
-        description: '从虚拟列表、组件缓存到按需加载，梳理大型前端页面的性能优化路径。',
-        tags: ['Vue3', 'Performance', 'Practice'],
-        link: '/essays/vue2-vs-vue3'
-    },
-    {
-        title: 'CSS 伪元素高级用法',
-        category: 'UI Engineering',
-        description: '用更少 DOM 构建状态、装饰和交互细节，让页面保持轻盈。',
-        tags: ['CSS', 'UI', 'Detail'],
-        link: '/essays/pseudo-elements'
-    },
-    {
-        title: '虚拟列表实现原理',
-        category: 'Architecture',
-        description: '解析长列表渲染的窗口化策略，找到体验和性能之间的平衡点。',
-        tags: ['Virtual List', 'Render', 'UX'],
-        link: '/performance'
-    }
-]
 </script>
 
 <style scoped>
 .home-page {
     width: 100%;
-    background: var(--page-bg);
+    background: transparent;
     color: var(--text-primary);
 }
 
 .hero-section {
-    max-width: 1200px;
+    width: var(--page-width);
     min-height: calc(100vh - 96px);
     margin: 0 auto;
-    padding: 96px 16px 56px;
+    padding: 96px 0 56px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
     align-items: center;
@@ -169,7 +124,7 @@ const featuredCases = [
     border-radius: 9999px;
     background: #ebf5ff;
     color: #0068d6;
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -180,7 +135,7 @@ const featuredCases = [
     font-size: clamp(48px, 8vw, 88px);
     font-weight: 600;
     line-height: 0.96;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
 .hero-copy p {
@@ -199,15 +154,13 @@ const featuredCases = [
 }
 
 .primary-action,
-.secondary-action,
-.text-link,
-.card-link {
+.secondary-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     height: 40px;
     padding: 0 16px;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
     transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
@@ -223,17 +176,13 @@ const featuredCases = [
     background: var(--button-hover);
 }
 
-.secondary-action,
-.text-link,
-.card-link {
+.secondary-action {
     color: var(--text-primary);
     background: var(--surface);
     box-shadow: var(--ring);
 }
 
-.secondary-action:hover,
-.text-link:hover,
-.card-link:hover {
+.secondary-action:hover {
     background: var(--surface-hover);
 }
 
@@ -257,13 +206,13 @@ const featuredCases = [
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #ebebeb;
+    background: var(--line);
 }
 
 .console-topbar strong {
     margin-left: auto;
     color: var(--text-muted);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -284,7 +233,7 @@ const featuredCases = [
     align-items: center;
     gap: 14px;
     padding: 0 14px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
@@ -296,46 +245,45 @@ const featuredCases = [
 }
 
 .step-label {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
-    text-transform: uppercase;
 }
 
 .pipeline-step strong {
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: -0.32px;
+    letter-spacing: 0;
 }
 
-.terminal {
+.insight-panel {
     margin-top: 16px;
     padding: 18px;
-    border-radius: 8px;
-    color: var(--button-fg);
-    background: var(--button-bg);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    border-radius: 12px;
+    color: var(--text-primary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+}
+
+.insight-panel span {
+    color: var(--terracotta);
     font-size: 13px;
-    line-height: 1.65;
+    font-weight: 600;
 }
 
-.terminal p {
-    margin: 0;
-}
-
-.terminal span {
-    color: #0a72ef;
-}
-
-.terminal .muted {
-    color: #a3a3a3;
+.insight-panel p {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.7;
 }
 
 .metrics-row,
 .section-block {
-    max-width: 1200px;
+    width: var(--page-width);
     margin: 0 auto;
-    padding: 56px 16px;
+    padding: 56px 0;
 }
 
 .metrics-row {
@@ -347,10 +295,9 @@ const featuredCases = [
 
 .metric-card,
 .feature-card,
-.case-card,
 .cta-section {
     background: var(--surface);
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
 }
 
@@ -366,7 +313,7 @@ const featuredCases = [
     font-size: 40px;
     font-weight: 600;
     line-height: 1;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
 .metric-card span {
@@ -379,14 +326,6 @@ const featuredCases = [
     margin-bottom: 32px;
 }
 
-.section-heading.inline {
-    max-width: none;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 24px;
-}
-
 .section-heading h2,
 .cta-section h2 {
     margin: 14px 0 0;
@@ -394,83 +333,55 @@ const featuredCases = [
     font-size: clamp(32px, 5vw, 48px);
     font-weight: 600;
     line-height: 1.08;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
-.feature-grid,
-.case-grid {
+.feature-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
 
-.feature-card,
-.case-card {
+.feature-card {
     padding: 24px;
 }
 
 .feature-index {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 500;
 }
 
-.feature-card h3,
-.case-card h3 {
+.feature-card h3 {
     margin: 18px 0 10px;
     color: var(--text-primary);
     font-size: 24px;
     font-weight: 600;
     line-height: 1.25;
-    letter-spacing: -0.96px;
+    letter-spacing: 0;
 }
 
-.feature-card p,
-.case-card p {
+.feature-card p {
     margin: 0;
     color: var(--text-secondary);
     font-size: 15px;
     line-height: 1.7;
 }
 
-.case-category,
-.case-tags span {
-    display: inline-flex;
-    align-items: center;
-    height: 24px;
-    padding: 0 10px;
-    border-radius: 9999px;
-    background: var(--surface-subtle);
-    color: var(--text-secondary);
-    box-shadow: var(--ring);
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.case-tags {
-    margin: 18px 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.card-link {
-    width: fit-content;
-}
-
 .cta-section {
-    max-width: 1200px;
+    width: var(--page-width);
     margin: 56px auto 80px;
-    padding: 48px 16px;
+    padding: 48px 0;
     text-align: center;
 }
 
 .cta-section h2 {
-    max-width: 720px;
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 28px;
+    white-space: nowrap;
 }
 
 @media (max-width: 980px) {
@@ -484,8 +395,7 @@ const featuredCases = [
         max-width: 640px;
     }
 
-    .feature-grid,
-    .case-grid {
+    .feature-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -494,26 +404,25 @@ const featuredCases = [
     .hero-section,
     .metrics-row,
     .section-block {
-        padding-left: 12px;
-        padding-right: 12px;
+        padding-left: 0;
+        padding-right: 0;
     }
 
     .metrics-row {
         grid-template-columns: 1fr;
     }
 
-    .section-heading.inline {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
     .hero-copy h1 {
-        letter-spacing: -1.6px;
+        letter-spacing: 0;
     }
 
     .hero-copy p {
         font-size: 17px;
         line-height: 1.7;
+    }
+
+    .cta-section h2 {
+        white-space: normal;
     }
 
     .pipeline-step {
@@ -524,4 +433,19 @@ const featuredCases = [
         grid-column: 2;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

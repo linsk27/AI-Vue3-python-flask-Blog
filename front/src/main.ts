@@ -18,9 +18,8 @@ import './assets/main.css'
 import './assets/libs.css'
 import 'nprogress/nprogress.css' // 引入nprogress样式
 import * as Icons from '@element-plus/icons-vue' // 引入所有图标
-const savedTheme = localStorage.getItem('theme')
-const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
-document.documentElement.dataset.theme = savedTheme || (prefersDark ? 'dark' : 'light')
+document.documentElement.dataset.theme = 'light'
+localStorage.removeItem('theme')
 
 const setupApp = async () => {
     const app = createApp(App)

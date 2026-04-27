@@ -243,7 +243,7 @@ function clearSelectedTags() {
 
 <style scoped>
 .essays-page {
-    width: min(1200px, calc(100vw - 32px));
+    width: var(--page-width);
     min-height: calc(100vh - 160px);
     margin: 0 auto;
     padding: 72px 0 80px;
@@ -266,7 +266,7 @@ function clearSelectedTags() {
     border-radius: 9999px;
     background: var(--badge-bg);
     color: var(--badge-fg);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -276,7 +276,7 @@ function clearSelectedTags() {
     font-size: clamp(44px, 7vw, 72px);
     font-weight: 600;
     line-height: 0.96;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
 .library-hero p {
@@ -297,7 +297,7 @@ function clearSelectedTags() {
     display: flex;
     gap: 4px;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
@@ -316,7 +316,7 @@ function clearSelectedTags() {
     height: 34px;
     display: grid;
     place-items: center;
-    border-radius: 6px;
+    border-radius: 10px;
     color: var(--text-secondary);
     background: transparent;
     transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
@@ -335,7 +335,7 @@ function clearSelectedTags() {
     align-items: center;
     gap: 8px;
     padding: 0 14px;
-    border-radius: 6px;
+    border-radius: 10px;
     color: var(--button-fg);
     background: var(--button-bg);
     font-size: 14px;
@@ -360,7 +360,7 @@ function clearSelectedTags() {
     align-items: center;
     gap: 12px;
     padding: 0 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--card-shadow);
 }
@@ -387,7 +387,7 @@ function clearSelectedTags() {
 
 .search-count {
     color: var(--text-secondary);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -395,7 +395,7 @@ function clearSelectedTags() {
 .tags-section {
     margin: 20px 0 32px;
     padding: 18px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--ring);
 }
@@ -471,7 +471,7 @@ function clearSelectedTags() {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--card-shadow);
     cursor: pointer;
@@ -494,7 +494,7 @@ function clearSelectedTags() {
     justify-content: space-between;
     gap: 16px;
     color: var(--text-muted);
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -505,7 +505,7 @@ function clearSelectedTags() {
     font-size: 24px;
     font-weight: 600;
     line-height: 1.25;
-    letter-spacing: -0.96px;
+    letter-spacing: 0;
 }
 
 .essay-card p {
@@ -536,7 +536,7 @@ function clearSelectedTags() {
     display: grid;
     place-items: center;
     text-align: center;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--card-shadow);
 }
@@ -551,7 +551,7 @@ function clearSelectedTags() {
     margin: 14px 0 8px;
     font-size: 24px;
     font-weight: 600;
-    letter-spacing: -0.96px;
+    letter-spacing: 0;
 }
 
 .no-results p {
@@ -572,7 +572,6 @@ function clearSelectedTags() {
 
 @media (max-width: 640px) {
     .essays-page {
-        width: calc(100vw - 24px);
         padding: 48px 0 64px;
     }
 
@@ -593,4 +592,19 @@ function clearSelectedTags() {
         display: none;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

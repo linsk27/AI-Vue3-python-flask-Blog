@@ -106,10 +106,10 @@ function showContextMenuInfo() {
 
 <style scoped>
 .ai-center-page {
-    max-width: 1200px;
+    width: var(--page-width);
     min-height: calc(100vh - 160px);
     margin: 0 auto;
-    padding: 72px 16px 80px;
+    padding: 72px 0 80px;
     color: var(--text-primary);
 }
 
@@ -129,7 +129,7 @@ function showContextMenuInfo() {
     border-radius: 9999px;
     background: #ebf5ff;
     color: #0068d6;
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 500;
 }
@@ -141,7 +141,7 @@ function showContextMenuInfo() {
     font-size: clamp(44px, 7vw, 72px);
     font-weight: 600;
     line-height: 0.96;
-    letter-spacing: -2.4px;
+    letter-spacing: 0;
 }
 
 .ai-hero p,
@@ -163,7 +163,7 @@ function showContextMenuInfo() {
 .status-card,
 .ai-feature-card,
 .guide-panel {
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--card-shadow);
 }
@@ -174,7 +174,7 @@ function showContextMenuInfo() {
 
 .mono,
 .feature-top span {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 500;
@@ -186,7 +186,7 @@ function showContextMenuInfo() {
     margin: 16px 0 8px;
     font-size: 24px;
     font-weight: 600;
-    letter-spacing: -0.96px;
+    letter-spacing: 0;
 }
 
 .ai-features {
@@ -241,7 +241,7 @@ function showContextMenuInfo() {
     font-size: 24px;
     font-weight: 600;
     line-height: 1.25;
-    letter-spacing: -0.96px;
+    letter-spacing: 0;
 }
 
 .ai-feature-card strong {
@@ -275,13 +275,13 @@ function showContextMenuInfo() {
     display: flex;
     gap: 16px;
     padding: 18px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
 
 .guide-step > span {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     color: var(--text-muted);
     font-size: 12px;
     font-weight: 500;
@@ -291,7 +291,7 @@ function showContextMenuInfo() {
     margin: 0 0 8px;
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: -0.32px;
+    letter-spacing: 0;
 }
 
 @media (max-width: 980px) {
@@ -308,11 +308,26 @@ function showContextMenuInfo() {
 
 @media (max-width: 640px) {
     .ai-center-page {
-        padding: 48px 12px 64px;
+        padding: 48px 0 64px;
     }
 
     .guide-panel {
         padding: 20px;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

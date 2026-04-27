@@ -231,21 +231,34 @@ onBeforeUnmount(() => {
 
 .context-menu {
     position: fixed;
-    background: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
+    min-width: 168px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--card-shadow);
+    border-radius: 14px;
     z-index: 2000;
     font-size: 14px;
+    color: var(--text-primary);
+    backdrop-filter: blur(18px);
 }
 
 .menu-item {
-    padding: 8px 12px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
     cursor: pointer;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: background 180ms ease, color 180ms ease;
 }
 
 .menu-item:hover {
-    background: #f0f0f0;
+    color: var(--text-primary);
+    background: var(--surface-hover);
 }
 
 .chat-float {

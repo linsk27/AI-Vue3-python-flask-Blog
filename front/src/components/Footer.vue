@@ -9,17 +9,6 @@
                 </div>
             </div>
 
-            <div class="footer-actions" aria-label="显示设置">
-                <button class="footer-button" type="button" @click="changeBackground">
-                    <Picture class="footer-icon" />
-                    <span>切换背景</span>
-                </button>
-                <button class="footer-button" type="button" @click="changeStar">
-                    <MagicStick class="footer-icon" />
-                    <span>星空效果</span>
-                </button>
-            </div>
-
             <div class="footer-links">
                 <a href="https://lindablog.xyz" target="_blank" rel="noopener noreferrer">线上站点</a>
                 <router-link to="/essays">文章库</router-link>
@@ -34,36 +23,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { MagicStick, Picture } from '@element-plus/icons-vue'
-import { useImgStore } from '@/store/backgroundImg'
-
-const imgStore = useImgStore()
-const index = ref(0)
-
-const imgUrlData = ref([
-    'https://s2.loli.net/2025/08/27/XkKHlSEcUIvafWd.jpg',
-    'https://s2.loli.net/2025/08/27/ygncYMIGHK1NAaT.jpg',
-    'https://s2.loli.net/2025/08/27/wUVaC94WNfsFrcP.jpg'
-])
-
-if (imgStore.url) {
-    index.value = imgUrlData.value.findIndex(item => item === imgStore.url) + 1
-}
-
-const changeBackground = () => {
-    if (index.value >= imgUrlData.value.length) index.value = 0
-    const img = new Image()
-    img.src = imgUrlData.value[index.value]
-    img.onload = () => {
-        imgStore.changeUrl(img.src)
-    }
-    index.value++
-}
-
-const changeStar = () => {
-    imgStore.toggleStar()
-}
 </script>
 
 <style scoped>
@@ -73,11 +32,11 @@ const changeStar = () => {
 }
 
 .footer-shell {
-    max-width: 1200px;
+    width: var(--page-width);
     margin: 0 auto;
-    padding: 32px 16px;
+    padding: 32px 0;
     display: grid;
-    grid-template-columns: 1.2fr auto auto;
+    grid-template-columns: 1.2fr auto;
     align-items: center;
     gap: 32px;
 }
@@ -93,7 +52,7 @@ const changeStar = () => {
     height: 32px;
     flex: 0 0 auto;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--button-bg) 0%, var(--text-secondary) 100%);
+    background: var(--terracotta);
     box-shadow: var(--ring);
 }
 
@@ -102,7 +61,7 @@ const changeStar = () => {
     color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
-    letter-spacing: -0.32px;
+    letter-spacing: 0;
 }
 
 .footer-brand p {
@@ -112,14 +71,12 @@ const changeStar = () => {
     line-height: 1.5;
 }
 
-.footer-actions,
 .footer-links {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.footer-button,
 .footer-links a {
     height: 34px;
     display: inline-flex;
@@ -127,7 +84,7 @@ const changeStar = () => {
     gap: 8px;
     padding: 0 12px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--surface);
     color: var(--text-secondary);
     box-shadow: var(--ring);
@@ -138,21 +95,16 @@ const changeStar = () => {
     transition: color 180ms ease, background 180ms ease;
 }
 
-.footer-button:hover,
 .footer-links a:hover {
     color: var(--text-primary);
     background: var(--surface-hover);
 }
 
-.footer-icon {
-    width: 16px;
-    height: 16px;
-}
 
 .footer-bottom {
-    max-width: 1200px;
+    width: var(--page-width);
     margin: 0 auto;
-    padding: 14px 16px 28px;
+    padding: 14px 0 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -161,7 +113,7 @@ const changeStar = () => {
 }
 
 .mono {
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-weight: 500;
     letter-spacing: 0;
 }
@@ -173,7 +125,6 @@ const changeStar = () => {
         gap: 20px;
     }
 
-    .footer-actions,
     .footer-links {
         flex-wrap: wrap;
     }
@@ -186,4 +137,19 @@ const changeStar = () => {
         gap: 8px;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

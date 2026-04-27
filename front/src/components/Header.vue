@@ -20,10 +20,6 @@
             </ul>
 
             <div class="nav-actions">
-                <button class="theme-toggle" type="button" :aria-label="themeLabel" @click="toggleTheme">
-                    <Sunny v-if="theme === 'dark'" class="action-icon" />
-                    <Moon v-else class="action-icon" />
-                </button>
                 <router-link to="/essays/write" class="write-link">
                     <EditPen class="action-icon" />
                     <span>写作</span>
@@ -63,7 +59,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowDown, Document, EditPen, Moon, Star, Sunny, SwitchButton, User } from '@element-plus/icons-vue'
+import { ArrowDown, Document, EditPen, Star, SwitchButton, User } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
 import { useGlobalStore } from '@/store'
 
@@ -74,8 +70,6 @@ const globalStore = useGlobalStore()
 const userName = computed(() => globalStore.userInfo?.username || '访客')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
 
-const theme = ref(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
-const themeLabel = computed(() => theme.value === 'dark' ? '切换到白色主题' : '切换到黑色主题')
 
 const navItems = [
     { path: '/', label: '首页' },
@@ -87,11 +81,6 @@ const goToHome = () => {
     router.push('/')
 }
 
-const toggleTheme = () => {
-    theme.value = theme.value === 'dark' ? 'light' : 'dark'
-    document.documentElement.dataset.theme = theme.value
-    localStorage.setItem('theme', theme.value)
-}
 
 const handleCommand = (command: string) => {
     switch (command) {
@@ -125,7 +114,7 @@ const handleCommand = (command: string) => {
 }
 
 .nav-shell {
-    max-width: 1200px;
+    width: var(--page-width);
     height: 56px;
     margin: 0 auto;
     padding: 0 8px 0 12px;
@@ -133,7 +122,7 @@ const handleCommand = (command: string) => {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--ring), rgba(0, 0, 0, 0.04) 0 2px 2px;
 }
@@ -148,7 +137,7 @@ const handleCommand = (command: string) => {
     color: var(--text-primary);
     cursor: pointer;
     padding: 6px;
-    border-radius: 6px;
+    border-radius: 10px;
     transition: background 180ms ease;
 
     &:hover {
@@ -183,12 +172,12 @@ const handleCommand = (command: string) => {
 .brand-name {
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: -0.32px;
+    letter-spacing: 0;
 }
 
 .brand-subtitle {
     margin-top: 3px;
-    font-family: "Geist Mono", ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 500;
     color: var(--text-muted);
@@ -209,7 +198,7 @@ const handleCommand = (command: string) => {
     align-items: center;
     height: 34px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 10px;
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
@@ -229,14 +218,13 @@ const handleCommand = (command: string) => {
     gap: 8px;
 }
 
-.theme-toggle,
 .write-link,
 .user-profile {
     height: 36px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -251,20 +239,6 @@ const handleCommand = (command: string) => {
 
     &:hover {
         background: var(--button-hover);
-    }
-}
-
-.theme-toggle {
-    width: 36px;
-    justify-content: center;
-    padding: 0;
-    color: var(--text-primary);
-    background: var(--surface);
-    border: 0;
-    box-shadow: var(--ring);
-
-    &:hover {
-        background: var(--surface-hover);
     }
 }
 
@@ -331,4 +305,19 @@ const handleCommand = (command: string) => {
         padding: 0;
     }
 }
+
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+:where(p, li, small) {
+    line-height: 1.6;
+}
+
+:where(button, .el-button, a) {
+    letter-spacing: 0;
+}
+
 </style>

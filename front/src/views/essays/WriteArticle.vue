@@ -1,59 +1,64 @@
 <template>
     <div class="write-article-container">
-        <!-- 页面头部 -->
-        <div class="write-article-header">
+        <section class="write-article-header">
             <div class="header-content">
-                <h1 class="write-title">
-                    <span class="title-icon">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 30L15 10L25 15L30 5" stroke="white" stroke-width="3" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                            <path d="M5 35H35" stroke="white" stroke-width="3" stroke-linecap="round" />
-                        </svg>
-                    </span>
-                    {{ isEditing ? '编辑文章' : '创作新文章' }}
-                </h1>
-                <div class="ai-help-btn-wrapper">
-                    <el-button type="primary" class="ai-help-btn" @click="openAiDialog">
-                        ✨ AI 帮写
+                <span class="eyebrow">Article Studio</span>
+                <div class="title-row">
+                    <div>
+                        <h1 class="write-title">{{ pageTitle }}</h1>
+                        <p class="write-subtitle">{{ labels.subtitle }}</p>
+                    </div>
+                    <el-button class="ai-help-btn" @click="openAiDialog">
+                        <Grid />
+                        <span>{{ labels.aiAssist }}</span>
                     </el-button>
                 </div>
-                <p class="write-subtitle">打造高质量内容，分享你的知识和见解</p>
             </div>
-        </div>
+        </section>
 
-        <!-- AI 帮写弹窗 -->
-        <el-dialog v-model="aiDialogVisible" title="✨ AI 智能创作助手" width="50%" :close-on-click-modal="false"
-            custom-class="ai-dialog">
+        <el-dialog v-model="aiDialogVisible" width="640px" :close-on-click-modal="false" custom-class="ai-dialog">
+            <template #header>
+                <div class="ai-dialog-header">
+                    <span class="ai-dialog-mark">AI</span>
+                    <div>
+                        <span class="ai-dialog-eyebrow">Draft Assistant</span>
+                        <h2>{{ labels.aiDialogTitle }}</h2>
+                    </div>
+                </div>
+            </template>
             <div class="ai-dialog-content">
-                <p class="ai-tip">请输入文章的主题、大纲或核心观点，AI 将为您生成完整的文章内容。</p>
-                <el-input v-model="aiTopic" type="textarea" :rows="6"
-                    placeholder="例如：请帮我写一篇关于 Vue3 组合式 API 的入门教程，包含响应式原理、生命周期钩子和实战示例..." class="ai-input" />
+                <p class="ai-tip">{{ labels.aiTip }}</p>
+                <div class="ai-dialog-tags">
+                    <span>结构草稿</span>
+                    <span>标题摘要</span>
+                    <span>分类标签</span>
+                </div>
+                <label class="ai-input-label">创作要求</label>
+                <el-input v-model="aiTopic" type="textarea" :rows="6" :placeholder="labels.aiPlaceholder"
+                    class="ai-input" />
             </div>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button @click="aiDialogVisible = false">取消</el-button>
-                    <el-button type="primary" @click="handleAiGenerate" :loading="aiGenerating">
-                        {{ aiGenerating ? 'AI 正在创作中...' : '开始生成' }}
+                    <el-button class="dialog-cancel" @click="aiDialogVisible = false">{{ labels.cancel }}</el-button>
+                    <el-button class="dialog-generate" type="primary" @click="handleAiGenerate" :loading="aiGenerating">
+                        {{ aiGenerating ? labels.generating : labels.generate }}
                     </el-button>
                 </span>
             </template>
         </el-dialog>
 
-        <!-- 文章编辑区域 -->
-        <div class="write-article-content">
-            <!-- 文章标题 -->
-            <div class="form-section">
-                <el-input v-model="article.title" placeholder="请输入文章标题" class="title-input" :prefix-icon="Document"
-                    :class="{ 'title-input-focused': titleFocused }" @focus="titleFocused = true"
-                    @blur="titleFocused = false" />
+        <section class="write-article-content">
+            <div class="form-section title-section">
+                <label class="field-label">{{ labels.title }}</label>
+                <el-input v-model="article.title" :placeholder="labels.titlePlaceholder" class="title-input"
+                    :prefix-icon="Document" :class="{ 'title-input-focused': titleFocused }"
+                    @focus="titleFocused = true" @blur="titleFocused = false" />
             </div>
 
-            <!-- 文章分类和标签 -->
             <div class="form-row">
-                <!-- 文章分类 -->
                 <div class="form-section half-width">
-                    <el-select v-model="article.category" placeholder="请选择文章分类" class="category-select"
+                    <label class="field-label">{{ labels.category }}</label>
+                    <el-select v-model="article.category" :placeholder="labels.categoryPlaceholder" class="category-select"
                         :prefix-icon="Grid" :class="{ 'select-focused': categoryFocused }"
                         @focus="categoryFocused = true" @blur="categoryFocused = false">
                         <el-option v-for="category in categories" :key="category.value" :label="category.label"
@@ -61,38 +66,30 @@
                     </el-select>
                 </div>
 
-                <!-- 文章标签 -->
                 <div class="form-section half-width">
-                    <div class="tag-input-container">
-                        <el-input v-model="newTag" placeholder="请输入文章标签，按回车确认" class="tag-input" @keyup.enter="addTag"
-                            clearable :class="{ 'tag-input-focused': tagFocused }" @focus="tagFocused = true"
-                            @blur="tagFocused = false" />
-                    </div>
+                    <label class="field-label">{{ labels.tags }}</label>
+                    <el-input v-model="newTag" :placeholder="labels.tagPlaceholder" class="tag-input"
+                        @keyup.enter="addTag" clearable :class="{ 'tag-input-focused': tagFocused }"
+                        @focus="tagFocused = true" @blur="tagFocused = false" />
                 </div>
             </div>
 
-            <!-- 标签列表 -->
-            <div class="tags-display-section">
-                <div class="tag-list">
-                    <el-tag v-for="(tag, index) in article.tags" :key="index" closable @close="removeTag(index)"
-                        class="article-tag">
-                        {{ tag }}
-                    </el-tag>
-                </div>
+            <div v-if="article.tags.length" class="tags-display-section">
+                <el-tag v-for="(tag, index) in article.tags" :key="index" closable @close="removeTag(index)"
+                    class="article-tag">
+                    {{ tag }}
+                </el-tag>
             </div>
 
-            <!-- 文章内容 -->
             <div class="form-section editor-section">
                 <div class="editor-header">
-                    <h3 class="editor-title">文章内容</h3>
+                    <div>
+                        <label class="field-label">{{ labels.body }}</label>
+                        <h3 class="editor-title">{{ labels.content }}</h3>
+                    </div>
                     <div class="editor-tools">
-                        <span class="tool-tip">💡 提示：支持富文本编辑，可插入图片、链接和代码</span>
-                        <span class="content-stats">
-                            {{ contentStats.words }} 字 · {{ contentStats.paragraphs }} 段
-                        </span>
-                        <el-button type="danger" size="small" @click="handleClearContent" class="clear-button">
-                            清空内容
-                        </el-button>
+                        <span class="content-stats">{{ contentStats.words }} {{ labels.words }} · {{ contentStats.paragraphs }} {{ labels.paragraphs }}</span>
+                        <el-button size="small" @click="handleClearContent" class="clear-button">{{ labels.clear }}</el-button>
                     </div>
                 </div>
                 <div class="editor-wrapper">
@@ -100,24 +97,25 @@
                 </div>
             </div>
 
-            <!-- 文章摘要 -->
             <div class="form-section">
-                <el-input v-model="article.summary" type="textarea" placeholder="请输入文章摘要（可选，不填写将自动生成）" :rows="3"
+                <label class="field-label">{{ labels.summary }}</label>
+                <el-input v-model="article.summary" type="textarea" :placeholder="labels.summaryPlaceholder" :rows="3"
                     class="summary-input" :prefix-icon="CopyDocument"
                     :class="{ 'summary-input-focused': summaryFocused }" @focus="summaryFocused = true"
                     @blur="summaryFocused = false" />
             </div>
 
-            <!-- 操作按钮 -->
             <div class="action-section">
-                <el-button type="default" @click="handleCancel" class="cancel-button">
-                    <ArrowLeft /> 取消
+                <el-button @click="handleCancel" class="cancel-button">
+                    <ArrowLeft />
+                    <span>{{ labels.cancel }}</span>
                 </el-button>
                 <el-button type="primary" @click="handleSave" :loading="saving" class="save-button">
-                    <Upload /> {{ isEditing ? '保存修改' : '发布文章' }}
+                    <Upload />
+                    <span>{{ isEditing ? labels.save : labels.publish }}</span>
                 </el-button>
             </div>
-        </div>
+        </section>
     </div>
 </template>
 
@@ -131,24 +129,20 @@ import articleApi from '@/api/modules/article'
 import { aiArticleService } from '@/api/modules/ai'
 import { marked } from 'marked'
 
-// 导入Quill.js富文本编辑器
+// Import Quill rich text editor.
 // @ts-ignore
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 
-// 导入代码高亮库
+// Import code highlighting.
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
-
-// 导入文章数据
-import { articles } from './articles/index'
 
 const router = useRouter()
 const route = useRoute()
 const { message } = useElMessage()
 const { hasPermission } = usePermission()
 
-// AI 帮写相关状态
 const aiDialogVisible = ref(false)
 const aiTopic = ref('')
 const aiGenerating = ref(false)
@@ -169,82 +163,42 @@ const handleAiGenerate = async () => {
         // @ts-ignore
         const data = res.data || res
 
-        // 填充表单
         article.title = data.title || article.title
         article.summary = data.summary || article.summary
-        if (data.category) {
-            // 简单的分类映射，或者直接使用返回的分类如果匹配的话
-            // 这里假设 AI 返回的分类值与 options 匹配，或者直接赋值
-            // 为了更好的体验，可以做一个简单的映射或者让 AI 返回特定的 value
-            // 暂时直接赋值，如果下拉框没有匹配的，可能显示不出来，但值是有的
-            article.category = data.category
-        }
 
-        if (data.tags && Array.isArray(data.tags)) {
-            // 合并标签或覆盖
-            article.tags = data.tags
-        }
+        if (data.category) article.category = data.category
+        if (data.tags && Array.isArray(data.tags)) article.tags = data.tags
 
-        // 填充编辑器内容
         if (quillEditor && data.content) {
-            // 使用 marked 将 AI 返回的 Markdown 转换为 HTML
-            // 异步解析 Markdown，确保转换完全
             const htmlContent = await marked.parse(data.content)
-
-            // 使用 root.innerHTML 直接设置，并手动触发内容同步
             quillEditor.root.innerHTML = htmlContent
             article.content = quillEditor.root.innerHTML
-
-            // 更新统计
-            const text = quillEditor.getText()
-            // 重新计算字数和段落数
-            const englishWords = text.trim().replace(/\s+/g, ' ').split(' ').filter((word: string | any[]) => word.length > 0)
-            const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || []
-            contentStats.words = englishWords.length + chineseChars.length
-            contentStats.paragraphs = text.trim().split(/\n+/).filter((p: string | any[]) => p.length > 0).length
-
-            // 触发高亮
-            setTimeout(() => {
-                const codeBlocks = quillEditor?.root.querySelectorAll('pre.ql-code-block code')
-                codeBlocks?.forEach((block: any) => {
-                    hljs.highlightElement(block)
-                })
-            }, 100)
+            updateStatsFromEditor()
+            highlightEditorCode()
         }
 
-        message.success('AI 创作完成！已自动填充内容')
+        message.success('AI 创作完成，已自动填充内容')
         aiDialogVisible.value = false
     } catch (error: any) {
-        console.error('AI生成失败', error)
+        console.error('AI 生成失败', error)
         if (error.message && error.message.includes('timeout')) {
-            message.error('AI 生成超时，请尝试缩短主题描述或稍后再试')
+            message.error('AI 生成超时，请缩短主题描述后重试')
         } else {
-            message.error('AI 生成失败，请检查 AI 配置或稍后重试')
+            message.error('AI 生成失败，请检查 AI 配置后重试')
         }
     } finally {
         aiGenerating.value = false
     }
 }
 
-// 检查权限
-onMounted(() => {
-    if (!hasPermission('article:create')) {
-        message.warning('您没有权限创作文章，请联系管理员')
-        router.push('/')
-    }
-})
-
-// 富文本编辑器引用
 const editorRef = ref<HTMLElement | null>(null)
 let quillEditor: Quill | null = null
 
-// 表单焦点状态
 const titleFocused = ref(false)
 const categoryFocused = ref(false)
 const tagFocused = ref(false)
 const summaryFocused = ref(false)
 
-// 文章分类
 const categories = [
     { value: 'frontend', label: '前端开发' },
     { value: 'backend', label: '后端开发' },
@@ -256,9 +210,35 @@ const categories = [
     { value: 'other', label: '其他' }
 ]
 
-// 文章数据
 const articleId = computed(() => route.params.id as string)
 const isEditing = computed(() => !!articleId.value)
+const pageTitle = computed(() => isEditing.value ? '编辑文章' : '创作新文章')
+
+const labels = {
+    subtitle: '整理观点、补齐结构，并发布为正式内容。',
+    aiAssist: 'AI 帮写',
+    aiDialogTitle: 'AI 智能创作助手',
+    aiTip: '输入主题、大纲或核心观点，系统会生成可继续编辑的文章草稿。',
+    aiPlaceholder: '例如：写一篇 Vue3 组合式 API 入门教程，包含响应式原理、生命周期和实战示例。',
+    cancel: '取消',
+    generate: '开始生成',
+    generating: '正在生成',
+    title: '标题',
+    titlePlaceholder: '请输入文章标题',
+    category: '分类',
+    categoryPlaceholder: '请选择文章分类',
+    tags: '标签',
+    tagPlaceholder: '输入标签后按回车',
+    body: '正文',
+    content: '文章内容',
+    words: '字',
+    paragraphs: '段',
+    clear: '清空',
+    summary: '摘要',
+    summaryPlaceholder: '请输入文章摘要。留空时可在发布流程中自动生成。',
+    save: '保存修改',
+    publish: '发布文章',
+}
 
 const article = reactive({
     id: '',
@@ -270,288 +250,195 @@ const article = reactive({
     createTime: ''
 })
 
-// 新标签输入
 const newTag = ref('')
-
-// 编辑器内容统计
 const contentStats = reactive({
     words: 0,
     paragraphs: 0
 })
 
-// 添加标签
 const addTag = () => {
     const tag = newTag.value.trim()
     if (tag && !article.tags.includes(tag)) {
         article.tags.push(tag)
         newTag.value = ''
-        handleTagsChange(article.tags)
     }
 }
 
-// 移除标签
 const removeTag = (index: number) => {
     article.tags.splice(index, 1)
-    handleTagsChange(article.tags)
 }
 
-// 处理标签变化
-const handleTagsChange = (tags: string[]) => {
-    // 可以在这里添加标签验证逻辑
-    console.log('Tags changed:', tags)
-}
-
-// 图片上传处理函数
 const handleImageUpload = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        // 创建FormData对象
+    return new Promise((resolve) => {
         const formData = new FormData()
         formData.append('image', file)
 
-        // 模拟图片上传过程
+        // Keep the previous mock upload behavior until a real upload API is connected.
         setTimeout(() => {
-            // 模拟上传成功，返回图片URL
-            // 在实际应用中，这里应该调用真实的上传API
             const mockImageUrl = `https://picsum.photos/800/600?random=${Date.now()}`
             resolve(mockImageUrl)
         }, 1000)
-
-        // 实际的上传代码示例
-        /*
-        axios.post('/api/upload/image', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(response => {
-            if (response.data && response.data.url) {
-                resolve(response.data.url)
-            } else {
-                reject(new Error('上传失败：无效的响应'))
-            }
-        })
-        .catch(error => {
-            reject(new Error(`上传失败：${error.message}`))
-        })
-        */
     })
 }
 
-// 初始化富文本编辑器
+const highlightEditorCode = () => {
+    const codeBlocks = quillEditor?.root.querySelectorAll('pre.ql-code-block code')
+    codeBlocks?.forEach((block: any) => {
+        hljs.highlightElement(block)
+    })
+}
+
+const updateStatsFromEditor = () => {
+    if (!quillEditor) return
+
+    const text = quillEditor.getText()
+    let wordCount = 0
+    if (text.trim()) {
+        const englishWords = text.trim().replace(/\s+/g, ' ').split(' ').filter((word: string | any[]) => word.length > 0)
+        const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || []
+        wordCount = englishWords.length + chineseChars.length
+    }
+
+    const paragraphCount = text.trim()
+        ? text.trim().split(/\n+/).filter((paragraph: string | any[]) => paragraph.length > 0).length
+        : 0
+
+    contentStats.words = wordCount
+    contentStats.paragraphs = text.trim() && paragraphCount === 0 ? 1 : paragraphCount
+}
+
 const initEditor = () => {
-    if (editorRef.value) {
-        // 配置Quill编辑器
-        const toolbarOptions = [
-            ['bold', 'italic', 'underline', 'strike'],        // 粗体、斜体、下划线、删除线
-            ['blockquote', 'code-block'],                    // 引用、代码块
-            [{ 'header': 1 }, { 'header': 2 }],               // 标题1、标题2
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],   // 有序列表、无序列表
-            [{ 'script': 'sub' }, { 'script': 'super' }],    // 上标、下标
-            [{ 'indent': '-1' }, { 'indent': '+1' }],        // 缩进
-            [{ 'direction': 'rtl' }],                        // 文本方向
-            [{ 'size': ['small', false, 'large', 'huge'] }],  // 字体大小
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],       // 标题级别
-            [{ 'color': [] }, { 'background': [] }],          // 字体颜色、背景颜色
-            [{ 'font': [] }],                                // 字体
-            [{ 'align': [] }],                               // 对齐方式
-            ['clean'],                                       // 清除格式
-            ['link', 'image', 'video']                       // 链接、图片、视频
-        ]
+    if (!editorRef.value) return
 
-        // 自定义工具栏处理
-        const toolbarHandlers = {
-            image: function () {
-                const input = document.createElement('input')
-                input.type = 'file'
-                input.accept = 'image/*'
-                input.onchange = async (e) => {
-                    const target = e.target as HTMLInputElement
-                    if (target.files && target.files[0]) {
-                        const file = target.files[0]
-                        try {
-                            // 显示加载状态
-                            message.info('图片上传中...')
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{ 'header': 1 }, { 'header': 2 }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'script': 'sub' }, { 'script': 'super' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'direction': 'rtl' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+        ['clean'],
+        ['link', 'image', 'video']
+    ]
 
-                            // 上传图片
-                            const imageUrl = await handleImageUpload(file)
+    const toolbarHandlers = {
+        image: function () {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = 'image/*'
+            input.onchange = async (e) => {
+                const target = e.target as HTMLInputElement
+                if (!target.files || !target.files[0]) return
 
-                            // 隐藏加载状态
-                            message.success('图片上传成功')
+                const file = target.files[0]
+                try {
+                    message.info('图片上传中...')
+                    const imageUrl = await handleImageUpload(file)
+                    message.success('图片上传成功')
 
-                            // 获取编辑器选区
-                            const selection = quillEditor?.getSelection()
-                            if (selection) {
-                                // 在选区插入图片
-                                quillEditor?.insertEmbed(selection.index, 'image', imageUrl)
-                            } else {
-                                // 如果没有选区，在末尾插入图片
-                                quillEditor?.insertEmbed(quillEditor.getLength(), 'image', imageUrl)
-                            }
-                        } catch (error) {
-                            message.error('图片上传失败，请重试')
-                            console.error('Image upload error:', error)
-                        }
+                    const selection = quillEditor?.getSelection()
+                    if (selection) {
+                        quillEditor?.insertEmbed(selection.index, 'image', imageUrl)
+                    } else {
+                        quillEditor?.insertEmbed(quillEditor.getLength(), 'image', imageUrl)
                     }
-                }
-                input.click()
-            },
-            clean: function () {
-                if (confirm('确定要清空所有内容吗？此操作不可撤销。')) {
-                    quillEditor?.setText('')
-                    message.success('内容已清空')
+                } catch (error) {
+                    message.error('图片上传失败，请重试')
+                    console.error('Image upload error:', error)
                 }
             }
-        }
-
-        // 创建Quill编辑器实例
-        quillEditor = new Quill(editorRef.value, {
-            theme: 'snow',
-            modules: {
-                toolbar: {
-                    container: toolbarOptions,
-                    handlers: toolbarHandlers
-                }
-            },
-            placeholder: '开始编写你的文章...',
-            scrollingContainer: '.quill-editor'
-        })
-
-        // 代码高亮处理函数
-        const highlightCode = () => {
-            const codeBlocks = quillEditor?.root.querySelectorAll('pre.ql-code-block code')
-            codeBlocks?.forEach((block: any) => {
-                hljs.highlightElement(block)
-            })
-        }
-
-        // 更新内容统计
-        const updateContentStats = () => {
-            if (quillEditor) {
-                // 获取纯文本内容
-                const text = quillEditor.getText()
-
-                // 1. 统计单词数（同时支持英文和中文）
-                let wordCount = 0
-                if (text.trim()) {
-                    // 对于英文，按空格分割
-                    const englishWords = text.trim().replace(/\s+/g, ' ').split(' ').filter((word: string | any[]) => word.length > 0)
-
-                    // 对于中文，统计中文字符数
-                    const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || []
-
-                    // 综合统计：英文单词数 + 中文字符数
-                    wordCount = englishWords.length + chineseChars.length
-                }
-
-                // 2. 统计段落数
-                let paragraphCount = 0
-                if (text.trim()) {
-                    // 按换行符分割，过滤空段落
-                    paragraphCount = text.trim().split(/\n+/).filter((paragraph: string | any[]) => paragraph.length > 0).length
-                }
-
-                // 3. 确保至少有一个段落（如果有内容）
-                if (text.trim() && paragraphCount === 0) {
-                    paragraphCount = 1
-                }
-
-                // 更新统计数据
-                contentStats.words = wordCount
-                contentStats.paragraphs = paragraphCount
-
-                // 调试信息
-                console.log('Content stats:', {
-                    text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
-                    wordCount,
-                    paragraphCount
-                })
+            input.click()
+        },
+        clean: function () {
+            if (confirm('确定要清空所有内容吗？此操作不可撤销。')) {
+                quillEditor?.setText('')
+                message.success('内容已清空')
             }
         }
+    }
 
-        // 初始化时执行一次内容统计
-        setTimeout(updateContentStats, 200)
+    quillEditor = new Quill(editorRef.value, {
+        theme: 'snow',
+        modules: {
+            toolbar: {
+                container: toolbarOptions,
+                handlers: toolbarHandlers
+            }
+        },
+        placeholder: '开始编写你的文章...',
+        scrollingContainer: '.quill-editor'
+    })
 
-        // 监听内容变化，处理代码高亮和内容统计
-        quillEditor.on('text-change', () => {
-            article.content = quillEditor?.root.innerHTML || ''
-            // 延迟执行高亮，确保DOM已更新
-            setTimeout(highlightCode, 0)
-            // 更新内容统计
-            updateContentStats()
-        })
+    quillEditor.on('text-change', () => {
+        article.content = quillEditor?.root.innerHTML || ''
+        setTimeout(highlightEditorCode, 0)
+        updateStatsFromEditor()
+    })
 
-        // 监听代码块添加事件
-        quillEditor.on('selection-change', () => {
-            // 当选择变化时也检查代码高亮
-            setTimeout(highlightCode, 0)
-        })
+    quillEditor.on('selection-change', () => {
+        setTimeout(highlightEditorCode, 0)
+    })
 
-        // 如果是编辑模式，加载现有内容并处理代码高亮
-        if (isEditing.value) {
+    if (article.content) quillEditor.root.innerHTML = article.content
+
+    setTimeout(() => {
+        highlightEditorCode()
+        updateStatsFromEditor()
+
+        const cleanButton: HTMLElement | null = document.querySelector('.ql-toolbar.ql-snow button.ql-clean')
+        if (cleanButton) {
+            cleanButton.title = '清空内容'
+            cleanButton.style.backgroundColor = '#fef2f2'
+            cleanButton.style.borderColor = '#fecaca'
+            cleanButton.style.color = '#dc2626'
+            cleanButton.style.padding = '8px'
+            cleanButton.style.borderRadius = '4px'
+        }
+    }, 100)
+}
+
+const loadArticle = async () => {
+    if (!isEditing.value) return
+
+    try {
+        const data: any = await articleApi.getDetail(articleId.value)
+        if (!data) return
+
+        article.id = String(data.id)
+        article.title = data.title
+        article.content = data.content
+        article.summary = data.summary || ''
+        article.category = data.category || ''
+        article.tags = data.tags || []
+        article.createTime = data.created_at
+
+        if (quillEditor) {
             quillEditor.root.innerHTML = article.content
-            // 加载内容后执行代码高亮和内容统计
             setTimeout(() => {
-                highlightCode()
-                updateContentStats()
-            }, 0)
-        } else {
-            // 初始化时也执行一次代码高亮和内容统计（如果有默认内容）
-            setTimeout(() => {
-                highlightCode()
-                updateContentStats()
-            }, 0)
+                highlightEditorCode()
+                updateStatsFromEditor()
+            }, 100)
         }
-
-        // 简化工具栏按钮提示 - 直接在CSS中添加
-        // 为清空按钮添加视觉标识
-        setTimeout(() => {
-            const cleanButton: HTMLElement | null = document.querySelector('.ql-toolbar.ql-snow button.ql-clean')
-            if (cleanButton) {
-                cleanButton.title = '清空内容'
-                // 添加醒目的视觉标识
-                cleanButton.style.backgroundColor = '#fef2f2'
-                cleanButton.style.borderColor = '#fecaca'
-                cleanButton.style.color = '#dc2626'
-                cleanButton.style.padding = '8px'
-                cleanButton.style.borderRadius = '4px'
-            }
-        }, 100)
+    } catch (err) {
+        console.error('加载文章失败:', err)
+        message.error('加载文章失败')
     }
 }
 
-// 加载文章数据（编辑模式）
-if (isEditing.value) {
-    // 从API获取文章详情
-    articleApi.getDetail(articleId.value).then((data: any) => {
-        if (data) {
-            article.id = String(data.id)
-            article.title = data.title
-            article.content = data.content
-            article.summary = data.summary || ''
-            article.category = data.category || ''
-            article.tags = data.tags || []
-            article.createTime = data.created_at
+onMounted(async () => {
+    if (!hasPermission('article:create')) {
+        message.warning('您没有权限创作文章，请联系管理员')
+        router.push('/')
+        return
+    }
 
-            // 更新编辑器内容
-            if (quillEditor) {
-                quillEditor.root.innerHTML = article.content
-                // 触发高亮和统计更新
-                setTimeout(() => {
-                    const codeBlocks = quillEditor?.root.querySelectorAll('pre.ql-code-block code')
-                    codeBlocks?.forEach((block: any) => {
-                        hljs.highlightElement(block)
-                    })
-                }, 100)
-            }
-        }
-    }).catch(err => {
-        console.error('Failed to load article:', err)
-        message.error('加载文章失败')
-    })
-}
-
-// 组件挂载后初始化编辑器
-onMounted(() => {
+    await loadArticle()
     nextTick(() => {
         initEditor()
     })
@@ -559,9 +446,7 @@ onMounted(() => {
 
 const saving = ref(false)
 
-// 保存文章
 const handleSave = async () => {
-    // 表单验证
     if (!article.title.trim()) {
         message.warning('请输入文章标题')
         return
@@ -573,7 +458,6 @@ const handleSave = async () => {
     }
 
     if (!article.summary.trim()) {
-        // 自动生成摘要
         article.summary = article.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
     }
 
@@ -589,17 +473,14 @@ const handleSave = async () => {
         }
 
         if (isEditing.value) {
-            // 更新现有文章
             await articleApi.update(article.id, params)
             message.success('文章修改成功')
         } else {
-            // 创建新文章
             const res = await articleApi.create(params)
-            article.id = String(res.id) // 确保ID类型匹配
+            article.id = String(res.id)
             message.success('文章发布成功')
         }
 
-        // 返回文章列表页
         router.push('/essays')
     } catch (error) {
         message.error('保存失败，请稍后重试')
@@ -609,19 +490,16 @@ const handleSave = async () => {
     }
 }
 
-// 清空内容操作
 const handleClearContent = () => {
     if (confirm('确定要清空所有内容吗？此操作不可撤销。')) {
         quillEditor?.setText('')
         article.content = ''
-        // 更新内容统计
         contentStats.words = 0
         contentStats.paragraphs = 0
         message.success('内容已清空')
     }
 }
 
-// 取消操作
 const handleCancel = () => {
     if (article.title || article.content) {
         if (confirm('确定要放弃当前编辑内容吗？')) {
@@ -633,669 +511,554 @@ const handleCancel = () => {
 }
 </script>
 
-<style>
-/* 全局样式重置 */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-/* Quill编辑器样式覆盖 */
-.quill-editor {
-    min-height: 500px;
-    border-radius: 12px;
-}
-
-.ql-container {
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    font-size: 16px;
-    line-height: 1.7;
-}
-
-.ql-toolbar {
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.ql-toolbar.ql-snow .ql-picker-label {
-    color: #475569;
-}
-
-.ql-toolbar.ql-snow .ql-picker-label:hover,
-.ql-toolbar.ql-snow .ql-picker-item:hover {
-    color: var(--primary-color);
-}
-
-.ql-toolbar.ql-snow .ql-picker-item.ql-selected {
-    color: var(--primary-color);
-}
-
-.ql-toolbar.ql-snow .ql-picker-options {
-    border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.ql-toolbar.ql-snow button:hover {
-    color: var(--primary-color);
-}
-
-.ql-toolbar.ql-snow button.ql-active {
-    color: var(--primary-color);
-}
-
-.ql-editor h1,
-.ql-editor h2,
-.ql-editor h3,
-.ql-editor h4,
-.ql-editor h5,
-.ql-editor h6 {
-    color: #1e293b;
-    font-weight: 600;
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-
-.ql-editor p {
-    margin-bottom: 1rem;
-}
-
-.ql-editor ul,
-.ql-editor ol {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-}
-
-.ql-editor li {
-    margin-bottom: 0.5rem;
-}
-
-.ql-editor pre {
-    background-color: #f1f5f9;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    overflow-x: auto;
-}
-
-.ql-editor code {
-    background-color: #f1f5f9;
-    border-radius: 4px;
-    padding: 0.2rem 0.4rem;
-    font-family: 'Fira Code', monospace;
-    font-size: 0.9rem;
-}
-
-.ql-editor blockquote {
-    border-left: 4px solid var(--primary-color);
-    margin: 1rem 0;
-    padding-left: 1rem;
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-/* 图片样式 */
-.ql-editor img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 1rem 0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.ql-editor img:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* 响应式图片 */
-@media (max-width: 768px) {
-    .ql-editor img {
-        margin: 0.75rem 0;
-        border-radius: 6px;
-    }
-}
-
-/* 全局变量定义 - 新的颜色方案 */
-:root {
-    /* 主色调 - 橙色主题 */
-    --primary-color: #FF7F50;
-    --primary-dark: #FF6347;
-    --primary-light: #FFA07A;
-    --primary-lighter: #FFDAB9;
-    --primary-lightest: #FFF5F0;
-
-    /* 辅助色 - 更鲜明的对比色 */
-    --secondary-color: #E67E22;
-    --secondary-light: #FAD7A0;
-    --accent-color: #D35400;
-    --accent-light: #EDBB99;
-    --warning-color: #F39C12;
-    --warning-light: #FDEBD0;
-
-    /* 中性色 */
-    --text-primary: #111827;
-    --text-secondary: #374151;
-    --text-muted: #6B7280;
-    --background-primary: #FFFFFF;
-    --background-secondary: #FFF8F5;
-    --background-tertiary: #FFF0E6;
-    --border-color: #FEE8D6;
-    --border-light: #FFF5EE;
-
-    /* 阴影 */
-    --shadow-sm: 0 1px 2px 0 rgba(255, 127, 80, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(255, 127, 80, 0.1), 0 2px 4px -1px rgba(255, 127, 80, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(255, 127, 80, 0.1), 0 4px 6px -2px rgba(255, 127, 80, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(255, 127, 80, 0.1), 0 10px 10px -5px rgba(255, 127, 80, 0.04);
-    --shadow-2xl: 0 25px 50px -12px rgba(255, 127, 80, 0.25);
-
-    /* 边框半径 */
-    --border-radius-sm: 0.375rem;
-    --border-radius-md: 0.5rem;
-    --border-radius-lg: 0.75rem;
-    --border-radius-xl: 1rem;
-    --border-radius-2xl: 1.5rem;
-    --border-radius-3xl: 2rem;
-
-    /* 过渡效果 */
-    --transition-fast: 0.15s ease-in-out;
-    --transition-normal: 0.3s ease-in-out;
-    --transition-slow: 0.5s ease-in-out;
-}
-</style>
 
 <style scoped>
-/* 页面容器 */
 .write-article-container {
     width: 100%;
-    /* max-width: 1200px; */
-    /* margin: 0 auto; */
-    padding: 40px 20px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 248, 245, 0.85) 100%);
     min-height: calc(100vh - 140px);
-    font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    position: relative;
-    overflow: hidden;
+    padding: 56px 0 80px;
+    background: transparent;
+    color: var(--text-primary);
 }
 
-/* 背景装饰 */
-.write-article-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40%;
-    height: 60%;
-    background: radial-gradient(circle at 100% 0%, var(--primary-lightest) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
+.write-article-header,
+.write-article-content {
+    width: var(--page-width);
+    margin: 0 auto;
 }
 
-.write-article-container::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 30%;
-    height: 40%;
-    background: radial-gradient(circle at 0% 100%, var(--secondary-light) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* 页面头部 */
 .write-article-header {
-    text-align: center;
-    margin-bottom: 60px;
-    position: relative;
-    z-index: 1;
-    animation: fadeInDown 0.8s ease-out;
+    padding: 32px 0 28px;
 }
 
 .header-content {
-    max-width: 800px;
-    margin: 0 auto;
+    width: 100%;
+}
+
+.eyebrow,
+.field-label,
+.content-stats {
+    font-family: var(--font-mono);
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    box-shadow: var(--ring);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.title-row {
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
 }
 
 .write-title {
-    font-size: 3rem;
-    font-weight: 700;
+    margin: 0;
     color: var(--text-primary);
-    margin: 0 0 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-color) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    background-size: 200% 100%;
-    animation: gradientShift 3s ease-in-out infinite;
-}
-
-.ai-help-btn-wrapper {
-    margin: 20px 0;
-    text-align: center;
-}
-
-.ai-help-btn {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 25px;
-    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3);
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4);
-    }
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
 }
 
 .write-subtitle {
-    font-size: 1.25rem;
+    max-width: 640px;
+    margin: 16px 0 0;
     color: var(--text-secondary);
-    margin: 0;
-    font-weight: 400;
-    animation: fadeInUp 0.8s ease-out 0.2s both;
+    font-size: 18px;
+    line-height: 1.7;
 }
 
-.title-icon {
-    font-size: 2.5rem;
-    display: flex;
+.ai-help-btn,
+.cancel-button,
+.save-button,
+.clear-button {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    border-radius: 50%;
-    box-shadow: var(--shadow-xl);
-    animation: pulse 2s ease-in-out infinite;
-    border: 3px solid white;
+    gap: 8px;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-/* 文章编辑内容区域 */
+.ai-help-btn,
+.save-button {
+    height: 40px;
+    padding: 0 16px;
+    color: var(--button-fg);
+    background: var(--button-bg);
+    box-shadow: var(--ring);
+}
+
+.ai-help-btn:hover,
+.save-button:hover:not(:disabled) {
+    background: var(--button-hover);
+}
+
 .write-article-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: var(--background-primary);
-    border-radius: var(--border-radius-2xl);
-    padding: 50px;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--border-light);
-    position: relative;
-    z-index: 1;
-    animation: slideInUp 0.8s ease-out 0.4s both;
+    padding: 32px;
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
 }
 
-/* 表单行布局 */
-.form-row {
-    display: flex;
-    gap: 24px;
+.form-section {
     margin-bottom: 24px;
 }
 
+.title-section {
+    margin-bottom: 28px;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
 .half-width {
-    flex: 1;
+    min-width: 0;
 }
 
-/* 表单区域 */
-.form-section {
-    margin-bottom: 32px;
-    transition: var(--transition-normal);
-    position: relative;
+.title-input,
+.category-select,
+.tag-input,
+.summary-input {
+    width: 100%;
 }
 
-/* 标题输入 */
-.title-input {
-    font-size: 1.5rem;
-    font-weight: 600;
-    border-radius: var(--border-radius-lg);
-    padding: 1.5rem 2rem;
-    border: none;
-    transition: var(--transition-normal);
-    background: var(--background-secondary);
+:deep(.el-input__wrapper),
+:deep(.el-textarea__inner),
+:deep(.el-select__wrapper) {
+    min-height: 42px;
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--ring);
+    transition: box-shadow 180ms ease, background 180ms ease;
+}
+
+:deep(.el-input__wrapper.is-focus),
+:deep(.el-select__wrapper.is-focused),
+:deep(.el-textarea__inner:focus) {
+    box-shadow: var(--ring), 0 0 0 3px rgba(10, 114, 239, 0.16);
+}
+
+:deep(.el-input__inner),
+:deep(.el-textarea__inner) {
     color: var(--text-primary);
-    box-shadow: var(--shadow-sm);
+    font-family: inherit;
 }
 
-.title-input::placeholder {
+:deep(.el-input__inner::placeholder),
+:deep(.el-textarea__inner::placeholder) {
     color: var(--text-muted);
 }
 
-.title-input-focused,
-.title-input:focus {
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-lighter), var(--shadow-md);
-    transform: translateY(-2px);
-    background: var(--background-primary);
+.title-input :deep(.el-input__wrapper) {
+    min-height: 56px;
 }
 
-/* 选择器样式 */
-.category-select {
-    width: 100%;
-    border-radius: var(--border-radius-lg);
-    padding: 1.25rem 1.75rem;
-    border: none;
-    transition: var(--transition-normal);
-    background: var(--background-secondary);
-    box-shadow: var(--shadow-sm);
+.title-input :deep(.el-input__inner) {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
-.select-focused,
-.category-select:focus {
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-lighter), var(--shadow-md);
-    transform: translateY(-2px);
-    background: var(--background-primary);
-}
-
-/* 标签输入 */
-.tag-input-container {
-    width: 100%;
-}
-
-.tag-input {
-    width: 100%;
-    border-radius: var(--border-radius-lg);
-    padding: 1.25rem 1.75rem;
-    border: none;
-    transition: var(--transition-normal);
-    background: var(--background-secondary);
-    box-shadow: var(--shadow-sm);
-}
-
-.tag-input-focused,
-.tag-input:focus {
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-lighter), var(--shadow-md);
-    transform: translateY(-2px);
-    background: var(--background-primary);
-}
-
-/* 标签显示区域 */
 .tags-display-section {
-    margin-bottom: 32px;
-}
-
-.tag-list {
+    margin: -8px 0 28px;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
 }
 
 .article-tag {
-    background: var(--primary-lighter);
-    color: var(--primary-color);
-    border-color: var(--primary-light);
-    font-size: 1rem;
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    box-shadow: var(--ring);
     font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 25px;
-    transition: var(--transition-normal);
-    animation: tagSlideIn 0.3s ease-out;
 }
 
-.article-tag:hover {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-dark);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-/* 编辑器区域 */
 .editor-section {
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 .editor-header {
     display: flex;
+    align-items: flex-end;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin-bottom: 14px;
 }
 
 .editor-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text-primary);
     margin: 0;
-    letter-spacing: -0.3px;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    color: var(--text-primary);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0;
 }
 
 .editor-tools {
     display: flex;
     align-items: center;
-}
-
-.tool-tip {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    background: var(--background-tertiary);
-    padding: 8px 16px;
-    border-radius: var(--border-radius-md);
-    border: none;
-    margin-right: 16px;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .content-stats {
-    font-size: 0.9rem;
-    color: var(--primary-color);
-    background: var(--primary-lightest);
-    padding: 8px 16px;
-    border-radius: var(--border-radius-md);
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    font-size: 12px;
     font-weight: 500;
-    border: 1px solid var(--primary-lighter);
-    margin-right: 16px;
+    white-space: nowrap;
+}
+
+.clear-button,
+.cancel-button {
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--ring);
 }
 
 .clear-button {
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: var(--border-radius-md);
-    transition: var(--transition-normal);
+    height: 30px;
+    padding: 0 12px;
 }
 
-.clear-button:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+.clear-button:hover,
+.cancel-button:hover {
+    background: var(--surface-hover);
 }
 
 .editor-wrapper {
-    border: 2px solid transparent;
-    border-radius: var(--border-radius-lg);
+    min-height: 620px;
     overflow: hidden;
-    transition: var(--transition-normal);
-    background: var(--background-primary);
-    min-height: 600px;
-    box-shadow: var(--shadow-md);
-}
-
-.editor-wrapper:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-1px);
-}
-
-.editor-wrapper:focus-within {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), var(--shadow-lg);
-    transform: translateY(-2px);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--card-shadow);
 }
 
 .quill-editor {
-    min-height: 600px;
-    max-height: 800px;
+    min-height: 620px;
+    max-height: 760px;
     overflow-y: auto;
 }
 
-/* 摘要输入 */
-.summary-input {
-    width: 100%;
-    border-radius: var(--border-radius-lg);
-    padding: 1.5rem 2rem;
-    border: none;
-    transition: var(--transition-normal);
-    background: var(--background-secondary);
-    font-size: 1rem;
-    line-height: 1.6;
-    box-shadow: var(--shadow-sm);
+:deep(.ql-toolbar.ql-snow) {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    border: 0;
+    background: var(--surface);
+    box-shadow: var(--ring);
 }
 
-.summary-input::placeholder {
+:deep(.ql-container.ql-snow) {
+    border: 0;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+:deep(.ql-editor) {
+    min-height: 560px;
+    padding: 28px;
+}
+
+:deep(.ql-editor.ql-blank::before) {
     color: var(--text-muted);
+    font-style: normal;
 }
 
-.summary-input-focused,
-.summary-input:focus {
-    border: 1px solid var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-lighter), var(--shadow-md);
-    transform: translateY(-2px);
-    background: var(--background-primary);
+:deep(.ql-editor h1),
+:deep(.ql-editor h2),
+:deep(.ql-editor h3) {
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
-/* 操作按钮区域 */
+:deep(.ql-editor blockquote) {
+    margin: 16px 0;
+    padding: 8px 0 8px 16px;
+    border-left: 3px solid #0a72ef;
+    color: var(--text-secondary);
+}
+
+:deep(.ql-editor pre.ql-code-block),
+:deep(.ql-editor pre) {
+    margin: 16px 0;
+    padding: 16px;
+    border-radius: 10px;
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+    box-shadow: var(--ring);
+    overflow-x: auto;
+}
+
+:deep(.ql-editor code) {
+    border-radius: 4px;
+    background: var(--surface-subtle);
+    padding: 2px 5px;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+:deep(.ql-editor img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: var(--ring);
+}
+
+.summary-input :deep(.el-textarea__inner) {
+    min-height: 112px;
+    padding: 12px 14px;
+    line-height: 1.7;
+    resize: vertical;
+}
+
 .action-section {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
-    gap: 20px;
-    margin-top: 60px;
-    padding-top: 40px;
-    border-top: 2px solid var(--border-light);
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
 }
 
-/* 按钮样式 */
 .cancel-button,
 .save-button {
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: var(--border-radius-lg);
-    transition: var(--transition-normal);
-    position: relative;
+    height: 40px;
+    padding: 0 16px;
+}
+
+:global(.ai-dialog) {
     overflow: hidden;
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--card-shadow);
 }
 
-.cancel-button {
-    background: var(--background-secondary);
-    border: none;
+:global(.ai-dialog .el-dialog__header) {
+    padding: 0;
+    margin: 0;
+}
+
+:global(.ai-dialog .el-dialog__headerbtn) {
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    transition: background 180ms ease;
+}
+
+:global(.ai-dialog .el-dialog__headerbtn:hover) {
+    background: var(--surface-hover);
+}
+
+:global(.ai-dialog .el-dialog__body) {
+    padding: 0 28px 8px;
+}
+
+:global(.ai-dialog .el-dialog__footer) {
+    padding: 18px 28px 28px;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.ai-dialog-header {
+    min-height: 112px;
+    padding: 28px 64px 22px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.ai-dialog-mark {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--button-fg);
+    background: var(--button-bg);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: var(--ring);
+}
+
+.ai-dialog-eyebrow,
+.ai-input-label,
+.ai-dialog-tags span {
+    font-family: var(--font-mono);
+}
+
+.ai-dialog-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.ai-dialog-header h2 {
+    margin: 0;
     color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0;
 }
 
-.cancel-button:hover {
-    background: var(--background-tertiary);
-    color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+.ai-tip {
+    margin: 22px 0 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
 }
 
-.save-button {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    border: none;
-    color: white;
-    box-shadow: var(--shadow-lg);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+.ai-dialog-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
 }
 
-.save-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, #1E40AF 100%);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
-    animation: none;
+.ai-dialog-tags span {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    font-size: 12px;
+    font-weight: 500;
 }
 
-.save-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: var(--shadow-sm);
+.ai-input-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-    .write-article-content {
-        padding: 40px;
+.ai-input :deep(.el-textarea__inner) {
+    min-height: 172px !important;
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: var(--text-primary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.75;
+    resize: vertical;
+}
+
+.ai-input :deep(.el-textarea__inner:focus) {
+    box-shadow: var(--ring), 0 0 0 3px rgba(10, 114, 239, 0.16);
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.dialog-cancel,
+.dialog-generate {
+    height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.dialog-cancel {
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--ring);
+}
+
+.dialog-cancel:hover {
+    background: var(--surface-hover);
+}
+
+.dialog-generate {
+    color: var(--button-fg);
+    background: var(--button-bg);
+    box-shadow: var(--ring);
+}
+
+.dialog-generate:hover {
+    background: var(--button-hover);
+}
+
+@media (max-width: 980px) {
+    .title-row,
+    .editor-header {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
-    .write-title {
-        font-size: 2.5rem;
+    .ai-help-btn {
+        align-self: flex-start;
     }
 
     .form-row {
-        flex-direction: column;
-        gap: 32px;
-    }
-
-    .half-width {
-        width: 100%;
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .write-article-container {
-        padding: 30px 20px;
-    }
-
-    .write-article-content {
-        padding: 30px;
-    }
-
-    .write-title {
-        font-size: 2rem;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .title-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 2rem;
-    }
-
-    .write-subtitle {
-        font-size: 1.1rem;
-    }
-
-    .editor-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .tool-tip {
-        font-size: 0.8rem;
-        padding: 6px 12px;
-    }
-
-    .quill-editor {
-        min-height: 500px;
-    }
-
-    .action-section {
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .cancel-button,
-    .save-button {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .write-article-container {
-        padding: 25px 15px;
+        padding: 32px 0 56px;
     }
 
     .write-article-content {
@@ -1303,266 +1066,41 @@ const handleCancel = () => {
     }
 
     .write-title {
-        font-size: 1.8rem;
+        letter-spacing: 0;
     }
 
-    .title-icon {
-        width: 45px;
-        height: 45px;
-        font-size: 1.75rem;
-    }
-
-    .write-subtitle {
-        font-size: 1rem;
-    }
-
+    .editor-wrapper,
     .quill-editor {
-        min-height: 400px;
+        min-height: 500px;
     }
 
-    .editor-wrapper {
-        min-height: 400px;
-    }
-}
-
-/* 动画效果 */
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
+    :deep(.ql-editor) {
+        min-height: 440px;
+        padding: 20px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .action-section {
+        flex-direction: column-reverse;
+    }
+
+    .cancel-button,
+    .save-button {
+        width: 100%;
     }
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+:where(h1, h2, h3) {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: 0;
 }
 
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+:where(p, li, small) {
+    line-height: 1.6;
 }
 
-@keyframes gradientShift {
-
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
+:where(button, .el-button, a) {
+    letter-spacing: 0;
 }
 
-@keyframes pulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 20px rgba(99, 102, 241, 0);
-    }
-}
-
-@keyframes tagSlideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.8);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-/* 代码块高亮样式 */
-.ql-editor pre.ql-code-block {
-    background-color: #f6f8fa;
-    border: 1px solid #e1e4e8;
-    border-radius: 8px;
-    padding: 1.25rem;
-    margin: 1.5rem 0;
-    overflow-x: auto;
-    position: relative;
-}
-
-.ql-editor pre.ql-code-block::before {
-    content: '代码';
-    position: absolute;
-    top: -0.5rem;
-    left: 1rem;
-    background: var(--primary-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.ql-editor pre.ql-code-block code {
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
-    font-size: 0.875rem;
-    line-height: 1.5;
-}
-
-/* 适配highlight.js的样式 */
-.ql-editor pre code.hljs {
-    display: block;
-    overflow-x: auto;
-    padding: 0;
-    background: transparent;
-    color: inherit;
-}
-
-.ql-editor pre .hljs {
-    background: transparent;
-}
-
-/* 工具栏按钮提示 */
-.ql-toolbar.ql-snow button {
-    position: relative;
-}
-
-.ql-toolbar.ql-snow button::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--text-primary);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 1000;
-    margin-bottom: 8px;
-}
-
-.ql-toolbar.ql-snow button:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* 为工具栏按钮添加title属性 */
-.ql-bold::before {
-    content: '粗体';
-}
-
-.ql-italic::before {
-    content: '斜体';
-}
-
-.ql-underline::before {
-    content: '下划线';
-}
-
-.ql-strike::before {
-    content: '删除线';
-}
-
-.ql-blockquote::before {
-    content: '引用';
-}
-
-.ql-code-block::before {
-    content: '代码块';
-}
-
-.ql-header::before {
-    content: '标题';
-}
-
-.ql-list.ql-ordered::before {
-    content: '有序列表';
-}
-
-.ql-list.ql-bullet::before {
-    content: '无序列表';
-}
-
-.ql-script.ql-sub::before {
-    content: '下标';
-}
-
-.ql-script.ql-super::before {
-    content: '上标';
-}
-
-.ql-indent.ql-minus::before {
-    content: '减少缩进';
-}
-
-.ql-indent.ql-plus::before {
-    content: '增加缩进';
-}
-
-.ql-direction::before {
-    content: '文本方向';
-}
-
-.ql-size::before {
-    content: '字体大小';
-}
-
-.ql-color::before {
-    content: '字体颜色';
-}
-
-.ql-background::before {
-    content: '背景颜色';
-}
-
-.ql-font::before {
-    content: '字体';
-}
-
-.ql-align::before {
-    content: '对齐方式';
-}
-
-.ql-clean::before {
-    content: '清空内容';
-}
-
-.ql-link::before {
-    content: '插入链接';
-}
-
-.ql-image::before {
-    content: '插入图片';
-}
-
-.ql-video::before {
-    content: '插入视频';
-}
 </style>
