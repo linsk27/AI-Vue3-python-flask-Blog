@@ -6,6 +6,10 @@ export interface IArticleParams {
     tags?: string[]
     cover_image?: string
     status?: string
+    resource_type?: string
+    document_status?: string
+    visibility?: string
+    source_url?: string
 }
 
 export interface IArticle {
@@ -25,4 +29,11 @@ export interface IArticle {
     author_name?: string
     author_avatar?: string
     is_liked?: boolean
+    resource_type?: string
+    document_status?: string
+    visibility?: string
+    source_url?: string
+    ai_summary?: string
+    ai_keywords?: string[]
+    ai_questions?: string[]
 }

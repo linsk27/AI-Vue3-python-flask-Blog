@@ -1,108 +1,137 @@
 <template>
-    <div class="article-page">
-        <div class="article-container">
-            <div class="article-header">
-                <button class="back-btn" @click="$router.back()">← 返回列表</button>
-                <div v-if="article">
-                    <h1 class="article-title">{{ article.title }}</h1>
-                    <div class="article-meta">
-                        <span class="article-date" v-if="article.created_at">发布于 {{ formatDate(article.created_at)
-                            }}</span>
-                        <span class="article-author" v-if="article.author_name"> · 作者: {{ article.author_name }}</span>
-                        <span class="meta-item"> · {{ article.views }} 阅读</span>
-                        <span class="meta-item like-btn" @click="toggleLike" :class="{ 'is-liked': article.is_liked }">
-                            {{ article.is_liked ? '❤️' : '🤍' }} {{ article.likes }} 点赞
-                        </span>
+    <div class="document-page">
+        <div class="document-layout">
+            <main class="document-main">
+                <button class="back-btn" @click="$router.back()">Back to Knowledge Base</button>
+
+                <header class="document-header" v-if="article">
+                    <div class="document-kicker">
+                        <span>{{ getDocumentTypeLabel(article) }}</span>
+                        <span>{{ getDocumentStatusLabel(article) }}</span>
                     </div>
-                    <div class="article-tags">
-                        <span class="article-tag" v-for="tag in article.tags" :key="tag">{{ tag }}</span>
-                    </div>
-                    <p class="article-summary">{{ article.summary }}</p>
-                </div>
-            </div>
-            <div class="article-content-card">
-                <div v-if="loading" class="loading">加载中...</div>
-
-                <!-- 交互式组件渲染 -->
-                <div v-else-if="activeComponent" class="interactive-component">
-                    <component :is="activeComponent" />
-                </div>
-
-                <!-- 富文本内容渲染 -->
-                <div v-else-if="article" class="article-html-content ql-editor" v-html="parsedContent"></div>
-
-                <div v-else class="not-found">文章不存在</div>
-            </div>
-
-            <!-- 评论模块 -->
-            <div class="comment-section" v-if="article">
-                <div class="section-title">
-                    <h3>全部评论 ({{ comments.length }})</h3>
-                </div>
-
-                <!-- 发表评论 -->
-                <div class="comment-input-box">
-                    <textarea v-model="commentContent" placeholder="写下你的评论..." class="comment-textarea"></textarea>
-                    <div class="input-footer">
-                        <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment">
-                            {{ submittingComment ? '提交中...' : '发表评论' }}
+                    <h1 class="document-title">{{ article.title }}</h1>
+                    <div class="document-meta">
+                        <span v-if="article.created_at">Created {{ formatDate(article.created_at) }}</span>
+                        <span v-if="article.author_name">By {{ article.author_name }}</span>
+                        <span>{{ article.views || 0 }} views</span>
+                        <button class="favorite-btn" type="button" @click="toggleLike" :class="{ 'is-liked': article.is_liked }">
+                            <Star class="meta-icon" />
+                            <span>{{ article.likes || 0 }} favorites</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- 评论列表 -->
-                <div class="comments-list">
-                    <div v-if="comments.length === 0" class="no-comments">
-                        暂无评论，快来抢沙发吧~
+                    <div class="document-tags">
+                        <span v-for="tag in article.tags" :key="tag">{{ tag }}</span>
                     </div>
-                    <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                        <div class="comment-user-avatar">
-                            <img :src="comment.user_avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
-                                alt="用户头像">
+                    <p v-if="article.summary" class="document-summary">{{ article.summary }}</p>
+                </header>
+
+                <section class="document-content-card">
+                    <div v-if="loading" class="loading">Loading document...</div>
+                    <div v-else-if="activeComponent" class="interactive-component">
+                        <component :is="activeComponent" />
+                    </div>
+                    <div v-else-if="article" class="document-html-content ql-editor" v-html="parsedContent"></div>
+                    <div v-else class="not-found">Document not found.</div>
+                </section>
+
+                <section class="discussion-section" v-if="article">
+                    <div class="section-title">
+                        <h2>Discussion ({{ comments.length }})</h2>
+                    </div>
+
+                    <div class="comment-input-box">
+                        <textarea v-model="commentContent" placeholder="Add a note, question, or discussion point..." class="comment-textarea"></textarea>
+                        <div class="input-footer">
+                            <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment">
+                                {{ submittingComment ? 'Submitting...' : 'Post Discussion' }}
+                            </button>
                         </div>
-                        <div class="comment-content-main">
-                            <div class="comment-user-info">
-                                <span class="comment-user-name">{{ comment.user_name }}</span>
-                                <span class="comment-time">{{ formatDate(comment.created_at) }}</span>
+                    </div>
+
+                    <div class="comments-list">
+                        <div v-if="comments.length === 0" class="no-comments">
+                            No discussion yet. Add the first context note.
+                        </div>
+                        <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                            <div class="comment-user-avatar">
+                                <img :src="comment.user_avatar || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
+                                    alt="User avatar">
                             </div>
-                            <div class="comment-text">
-                                {{ comment.content }}
+                            <div class="comment-content-main">
+                                <div class="comment-user-info">
+                                    <span class="comment-user-name">{{ comment.user_name }}</span>
+                                    <span class="comment-time">{{ formatDate(comment.created_at) }}</span>
+                                </div>
+                                <div class="comment-text">
+                                    {{ comment.content }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </section>
+            </main>
 
-        <!-- AI 摘要悬浮按钮 -->
-        <div class="ai-float-btn" @click="generateAiSummary" v-if="article && !loading" title="生成 AI 摘要">
-            <span class="ai-icon">✨</span>
-            <span class="ai-text">AI 摘要</span>
-        </div>
-
-        <!-- AI 摘要面板 -->
-        <transition name="slide-fade">
-            <div class="ai-summary-panel" v-if="showAiPanel" ref="aiPanelRef">
-                <div class="panel-header">
-                    <h3>✨ AI 智能摘要</h3>
-                    <button class="close-btn" @click="showAiPanel = false">×</button>
+            <aside class="ai-insight-panel" v-if="article && !loading">
+                <div class="insight-header">
+                    <span class="eyebrow">AI Insight</span>
+                    <h2>Reading Assistant</h2>
+                    <p>Generate reusable understanding from this document.</p>
                 </div>
-                <div class="panel-content">
+
+                <div class="insight-actions">
+                    <button type="button" @click="generateAiSummary" :disabled="isAiGenerating">
+                        <DocumentChecked class="action-icon" />
+                        <span>{{ isAiGenerating ? 'Summarizing...' : 'Generate Summary' }}</span>
+                    </button>
+                    <button type="button" @click="generateLocalKeywords">
+                        <PriceTag class="action-icon" />
+                        <span>Extract Keywords</span>
+                    </button>
+                    <button type="button" @click="generateLocalQuestions">
+                        <QuestionFilled class="action-icon" />
+                        <span>Review Questions</span>
+                    </button>
+                    <router-link class="panel-link" to="/context-packs">
+                        <FolderAdd class="action-icon" />
+                        <span>Add to Context Pack</span>
+                    </router-link>
+                    <router-link class="panel-link" to="/ai-center/chat">
+                        <ChatDotRound class="action-icon" />
+                        <span>Ask in Context Chat</span>
+                    </router-link>
+                </div>
+
+                <div class="insight-block">
+                    <h3>Summary</h3>
                     <div v-if="isAiGenerating" class="ai-loading">
                         <div class="spinner"></div>
-                        <p>AI 正在阅读并生成摘要...</p>
+                        <p>AI is reading this document...</p>
                     </div>
-                    <div v-else class="ai-result">
-                        <p>{{ aiSummary }}</p>
+                    <p v-else>{{ aiSummary || article.summary || 'Generate a summary to create a compact context note.' }}</p>
+                </div>
+
+                <div class="insight-block">
+                    <h3>Keywords</h3>
+                    <div class="keyword-list">
+                        <span v-for="keyword in insightKeywords" :key="keyword">{{ keyword }}</span>
                     </div>
                 </div>
-            </div>
-        </transition>
+
+                <div class="insight-block">
+                    <h3>Review Questions</h3>
+                    <ol class="question-list">
+                        <li v-for="question in insightQuestions" :key="question">{{ question }}</li>
+                    </ol>
+                </div>
+            </aside>
+        </div>
     </div>
 </template>
+
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { ref, onMounted, shallowRef, defineAsyncComponent, nextTick, computed } from 'vue'
+import { ref, onMounted, shallowRef } from 'vue'
+import { ChatDotRound, DocumentChecked, FolderAdd, PriceTag, QuestionFilled, Star } from '@element-plus/icons-vue'
 import articleApi, { IComment } from '@/api/modules/article'
 import { aiSummaryService } from '@/api/modules/ai'
 import { IArticle } from '@/api/modules/article/interface'
@@ -125,45 +154,15 @@ const comments = ref<IComment[]>([])
 const commentContent = ref('')
 const submittingComment = ref(false)
 
-const fetchComments = async () => {
-    const id = route.params.id as string
-    if (!id) return
-    try {
-        const res = await articleApi.getComments(id)
-        comments.value = res.data || res
-    } catch (error) {
-        console.error('获取评论失败', error)
-    }
-}
-
-const submitComment = async () => {
-    if (!commentContent.value.trim()) {
-        message.warning('请输入评论内容')
-        return
-    }
-
-    const id = route.params.id as string
-    submittingComment.value = true
-    try {
-        await articleApi.createComment(id, commentContent.value)
-        message.success('评论发表成功')
-        commentContent.value = ''
-        await fetchComments() // 刷新评论列表
-    } catch (error) {
-        console.error('发表评论失败', error)
-        message.error('发表评论失败，请先登录')
-    } finally {
-        submittingComment.value = false
-    }
-}
-
-// AI 摘要相关状态
-const showAiPanel = ref(false)
 const aiSummary = ref('')
 const isAiGenerating = ref(false)
-const aiPanelRef = ref<HTMLElement | null>(null)
+const insightKeywords = ref<string[]>([])
+const insightQuestions = ref<string[]>([
+    'What is the main problem this document helps solve?',
+    'Which parts should be added to a context pack?',
+    'What follow-up action does this document suggest?'
+])
 
-// 配置 marked
 marked.setOptions({
     highlight: function (code: string, lang: string) {
         if (lang && hljs.getLanguage(lang)) {
@@ -175,23 +174,94 @@ marked.setOptions({
     gfm: true
 })
 
-// 解析文章内容
 const parsedContent = ref('')
 const parseMarkdown = async () => {
     if (!article.value?.content) {
         parsedContent.value = ''
         return
     }
-    // 异步解析 Markdown，防止阻塞主线程
     parsedContent.value = await marked.parse(article.value.content)
 }
 
 const formatDate = (dateStr: string) => {
     if (!dateStr) return ''
-    return new Date(dateStr).toLocaleDateString()
+    const date = new Date(dateStr)
+    if (Number.isNaN(date.getTime())) return ''
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+    })
 }
 
-// 点赞文章
+const slugifyType = (value?: string) => {
+    if (!value) return 'note'
+    const normalized = value.toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-')
+    const categoryMap: Record<string, string> = {
+        frontend: 'technical-doc',
+        backend: 'technical-doc',
+        database: 'technical-doc',
+        algorithm: 'technical-doc',
+        devops: 'technical-doc',
+        architecture: 'project-record',
+        ai: 'technical-doc',
+        other: 'note'
+    }
+    return categoryMap[normalized] || normalized
+}
+
+const typeLabels: Record<string, string> = {
+    note: 'Note',
+    'technical-doc': 'Technical Doc',
+    tutorial: 'Tutorial',
+    'project-record': 'Project Record',
+    paper: 'Paper',
+    idea: 'Idea'
+}
+
+const statusLabels: Record<string, string> = {
+    published: 'Published',
+    draft: 'Draft',
+    organized: 'Organized',
+    reviewing: 'Reviewing',
+    archived: 'Archived'
+}
+
+const getDocumentTypeLabel = (item: IArticle) => typeLabels[slugifyType(item.resource_type || item.category)] || 'Document'
+const getDocumentStatusLabel = (item: IArticle) => statusLabels[item.document_status || item.status || 'published'] || 'Published'
+
+const fetchComments = async () => {
+    const id = route.params.id as string
+    if (!id) return
+    try {
+        const res = await articleApi.getComments(id)
+        comments.value = (res as any).data || res
+    } catch (error) {
+        console.error('Failed to fetch discussion:', error)
+    }
+}
+
+const submitComment = async () => {
+    if (!commentContent.value.trim()) {
+        message.warning('Please enter discussion content')
+        return
+    }
+
+    const id = route.params.id as string
+    submittingComment.value = true
+    try {
+        await articleApi.createComment(id, commentContent.value)
+        message.success('Discussion posted')
+        commentContent.value = ''
+        await fetchComments()
+    } catch (error) {
+        console.error('Failed to post discussion:', error)
+        message.error('Failed to post. Please sign in first.')
+    } finally {
+        submittingComment.value = false
+    }
+}
+
 const toggleLike = async () => {
     if (!article.value) return
     try {
@@ -201,61 +271,40 @@ const toggleLike = async () => {
             article.value.likes = res.likes
         }
     } catch (error) {
-        console.error('点赞失败', error)
-        message.error('操作失败，请先登录')
+        console.error('Favorite failed:', error)
+        message.error('Action failed. Please sign in first.')
     }
 }
 
-// 增加阅读量
-const incrementView = async () => {
-    if (!article.value) return
-    try {
-        await articleApi.incrementView(article.value.id)
-        if (article.value) {
-            article.value.views++
-        }
-    } catch (error) {
-        console.error('增加阅读量失败', error)
-    }
-}
-
-// 提取纯文本内容
 const extractTextContent = (html: string) => {
     const tempDiv = document.createElement('div')
     tempDiv.innerHTML = html
     return tempDiv.textContent || tempDiv.innerText || ''
 }
 
-// 生成 AI 摘要
+const getReadableText = () => {
+    if (!article.value) return ''
+    if (article.value.content) return extractTextContent(article.value.content)
+    return `${article.value.title}\n${article.value.summary || ''}`
+}
+
 const generateAiSummary = async () => {
     if (!article.value) return
+    if (aiSummary.value) return
 
-    // 如果已经有摘要了，直接显示面板
-    if (aiSummary.value) {
-        showAiPanel.value = true
-        return
-    }
-
-    showAiPanel.value = true
     isAiGenerating.value = true
 
     try {
-        // 获取文章内容（优先使用 content，如果是交互式组件则尝试获取描述）
-        let contentToSummarize = ''
-        if (article.value.content) {
-            contentToSummarize = extractTextContent(article.value.content)
-        } else {
-            contentToSummarize = article.value.summary || article.value.title
-        }
+        const contentToSummarize = getReadableText()
 
         if (!contentToSummarize || contentToSummarize.length < 50) {
-            aiSummary.value = '文章内容过短，无法生成摘要。'
+            aiSummary.value = 'This document is too short for a useful AI summary.'
             return
         }
 
         const res = await aiSummaryService.generateSummary({
             content: contentToSummarize,
-            length: 200, // 侧边栏展示，200字左右比较合适
+            length: 220
         }) as any
 
         const summaryText = res?.reply || res?.data?.reply || res?.summary || res?.data?.summary
@@ -263,120 +312,148 @@ const generateAiSummary = async () => {
         if (summaryText) {
             aiSummary.value = summaryText
         } else {
-            throw new Error('未获取到有效摘要')
+            throw new Error('No summary returned')
         }
     } catch (error) {
         console.error('AI summary generation failed:', error)
-        message.error('摘要生成失败，请稍后重试')
-        showAiPanel.value = false
+        message.error('Summary generation failed. Please try again later.')
     } finally {
         isAiGenerating.value = false
     }
 }
 
+const generateLocalKeywords = () => {
+    if (!article.value) return
+    const tags = article.value.tags || []
+    const titleWords = article.value.title
+        .split(/[\s:：,，.。/\\-]+/)
+        .map(word => word.trim())
+        .filter(word => word.length > 2)
+        .slice(0, 6)
+
+    insightKeywords.value = Array.from(new Set([...tags, ...titleWords])).slice(0, 10)
+}
+
+const generateLocalQuestions = () => {
+    if (!article.value) return
+    insightQuestions.value = [
+        `What reusable context does "${article.value.title}" provide?`,
+        'Which parts should be packed with related documents?',
+        'What decision, explanation, or workflow should be extracted from this document?'
+    ]
+}
+
 onMounted(async () => {
     window.scrollTo(0, 0)
     const id = route.params.id as string
-    if (id) {
-        const localArticle = localArticles.find(a => a.id === id)
-        if (localArticle) {
-            article.value = {
-                ...localArticle,
-                tags: [...(localArticle.tags || []), '可交互文章'],
-                created_at: new Date().toISOString(),
-                author_name: '智汇编辑部',
-                content: ''
-            }
+    if (!id) return
 
-            if (localArticle.component) {
-                try {
-                    const compModule = await localArticle.component()
-                    activeComponent.value = compModule.default || compModule
-                } catch (err) {
-                    console.error('Failed to load component:', err)
-                    message.error('组件加载失败')
-                }
-            }
-            loading.value = false
-            return
+    const localArticle = localArticles.find(a => a.id === id)
+    if (localArticle) {
+        article.value = {
+            ...localArticle,
+            tags: [...(localArticle.tags || []), 'example'],
+            resource_type: 'technical-doc',
+            document_status: 'organized',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            author_name: 'ContextForge Team',
+            views: 0,
+            likes: 0,
+            content: ''
         }
 
-        const cachedArticle = cacheStore.getArticleDetail(id)
-        if (cachedArticle) {
-            article.value = cachedArticle
-            if (typeof article.value.views !== 'number') {
-                article.value.views = 0
-            }
-            article.value.is_liked = !!article.value.is_liked
-            await parseMarkdown()
-            await fetchComments()
-            loading.value = false
+        generateLocalKeywords()
 
+        if (localArticle.component) {
             try {
-                await articleApi.incrementView(id)
-                if (article.value) {
-                    article.value.views++
-                    cacheStore.setArticleDetail(id, article.value)
-                }
-            } catch (e) {
-                console.error('更新阅读量失败', e)
+                const compModule = await localArticle.component()
+                activeComponent.value = compModule.default || compModule
+            } catch (err) {
+                console.error('Failed to load component:', err)
+                message.error('Component failed to load')
             }
-            return
         }
+        loading.value = false
+        return
+    }
+
+    const cachedArticle = cacheStore.getArticleDetail(id)
+    if (cachedArticle) {
+        article.value = cachedArticle
+        if (typeof article.value.views !== 'number') article.value.views = 0
+        article.value.is_liked = !!article.value.is_liked
+        await parseMarkdown()
+        generateLocalKeywords()
+        await fetchComments()
+        loading.value = false
 
         try {
             await articleApi.incrementView(id)
-        } catch (e) {
-            console.error('更新阅读量失败', e)
-        }
-
-        loading.value = true
-
-        try {
-            const res = await articleApi.getDetail(id)
-            article.value = res.data || res
-
             if (article.value) {
-                if (typeof article.value.views !== 'number') {
-                    article.value.views = 0
-                }
-                article.value.is_liked = !!article.value.is_liked
-
+                article.value.views++
                 cacheStore.setArticleDetail(id, article.value)
-
-                await parseMarkdown()
-                await fetchComments()
             }
-        } catch (error) {
-            console.error('Failed to load article:', error)
-            message.error('加载文章失败')
-        } finally {
-            loading.value = false
+        } catch (e) {
+            console.error('Failed to update view count:', e)
         }
+        return
+    }
+
+    try {
+        await articleApi.incrementView(id)
+    } catch (e) {
+        console.error('Failed to update view count:', e)
+    }
+
+    loading.value = true
+
+    try {
+        const res = await articleApi.getDetail(id)
+        article.value = (res as any).data || res
+
+        if (article.value) {
+            if (typeof article.value.views !== 'number') article.value.views = 0
+            article.value.is_liked = !!article.value.is_liked
+
+            cacheStore.setArticleDetail(id, article.value)
+
+            await parseMarkdown()
+            generateLocalKeywords()
+            await fetchComments()
+        }
+    } catch (error) {
+        console.error('Failed to load document:', error)
+        message.error('Failed to load document')
+    } finally {
+        loading.value = false
     }
 })
 </script>
 
 <style scoped lang="scss">
-.article-page {
+.document-page {
     min-height: calc(100vh - 140px);
-    padding: 64px 0 88px;
+    padding: 56px 0 88px;
     color: var(--text-primary);
     background: transparent;
 }
 
-.article-container {
-    width: min(920px, var(--page-width));
+.document-layout {
+    width: var(--page-width);
     margin: 0 auto;
-    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 18px;
 }
 
-.article-header {
-    margin-bottom: 28px;
+.document-main {
+    min-width: 0;
 }
 
 .back-btn {
-    height: 36px;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     border: 0;
@@ -385,7 +462,7 @@ onMounted(async () => {
     background: var(--surface);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 0 12px;
     margin-bottom: 28px;
     box-shadow: var(--ring);
@@ -397,32 +474,18 @@ onMounted(async () => {
     }
 }
 
-.article-title {
-    color: var(--text-primary);
-    margin: 0 0 18px;
-    font-family: var(--font-serif);
-    font-size: clamp(42px, 7vw, 72px);
-    font-weight: 600;
-    line-height: 1.04;
-    letter-spacing: 0;
+.document-header {
+    margin-bottom: 24px;
 }
 
-.article-meta {
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    margin-bottom: 18px;
+.document-kicker {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-}
+    margin-bottom: 16px;
 
-.meta-item {
-    &.like-btn {
-        cursor: pointer;
-        min-height: 28px;
+    span {
+        min-height: 26px;
         display: inline-flex;
         align-items: center;
         padding: 0 10px;
@@ -430,53 +493,112 @@ onMounted(async () => {
         color: var(--text-secondary);
         background: var(--surface-subtle);
         box-shadow: var(--ring);
-        transition: background 180ms ease, color 180ms ease;
-        user-select: none;
-
-        &:hover {
-            color: var(--text-primary);
-            background: var(--surface-hover);
-        }
-
-        &.is-liked {
-            color: var(--button-fg);
-            background: var(--button-bg);
-        }
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
     }
 }
 
-.article-tags {
+.document-title {
+    color: var(--text-primary);
+    margin: 0 0 18px;
+    font-family: var(--font-serif);
+    font-size: clamp(42px, 7vw, 72px);
+    font-weight: 650;
+    line-height: 1.04;
+    letter-spacing: 0;
+}
+
+.document-meta {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.favorite-btn {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 9999px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    cursor: pointer;
+    font: inherit;
+    transition: background 180ms ease, color 180ms ease;
+
+    &:hover {
+        color: var(--text-primary);
+        background: var(--surface-hover);
+    }
+
+    &.is-liked {
+        color: var(--button-fg);
+        background: var(--button-bg);
+    }
+}
+
+.meta-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.document-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 22px;
+
+    span {
+        min-height: 26px;
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-secondary);
+        background: var(--surface-subtle);
+        padding: 0 10px;
+        border-radius: 9999px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: var(--ring);
+    }
 }
 
-.article-tag {
-    min-height: 26px;
-    display: inline-flex;
-    align-items: center;
-    color: var(--text-secondary);
-    background: var(--surface-subtle);
-    padding: 0 10px;
-    border-radius: 9999px;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    box-shadow: var(--ring);
-}
-
-.article-summary {
+.document-summary {
     margin: 0;
     padding: 18px 20px;
     border-radius: 12px;
     color: var(--text-secondary);
     background: var(--surface);
-    box-shadow: inset 3px 0 0 var(--terracotta), var(--card-shadow);
+    box-shadow: inset 3px 0 0 var(--button-bg), var(--card-shadow);
     line-height: 1.75;
 }
 
-.article-html-content {
+.document-content-card,
+.discussion-section,
+.ai-insight-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.document-content-card {
+    padding: 3rem;
+    min-height: 400px;
+    margin-bottom: 18px;
+}
+
+.document-html-content {
     line-height: 1.8;
     color: var(--text-primary);
     font-size: 17px;
@@ -489,7 +611,7 @@ onMounted(async () => {
         margin-top: 2.2rem;
         margin-bottom: 1rem;
         font-family: var(--font-serif);
-        font-weight: 600;
+        font-weight: 650;
         letter-spacing: 0;
     }
 
@@ -531,7 +653,7 @@ onMounted(async () => {
 
     :deep(code) {
         background: var(--surface-subtle);
-        color: var(--terracotta);
+        color: var(--button-bg);
         padding: 0.2rem 0.4rem;
         border-radius: 4px;
         font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
@@ -548,7 +670,7 @@ onMounted(async () => {
     }
 
     :deep(blockquote) {
-        border-left: 3px solid var(--terracotta);
+        border-left: 3px solid var(--button-bg);
         padding: 0.75rem 1rem;
         background: var(--surface-subtle);
         color: var(--text-secondary);
@@ -558,43 +680,31 @@ onMounted(async () => {
 
     :deep(img) {
         max-width: 100%;
+        height: auto;
         border-radius: 10px;
         box-shadow: var(--ring);
         margin: 1.5rem 0;
     }
 }
 
-.article-content-card {
-    background: var(--surface);
-    padding: 3rem;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    min-height: 400px;
-    margin-bottom: 2rem;
-}
-
-/* 评论模块样式 */
-.comment-section {
-    background: var(--surface);
-    padding: 2.5rem 3rem;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
+.discussion-section {
+    padding: 2rem;
 }
 
 .section-title {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--line);
     padding-bottom: 1rem;
 
-    h3 {
-        font-size: 1.4rem;
+    h2 {
+        font-size: 1.3rem;
         color: var(--text-primary);
         margin: 0;
     }
 }
 
 .comment-input-box {
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .comment-textarea {
@@ -631,7 +741,7 @@ onMounted(async () => {
     padding: 0 18px;
     border-radius: 10px;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     box-shadow: var(--ring);
     transition: background 180ms ease, transform 180ms ease;
@@ -650,14 +760,13 @@ onMounted(async () => {
 .comments-list {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .no-comments {
     text-align: center;
     color: var(--text-muted);
-    padding: 3rem 0;
-    font-style: italic;
+    padding: 2.5rem 0;
 }
 
 .comment-item {
@@ -671,13 +780,11 @@ onMounted(async () => {
     }
 }
 
-.comment-user-avatar {
-    img {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
+.comment-user-avatar img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .comment-content-main {
@@ -692,9 +799,9 @@ onMounted(async () => {
 }
 
 .comment-user-name {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 .comment-time {
@@ -706,199 +813,197 @@ onMounted(async () => {
     line-height: 1.6;
     color: var(--text-secondary);
     white-space: pre-wrap;
-    word-break: break-all;
+    word-break: break-word;
 }
 
-.not-found {
-    color: var(--terracotta);
-    font-size: 1.2rem;
-    text-align: center;
-    padding: 40px 0;
-}
-
+.not-found,
 .loading {
     text-align: center;
     padding: 40px;
-    color: var(--text-muted);
 }
 
-/* 复用 Quill 编辑器的样式来渲染内容 */
-.article-html-content {
-    line-height: 1.8;
-    color: var(--text-primary);
-}
-
-.article-html-content :deep(img) {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    margin: 10px 0;
-}
-
-.article-html-content :deep(pre) {
-    background-color: var(--anthropic-black);
-    padding: 16px;
-    border-radius: 10px;
-    overflow-x: auto;
-}
-
-@media (max-width: 700px) {
-    .article-content-card {
-        padding: 16px 12px;
-    }
-
-    .article-title {
-        font-size: 34px;
-        line-height: 1.08;
-    }
-
-    .ai-float-btn {
-        bottom: 20px;
-        right: 20px;
-        top: auto;
-    }
-
-    .ai-summary-panel {
-        width: 90%;
-        right: 5%;
-        top: 20%;
-    }
-}
-
-/* AI 功能样式 */
-.ai-float-btn {
-    position: fixed;
-    right: 40px;
-    top: 150px;
-    /* 位于文章内容右侧上方 */
-    color: var(--button-fg);
-    background: var(--button-bg);
-    padding: 12px 20px;
-    border-radius: 50px;
-    box-shadow: var(--card-shadow);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-    border: 0;
-    z-index: 100;
-}
-
-.ai-float-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: rgba(20, 20, 19, 0.14) 0 8px 24px -14px;
-    background: var(--button-hover);
-}
-
-.ai-icon {
+.not-found {
+    color: var(--button-bg);
     font-size: 1.2rem;
 }
 
-.ai-text {
-    font-weight: 600;
-    color: currentColor;
-    font-size: 0.95rem;
-}
-
-/* 摘要面板 */
-.ai-summary-panel {
-    position: fixed;
-    right: 40px;
-    top: 220px;
-    /* 按钮下方 */
-    width: 320px;
-    color: var(--text-primary);
-    background: var(--surface);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    z-index: 99;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-header {
-    padding: 15px 20px;
-    background: var(--surface-subtle);
-    border-bottom: 1px solid var(--line);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.panel-header h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
+.loading {
     color: var(--text-muted);
-    cursor: pointer;
-    line-height: 1;
-    padding: 0 5px;
 }
 
-.close-btn:hover {
-    color: var(--text-primary);
-}
-
-.panel-content {
+.ai-insight-panel {
+    position: sticky;
+    top: 104px;
     padding: 20px;
-    max-height: 400px;
-    overflow-y: auto;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.insight-header h2 {
+    margin: 14px 0 8px;
+    font-size: 26px;
+    font-weight: 650;
+    line-height: 1.1;
+}
+
+.insight-header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.insight-actions {
+    display: grid;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.insight-actions button,
+.panel-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    color: var(--text-primary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 180ms ease, color 180ms ease;
+}
+
+.insight-actions button:hover,
+.panel-link:hover {
+    background: var(--surface-hover);
+}
+
+.insight-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.action-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.insight-block {
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    margin-bottom: 12px;
+
+    h3 {
+        margin: 0 0 10px;
+        color: var(--text-primary);
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.65;
+    }
+}
+
+.keyword-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    span {
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 8px;
+        border-radius: 9999px;
+        background: var(--surface);
+        color: var(--text-secondary);
+        box-shadow: var(--ring);
+        font-size: 12px;
+        font-weight: 600;
+    }
+}
+
+.question-list {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+
+    li + li {
+        margin-top: 8px;
+    }
 }
 
 .ai-loading {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px 0;
+    gap: 10px;
     color: var(--text-secondary);
-    gap: 15px;
 }
 
 .spinner {
-    width: 30px;
-    height: 30px;
-    border: 3px solid var(--surface-subtle);
-    border-top: 3px solid var(--terracotta);
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--surface);
+    border-top: 2px solid var(--button-bg);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    flex: 0 0 auto;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
+    to {
         transform: rotate(360deg);
     }
 }
 
-.ai-result {
-    line-height: 1.6;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    text-align: justify;
+@media (max-width: 1040px) {
+    .document-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-insight-panel {
+        position: static;
+        order: -1;
+    }
 }
 
-/* 动画效果 */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-    transition: all 0.3s ease-out;
-}
+@media (max-width: 700px) {
+    .document-page {
+        padding-top: 36px;
+    }
 
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-    transform: translateX(20px);
-    opacity: 0;
+    .document-content-card,
+    .discussion-section {
+        padding: 18px;
+    }
+
+    .document-title {
+        font-size: 34px;
+        line-height: 1.08;
+    }
 }
 </style>

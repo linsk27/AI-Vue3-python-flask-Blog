@@ -1,18 +1,21 @@
 <template>
-    <div class="essays-page">
+    <div class="knowledge-page">
         <section class="library-hero">
             <div>
-                <span class="eyebrow">Knowledge library</span>
-                <h1>文章库</h1>
-                <p>探索精选技术文章、AI 创作实践与工程经验沉淀，快速找到值得深入阅读的内容。</p>
+                <span class="eyebrow">Knowledge Base</span>
+                <h1>Documents that can become AI context.</h1>
+                <p>
+                    Collect technical notes, project records, papers, tutorials, and source materials. Search them,
+                    filter them, and turn the right set into context packs when you need deeper AI help.
+                </p>
             </div>
             <div class="hero-actions">
-                <div class="layout-switch" aria-label="切换布局">
+                <div class="layout-switch" aria-label="Switch layout">
                     <button
                         class="layout-btn"
                         :class="{ active: layoutMode === 'grid' }"
                         type="button"
-                        title="网格视图"
+                        title="Grid view"
                         @click="layoutMode = 'grid'"
                     >
                         <Grid class="icon" />
@@ -21,7 +24,7 @@
                         class="layout-btn"
                         :class="{ active: layoutMode === 'list' }"
                         type="button"
-                        title="列表视图"
+                        title="List view"
                         @click="layoutMode = 'list'"
                     >
                         <List class="icon" />
@@ -29,21 +32,54 @@
                 </div>
                 <button class="write-btn" type="button" @click="goToWrite">
                     <EditPen class="icon" />
-                    <span>写文章</span>
+                    <span>New Document</span>
                 </button>
             </div>
         </section>
 
         <section class="search-panel">
             <Search class="search-icon" />
-            <input v-model="search" class="essay-search" type="search" placeholder="搜索标题、摘要或标签..." />
-            <span class="search-count">{{ filteredArticles.length }} 篇</span>
+            <input v-model="search" class="knowledge-search" type="search" placeholder="Search title, summary, or tags..." />
+            <span class="search-count">{{ filteredArticles.length }} docs</span>
+        </section>
+
+        <section class="filter-panel">
+            <div class="filter-group">
+                <span>Type</span>
+                <div class="filter-options">
+                    <button
+                        v-for="type in documentTypes"
+                        :key="type.value"
+                        class="filter-chip"
+                        :class="{ active: selectedType === type.value }"
+                        type="button"
+                        @click="selectedType = type.value"
+                    >
+                        {{ type.label }}
+                    </button>
+                </div>
+            </div>
+            <div class="filter-group">
+                <span>Status</span>
+                <div class="filter-options">
+                    <button
+                        v-for="statusItem in documentStatuses"
+                        :key="statusItem.value"
+                        class="filter-chip"
+                        :class="{ active: selectedStatus === statusItem.value }"
+                        type="button"
+                        @click="selectedStatus = statusItem.value"
+                    >
+                        {{ statusItem.label }}
+                    </button>
+                </div>
+            </div>
         </section>
 
         <section class="tags-section" v-if="allTags.length > 0">
             <div class="tags-header">
-                <span>热门标签</span>
-                <button v-if="selectedTags.length > 0" type="button" @click="clearSelectedTags">清除筛选</button>
+                <span>Knowledge Tags</span>
+                <button v-if="selectedTags.length > 0" type="button" @click="clearSelectedTags">Clear tags</button>
             </div>
             <div class="tags-list">
                 <button
@@ -61,13 +97,13 @@
 
         <section
             v-if="filteredArticles.length > 0"
-            class="article-results"
-            :class="layoutMode === 'grid' ? 'essays-grid' : 'essays-list'"
+            class="document-results"
+            :class="layoutMode === 'grid' ? 'knowledge-grid' : 'knowledge-list'"
         >
             <article
                 v-for="article in filteredArticles"
                 :key="article.id"
-                class="essay-card"
+                class="document-card"
                 tabindex="0"
                 role="button"
                 @click="goToArticle(article.id)"
@@ -75,11 +111,11 @@
             >
                 <div class="card-main">
                     <div class="card-kicker">
-                        <span>{{ article.category || 'Article' }}</span>
-                        <span>{{ formatDate(article.created_at) }}</span>
+                        <span>{{ getDocumentTypeLabel(article) }}</span>
+                        <span>{{ getDocumentStatusLabel(article) }}</span>
                     </div>
                     <h2>{{ article.title }}</h2>
-                    <p>{{ article.summary || '精选技术内容，适合继续深入阅读。' }}</p>
+                    <p>{{ article.summary || 'A knowledge document ready to be summarized, reused, and packed into context.' }}</p>
                 </div>
                 <div class="card-footer">
                     <div class="card-tags">
@@ -87,8 +123,9 @@
                     </div>
                     <div class="card-meta">
                         <span v-if="article.author_name">{{ article.author_name }}</span>
+                        <span>{{ formatDate(article.updated_at || article.created_at) }}</span>
                         <span>{{ article.views || 0 }} views</span>
-                        <span>{{ article.likes || 0 }} likes</span>
+                        <span>{{ article.likes || 0 }} favorites</span>
                     </div>
                 </div>
             </article>
@@ -96,8 +133,12 @@
 
         <section class="no-results" v-else>
             <Search class="empty-icon" />
-            <h2>没有找到相关文章</h2>
-            <p>换一个关键词，或者清除标签筛选后再试。</p>
+            <h2>No documents found</h2>
+            <p>Try a different keyword, clear filters, or create a new document.</p>
+            <button class="write-btn" type="button" @click="goToWrite">
+                <EditPen class="icon" />
+                <span>New Document</span>
+            </button>
         </section>
     </div>
 </template>
@@ -108,29 +149,77 @@ import { useRouter } from 'vue-router'
 import { EditPen, Grid, List, Search } from '@element-plus/icons-vue'
 import articleApi from '@/api/modules/article'
 import { IArticle } from '@/api/modules/article/interface'
-import { useElMessage } from '@/hooks/useMessage'
 import { articles as localArticles } from './articles/index'
 import { useCacheStore } from '@/store/cache'
 
 const router = useRouter()
-const { message } = useElMessage()
 const cacheStore = useCacheStore()
 
 const search = ref('')
 const selectedTags = ref<string[]>([])
+const selectedType = ref('all')
+const selectedStatus = ref('all')
 const articles = ref<IArticle[]>([])
 const loading = ref(false)
 const layoutMode = ref<'grid' | 'list'>('list')
 
+const documentTypes = [
+    { value: 'all', label: 'All' },
+    { value: 'note', label: 'Note' },
+    { value: 'technical-doc', label: 'Technical Doc' },
+    { value: 'tutorial', label: 'Tutorial' },
+    { value: 'project-record', label: 'Project Record' },
+    { value: 'paper', label: 'Paper' },
+    { value: 'idea', label: 'Idea' }
+]
+
+const documentStatuses = [
+    { value: 'all', label: 'All' },
+    { value: 'published', label: 'Published' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'organized', label: 'Organized' },
+    { value: 'reviewing', label: 'Reviewing' },
+    { value: 'archived', label: 'Archived' }
+]
+
 const formatDate = (dateStr: string) => {
-    if (!dateStr) return '精选文章'
+    if (!dateStr) return 'Recently updated'
     const date = new Date(dateStr)
-    if (Number.isNaN(date.getTime())) return '精选文章'
-    return date.toLocaleDateString('zh-CN', {
+    if (Number.isNaN(date.getTime())) return 'Recently updated'
+    return date.toLocaleDateString('en-US', {
         year: 'numeric',
-        month: '2-digit',
+        month: 'short',
         day: '2-digit'
     })
+}
+
+const slugifyType = (value?: string) => {
+    if (!value) return 'note'
+    const normalized = value.toLowerCase().replace(/_/g, '-').replace(/\s+/g, '-')
+    const categoryMap: Record<string, string> = {
+        frontend: 'technical-doc',
+        backend: 'technical-doc',
+        database: 'technical-doc',
+        algorithm: 'technical-doc',
+        devops: 'technical-doc',
+        architecture: 'project-record',
+        ai: 'technical-doc',
+        other: 'note'
+    }
+    return categoryMap[normalized] || normalized
+}
+
+const getDocumentType = (article: IArticle) => slugifyType(article.resource_type || article.category)
+const getDocumentStatus = (article: IArticle) => article.document_status || article.status || 'published'
+
+const getDocumentTypeLabel = (article: IArticle) => {
+    const type = getDocumentType(article)
+    return documentTypes.find(item => item.value === type)?.label || 'Document'
+}
+
+const getDocumentStatusLabel = (article: IArticle) => {
+    const status = getDocumentStatus(article)
+    return documentStatuses.find(item => item.value === status)?.label || status
 }
 
 const allTags = computed(() => {
@@ -144,10 +233,12 @@ const allTags = computed(() => {
 const processedLocalArticles = localArticles.map(article => ({
     ...article,
     id: article.id,
-    tags: [...(article.tags || []), '精选'],
+    tags: [...(article.tags || []), 'example'],
+    resource_type: 'technical-doc',
+    document_status: 'organized',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    author_name: '智汇编辑部',
+    author_name: 'ContextForge Team',
     views: 0,
     likes: 0,
     content: ''
@@ -190,7 +281,7 @@ const fetchArticles = async (forceRefresh = false) => {
             cacheStore.setCache('articles', backendArticles)
         }
     } catch (error) {
-        console.error('Failed to fetch articles:', error)
+        console.error('Failed to fetch documents:', error)
         articles.value = processedLocalArticles
     } finally {
         loading.value = false
@@ -211,11 +302,14 @@ onMounted(() => {
 
 const filteredArticles = computed(() => {
     return articles.value.filter(article => {
-        const isPublished = !article.status || article.status === 'published'
+        const status = getDocumentStatus(article)
+        const isVisible = status !== 'archived' || selectedStatus.value === 'archived'
+        const matchesType = selectedType.value === 'all' || getDocumentType(article) === selectedType.value
+        const matchesStatus = selectedStatus.value === 'all' || status === selectedStatus.value
         const matchesTags =
             selectedTags.value.length === 0 ||
             (article.tags && selectedTags.value.every(tag => article.tags?.includes(tag)))
-        return isPublished && matchesTags
+        return isVisible && matchesType && matchesStatus && matchesTags
     })
 })
 
@@ -242,7 +336,7 @@ function clearSelectedTags() {
 </script>
 
 <style scoped>
-.essays-page {
+.knowledge-page {
     width: var(--page-width);
     min-height: calc(100vh - 160px);
     margin: 0 auto;
@@ -261,26 +355,27 @@ function clearSelectedTags() {
 .eyebrow {
     display: inline-flex;
     align-items: center;
-    height: 24px;
+    min-height: 24px;
     padding: 0 10px;
     border-radius: 9999px;
     background: var(--badge-bg);
     color: var(--badge-fg);
     font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
 }
 
 .library-hero h1 {
+    max-width: 880px;
     margin: 16px 0 12px;
     font-size: clamp(44px, 7vw, 72px);
-    font-weight: 600;
-    line-height: 0.96;
+    font-weight: 650;
+    line-height: 0.98;
     letter-spacing: 0;
 }
 
 .library-hero p {
-    max-width: 620px;
+    max-width: 720px;
     margin: 0;
     color: var(--text-secondary);
     font-size: 18px;
@@ -305,6 +400,7 @@ function clearSelectedTags() {
 .layout-btn,
 .write-btn,
 .filter-tag,
+.filter-chip,
 .tags-header button {
     border: 0;
     font: inherit;
@@ -330,16 +426,17 @@ function clearSelectedTags() {
 }
 
 .write-btn {
-    height: 42px;
+    min-height: 42px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 0 14px;
     border-radius: 10px;
     color: var(--button-fg);
     background: var(--button-bg);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     box-shadow: var(--ring);
     transition: background 180ms ease;
 }
@@ -354,7 +451,7 @@ function clearSelectedTags() {
 }
 
 .search-panel {
-    height: 58px;
+    min-height: 58px;
     display: grid;
     grid-template-columns: 20px 1fr auto;
     align-items: center;
@@ -371,7 +468,7 @@ function clearSelectedTags() {
     color: var(--text-muted);
 }
 
-.essay-search {
+.knowledge-search {
     width: 100%;
     border: 0;
     outline: 0;
@@ -381,7 +478,7 @@ function clearSelectedTags() {
     font-size: 16px;
 }
 
-.essay-search::placeholder {
+.knowledge-search::placeholder {
     color: var(--text-muted);
 }
 
@@ -389,35 +486,36 @@ function clearSelectedTags() {
     color: var(--text-secondary);
     font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
+.filter-panel,
 .tags-section {
-    margin: 20px 0 32px;
+    margin: 20px 0 0;
     padding: 18px;
     border-radius: 12px;
     background: var(--surface);
     box-shadow: var(--ring);
 }
 
-.tags-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.filter-panel {
+    display: grid;
     gap: 16px;
-    margin-bottom: 12px;
+}
+
+.filter-group {
+    display: grid;
+    gap: 10px;
+}
+
+.filter-group > span,
+.tags-header {
     color: var(--text-primary);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-.tags-header button {
-    padding: 0;
-    color: var(--badge-fg);
-    background: transparent;
-    font-size: 14px;
-}
-
+.filter-options,
 .tags-list,
 .card-tags,
 .card-meta {
@@ -426,9 +524,10 @@ function clearSelectedTags() {
     gap: 8px;
 }
 
+.filter-chip,
 .filter-tag,
 .card-tags span {
-    height: 26px;
+    min-height: 28px;
     display: inline-flex;
     align-items: center;
     padding: 0 10px;
@@ -437,35 +536,57 @@ function clearSelectedTags() {
     background: var(--surface-subtle);
     box-shadow: var(--ring);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     transition: background 180ms ease, color 180ms ease;
 }
 
+.filter-chip:hover,
+.filter-chip.active,
 .filter-tag:hover,
 .filter-tag.active {
     color: var(--badge-fg);
     background: var(--badge-bg);
 }
 
-.essays-list {
+.tags-section {
+    margin-bottom: 32px;
+}
+
+.tags-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.tags-header button {
+    padding: 0;
+    color: var(--badge-fg);
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.knowledge-list {
     display: grid;
     gap: 12px;
 }
 
-.article-results {
+.document-results {
     width: 100%;
-    min-height: max(560px, calc(100vh - 360px));
+    min-height: max(560px, calc(100vh - 420px));
     align-content: start;
     overflow-anchor: none;
 }
 
-.essays-grid {
+.knowledge-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
 
-.essay-card {
+.document-card {
     min-height: 240px;
     padding: 24px;
     display: flex;
@@ -478,12 +599,12 @@ function clearSelectedTags() {
     transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.essays-list .essay-card {
+.knowledge-list .document-card {
     min-height: 180px;
 }
 
-.essay-card:hover,
-.essay-card:focus-visible {
+.document-card:hover,
+.document-card:focus-visible {
     transform: translateY(-2px);
     box-shadow: rgba(0, 0, 0, 0.12) 0 0 0 1px,
         rgba(0, 0, 0, 0.06) 0 8px 18px -12px;
@@ -496,19 +617,20 @@ function clearSelectedTags() {
     color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-.essay-card h2 {
+.document-card h2 {
     margin: 18px 0 10px;
     color: var(--text-primary);
     font-size: 24px;
-    font-weight: 600;
+    font-weight: 650;
     line-height: 1.25;
     letter-spacing: 0;
 }
 
-.essay-card p {
+.document-card p {
     margin: 0;
     color: var(--text-secondary);
     font-size: 15px;
@@ -535,6 +657,7 @@ function clearSelectedTags() {
     min-height: 320px;
     display: grid;
     place-items: center;
+    gap: 12px;
     text-align: center;
     border-radius: 12px;
     background: var(--surface);
@@ -548,9 +671,9 @@ function clearSelectedTags() {
 }
 
 .no-results h2 {
-    margin: 14px 0 8px;
+    margin: 0;
     font-size: 24px;
-    font-weight: 600;
+    font-weight: 650;
     letter-spacing: 0;
 }
 
@@ -565,13 +688,13 @@ function clearSelectedTags() {
         flex-direction: column;
     }
 
-    .essays-grid {
+    .knowledge-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 640px) {
-    .essays-page {
+    .knowledge-page {
         padding: 48px 0 64px;
     }
 
@@ -580,7 +703,7 @@ function clearSelectedTags() {
         justify-content: space-between;
     }
 
-    .essays-grid {
+    .knowledge-grid {
         grid-template-columns: 1fr;
     }
 
@@ -592,19 +715,4 @@ function clearSelectedTags() {
         display: none;
     }
 }
-
-:where(h1, h2, h3) {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: 0;
-}
-
-:where(p, li, small) {
-    line-height: 1.6;
-}
-
-:where(button, .el-button, a) {
-    letter-spacing: 0;
-}
-
 </style>
