@@ -8,6 +8,24 @@ from middleware import token_required
 
 article_bp = Blueprint('article', __name__)
 
+DOCUMENT_COLUMNS = {
+    "resource_type": "VARCHAR(50) DEFAULT 'note'",
+    "visibility": "VARCHAR(20) DEFAULT 'private'",
+    "source_url": "VARCHAR(500)",
+    "document_status": "VARCHAR(20) DEFAULT 'published'",
+    "ai_summary": "TEXT",
+    "ai_keywords": "JSON",
+    "ai_questions": "JSON",
+    "favorite_count": "INT DEFAULT 0"
+}
+
+def ensure_document_columns(conn):
+    existing = conn.execute(text("SHOW COLUMNS FROM articles")).mappings().fetchall()
+    existing_names = {row["Field"] for row in existing}
+    for column, definition in DOCUMENT_COLUMNS.items():
+        if column not in existing_names:
+            conn.execute(text(f"ALTER TABLE articles ADD COLUMN {column} {definition}"))
+
 @article_bp.route('/api/articles', methods=['POST'])
 @token_required
 def create_article(current_user_id):
@@ -20,6 +38,13 @@ def create_article(current_user_id):
     tags = data.get('tags') # Should be a list
     cover_image = data.get('cover_image')
     status = data.get('status', 'published') # Default to published if not provided
+    resource_type = data.get('resource_type', 'note')
+    visibility = data.get('visibility', 'private')
+    source_url = data.get('source_url')
+    document_status = data.get('document_status', status)
+    ai_summary = data.get('ai_summary')
+    ai_keywords = data.get('ai_keywords')
+    ai_questions = data.get('ai_questions')
     
     if not title or not content:
         return jsonify({'status': 1, 'msg': '标题和内容不能为空'}), 400
@@ -27,12 +52,23 @@ def create_article(current_user_id):
     try:
         # Convert tags list to JSON string for storage
         tags_json = json.dumps(tags if tags else [])
+        ai_keywords_json = json.dumps(ai_keywords if ai_keywords else [])
+        ai_questions_json = json.dumps(ai_questions if ai_questions else [])
         
         with engine.connect() as conn:
+            ensure_document_columns(conn)
             result = conn.execute(
                 text("""
-                    INSERT INTO articles (title, content, summary, category, tags, author_id, cover_image, status)
-                    VALUES (:title, :content, :summary, :category, :tags, :author_id, :cover_image, :status)
+                    INSERT INTO articles (
+                        title, content, summary, category, tags, author_id, cover_image, status,
+                        resource_type, visibility, source_url, document_status,
+                        ai_summary, ai_keywords, ai_questions
+                    )
+                    VALUES (
+                        :title, :content, :summary, :category, :tags, :author_id, :cover_image, :status,
+                        :resource_type, :visibility, :source_url, :document_status,
+                        :ai_summary, :ai_keywords, :ai_questions
+                    )
                 """),
                 {
                     "title": title,
@@ -42,7 +78,14 @@ def create_article(current_user_id):
                     "tags": tags_json,
                     "author_id": current_user_id,
                     "cover_image": cover_image,
-                    "status": status
+                    "status": status,
+                    "resource_type": resource_type,
+                    "visibility": visibility,
+                    "source_url": source_url,
+                    "document_status": document_status,
+                    "ai_summary": ai_summary,
+                    "ai_keywords": ai_keywords_json,
+                    "ai_questions": ai_questions_json
                 }
             )
             conn.commit()
@@ -79,11 +122,21 @@ def update_article(current_user_id, article_id):
     tags = data.get('tags')
     cover_image = data.get('cover_image')
     status = data.get('status')
+    resource_type = data.get('resource_type')
+    visibility = data.get('visibility')
+    source_url = data.get('source_url')
+    document_status = data.get('document_status')
+    ai_summary = data.get('ai_summary')
+    ai_keywords = data.get('ai_keywords')
+    ai_questions = data.get('ai_questions')
     
     try:
         tags_json = json.dumps(tags if tags else [])
+        ai_keywords_json = json.dumps(ai_keywords if ai_keywords else [])
+        ai_questions_json = json.dumps(ai_questions if ai_questions else [])
         
         with engine.connect() as conn:
+            ensure_document_columns(conn)
             # First check if article exists
             article = conn.execute(
                 text("SELECT author_id FROM articles WHERE id = :id"),
@@ -140,6 +193,27 @@ def update_article(current_user_id, article_id):
             if status is not None:
                 update_parts.append("status=:status")
                 params["status"] = status
+            if resource_type is not None:
+                update_parts.append("resource_type=:resource_type")
+                params["resource_type"] = resource_type
+            if visibility is not None:
+                update_parts.append("visibility=:visibility")
+                params["visibility"] = visibility
+            if source_url is not None:
+                update_parts.append("source_url=:source_url")
+                params["source_url"] = source_url
+            if document_status is not None:
+                update_parts.append("document_status=:document_status")
+                params["document_status"] = document_status
+            if ai_summary is not None:
+                update_parts.append("ai_summary=:ai_summary")
+                params["ai_summary"] = ai_summary
+            if ai_keywords is not None:
+                update_parts.append("ai_keywords=:ai_keywords")
+                params["ai_keywords"] = ai_keywords_json
+            if ai_questions is not None:
+                update_parts.append("ai_questions=:ai_questions")
+                params["ai_questions"] = ai_questions_json
                 
             if not update_parts:
                  return jsonify({'status': 0, 'msg': '无变更'})
@@ -276,6 +350,7 @@ def get_article(article_id):
                 pass
                 
         with engine.connect() as conn:
+            ensure_document_columns(conn)
             # Join with users to get author name
             result = conn.execute(
                 text("""
@@ -309,6 +384,13 @@ def get_article(article_id):
                     article['tags'] = json.loads(article['tags'])
                 except:
                     article['tags'] = []
+
+            for json_field in ['ai_keywords', 'ai_questions']:
+                if article.get(json_field):
+                    try:
+                        article[json_field] = json.loads(article[json_field])
+                    except:
+                        article[json_field] = []
             
             # Format dates
             if article.get('created_at'):
@@ -331,8 +413,12 @@ def get_articles():
         tag = request.args.get('tag', '')
         status = request.args.get('status', '') # Add status filter
         author_id = request.args.get('author_id', '') # Add author_id filter
+        resource_type = request.args.get('resource_type', '')
+        visibility = request.args.get('visibility', '')
+        document_status = request.args.get('document_status', '')
         
         with engine.connect() as conn:
+            ensure_document_columns(conn)
             # Build query
             query_str = """
                 SELECT a.*, u.username as author_name, u.avatar as author_avatar
@@ -364,6 +450,18 @@ def get_articles():
             if status:
                 query_str += " AND a.status = :status"
                 params['status'] = status
+
+            if resource_type:
+                query_str += " AND a.resource_type = :resource_type"
+                params['resource_type'] = resource_type
+
+            if visibility:
+                query_str += " AND a.visibility = :visibility"
+                params['visibility'] = visibility
+
+            if document_status:
+                query_str += " AND a.document_status = :document_status"
+                params['document_status'] = document_status
             
             if author_id:
                 query_str += " AND a.author_id = :author_id"
@@ -382,6 +480,13 @@ def get_articles():
                         article['tags'] = json.loads(article['tags'])
                     except:
                         article['tags'] = []
+
+                for json_field in ['ai_keywords', 'ai_questions']:
+                    if article.get(json_field):
+                        try:
+                            article[json_field] = json.loads(article[json_field])
+                        except:
+                            article[json_field] = []
                 
                 # Format dates
                 if article.get('created_at'):
