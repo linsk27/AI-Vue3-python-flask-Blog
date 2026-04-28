@@ -1,13 +1,13 @@
 <template>
     <header class="site-header">
-        <nav class="nav-shell" aria-label="主导航">
-            <button class="brand" type="button" aria-label="回到首页" @click="goToHome">
+        <nav class="nav-shell" aria-label="Primary navigation">
+            <button class="brand" type="button" aria-label="Go to workspace" @click="goToHome">
                 <span class="brand-mark" aria-hidden="true">
                     <span class="brand-mark-inner"></span>
                 </span>
                 <span class="brand-copy">
-                    <span class="brand-name">智汇博客</span>
-                    <span class="brand-subtitle">AI Knowledge Lab</span>
+                    <span class="brand-name">ContextForge</span>
+                    <span class="brand-subtitle">AI Context Workspace</span>
                 </span>
             </button>
 
@@ -22,10 +22,10 @@
             <div class="nav-actions">
                 <router-link to="/essays/write" class="write-link">
                     <EditPen class="action-icon" />
-                    <span>写作</span>
+                    <span>New Document</span>
                 </router-link>
                 <el-dropdown trigger="hover" @command="handleCommand" placement="bottom-end">
-                    <button class="user-profile" type="button" aria-label="打开用户菜单">
+                    <button class="user-profile" type="button" aria-label="Open user menu">
                         <el-avatar :size="28" :src="userAvatar" class="avatar" />
                         <span class="username">{{ userName }}</span>
                         <ArrowDown class="chevron" />
@@ -34,19 +34,19 @@
                         <el-dropdown-menu class="profile-menu">
                             <el-dropdown-item command="profile">
                                 <User class="menu-icon" />
-                                <span>个人中心</span>
+                                <span>My Space</span>
                             </el-dropdown-item>
                             <el-dropdown-item command="my-works">
                                 <Document class="menu-icon" />
-                                <span>我的作品</span>
+                                <span>My Documents</span>
                             </el-dropdown-item>
                             <el-dropdown-item command="my-likes">
                                 <Star class="menu-icon" />
-                                <span>我的喜欢</span>
+                                <span>Favorites</span>
                             </el-dropdown-item>
                             <el-dropdown-item divided command="logout" v-if="globalStore.token">
                                 <SwitchButton class="menu-icon" />
-                                <span>退出登录</span>
+                                <span>Sign out</span>
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -67,20 +67,19 @@ const { message } = useElMessage()
 const router = useRouter()
 const globalStore = useGlobalStore()
 
-const userName = computed(() => globalStore.userInfo?.username || '访客')
+const userName = computed(() => globalStore.userInfo?.username || 'Guest')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
 
-
 const navItems = [
-    { path: '/', label: '首页' },
-    { path: '/essays', label: '文章' },
-    { path: '/ai-center', label: 'AI 中心' }
+    { path: '/', label: 'Workspace' },
+    { path: '/essays', label: 'Knowledge Base' },
+    { path: '/context-packs', label: 'Context Packs' },
+    { path: '/ai-center', label: 'AI Workspace' }
 ]
 
 const goToHome = () => {
     router.push('/')
 }
-
 
 const handleCommand = (command: string) => {
     switch (command) {
@@ -95,7 +94,7 @@ const handleCommand = (command: string) => {
             break
         case 'logout':
             globalStore.clearLoginInfo()
-            message.success('已退出登录')
+            message.success('Signed out')
             router.push('/login')
             break
     }
@@ -115,9 +114,9 @@ const handleCommand = (command: string) => {
 
 .nav-shell {
     width: var(--page-width);
-    height: 56px;
+    min-height: 56px;
     margin: 0 auto;
-    padding: 0 8px 0 12px;
+    padding: 8px 8px 8px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -146,18 +145,19 @@ const handleCommand = (command: string) => {
 }
 
 .brand-mark {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     display: grid;
     place-items: center;
-    border-radius: 50%;
+    border-radius: 8px;
     background: var(--button-bg);
 }
 
 .brand-mark-inner {
-    width: 11px;
-    height: 11px;
+    width: 13px;
+    height: 13px;
     display: block;
+    border-radius: 3px;
     background: var(--button-fg);
     transform: rotate(45deg);
 }
@@ -171,7 +171,7 @@ const handleCommand = (command: string) => {
 
 .brand-name {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0;
 }
 
@@ -196,7 +196,7 @@ const handleCommand = (command: string) => {
 .nav-link {
     display: inline-flex;
     align-items: center;
-    height: 34px;
+    min-height: 34px;
     padding: 0 12px;
     border-radius: 10px;
     color: var(--text-secondary);
@@ -220,7 +220,7 @@ const handleCommand = (command: string) => {
 
 .write-link,
 .user-profile {
-    height: 36px;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -282,17 +282,26 @@ const handleCommand = (command: string) => {
     font-size: 14px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 920px) {
+    .nav-shell {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .nav-menu {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+}
+
+@media (max-width: 640px) {
     .site-header {
         padding: 8px;
     }
 
-    .nav-shell {
-        height: 54px;
-    }
-
     .brand-subtitle,
-    .nav-menu,
     .write-link span,
     .username {
         display: none;
@@ -305,19 +314,4 @@ const handleCommand = (command: string) => {
         padding: 0;
     }
 }
-
-:where(h1, h2, h3) {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: 0;
-}
-
-:where(p, li, small) {
-    line-height: 1.6;
-}
-
-:where(button, .el-button, a) {
-    letter-spacing: 0;
-}
-
 </style>

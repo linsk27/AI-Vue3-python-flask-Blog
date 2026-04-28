@@ -1,357 +1,366 @@
-# ContextForge Requirements
+# ContextForge Development Blueprint
 
-## Product Direction
+## 1. Product Thesis
 
-ContextForge is an open-source AI knowledge context workspace. It turns notes, articles, documents, conversations, and collected materials into a searchable, summarizable, and reusable personal knowledge base.
+ContextForge is an open-source AI context workspace. It helps users collect notes, documents, webpages, repositories, and AI conversations, then turn them into reusable AI-ready context.
 
-Chinese product name candidates:
+Tagline:
 
-- 语境工坊
-- 知脉 AI
-- 文脉 AI 工作台
-- KnowFlow AI
+> Stop losing context. Forge reusable AI context packs from docs, notes, webpages, repos, and conversations.
 
-Recommended positioning:
+The project should not feel like a blog with AI attached. It should feel like a practical AI-native workspace for people who constantly gather, summarize, reuse, and ship knowledge.
 
-> Open-source AI knowledge workspace for documents, notes, context-aware chat, and personal knowledge management.
+## 2. Differentiated Core Features
 
-中文定位：
+### 2.1 Context Packs
 
-> 一个开源的 AI 知识上下文工作台，支持文档管理、智能摘要、上下文问答和个人知识沉淀。
+Context Pack is the signature feature. It is more than a folder or favorite list.
 
-## Rename Map
+A context pack groups documents, links, notes, and AI conversations into one reusable bundle.
 
-- 智汇博客 -> ContextForge
-- 博客 -> 知识库 / 上下文库
-- 文章 -> 文档 / 知识条目
-- 写文章 -> 新建文档
-- 我的作品 -> 我的知识库
-- 我的喜欢 -> 我的收藏
-- 评论 -> 讨论 / 批注
-- AI 中心 -> AI 工作台
-- AI 聊天 -> 上下文问答
-- 智能摘要 -> 文档洞察
-- 分类 -> 类型 / 场景
-- 标签 -> 知识标签
-- 后台文章管理 -> 文档管理
+Examples:
 
-## Information Architecture
+- Vue 3 Interview Pack
+- Graduation Defense Pack
+- Flask Backend Refactor Pack
+- Product Requirement Pack
+- Paper Reading Pack
 
-- 工作台
-- 知识库
-- 新建文档
-- AI 工作台
-- 我的空间
-- 管理后台
+MVP requirements:
 
-## Frontend Requirements
+- Create a context pack.
+- Add documents to a pack.
+- Remove documents from a pack.
+- Generate pack summary.
+- Generate pack key points.
+- Ask AI with pack context.
+- Export pack as Markdown.
 
-### 1. Workspace Home
+Later requirements:
 
-- [ ] Replace the current blog-style landing page with a product workspace.
-- [ ] Show recent documents.
-- [ ] Show recent favorites.
-- [ ] Show document count, tag count, favorite count, and AI conversation count.
-- [ ] Show quick actions: new document, summarize document, ask AI, import material.
-- [ ] Show popular tags.
-- [ ] Show recent AI conversations.
-- [ ] Keep the layout useful as the first screen, not a marketing-only hero.
+- Share public pack link.
+- Clone public pack.
+- Version pack snapshots.
+- Add repo/webpage import results to a pack.
 
-### 2. Knowledge Base
+### 2.2 AI Reading Assistant
 
-- [ ] Rename essays/article list to knowledge base.
-- [ ] Support keyword search.
-- [ ] Support tag filtering.
-- [ ] Support document type filtering.
-- [ ] Support document status filtering.
-- [ ] Support grid and list view.
-- [ ] Support sorting by created time, updated time, views, and favorites.
-- [ ] Show title, summary, tags, type, author, views, favorites, and updated time.
-- [ ] Keep local demo documents as seed examples, but rename them to knowledge entries.
+Document detail should have an AI assistant built around the current document, not a detached chatbot.
 
-Document types:
+MVP actions:
 
-- [ ] Note
-- [ ] Technical doc
-- [ ] Paper
-- [ ] Tutorial
-- [ ] Project record
-- [ ] Idea
-- [ ] Q&A record
-- [ ] Other
+- Explain selected text.
+- Summarize selected text.
+- Generate examples.
+- Generate review questions.
+- Extract keywords.
+- Add selection to a context pack.
 
-Document statuses:
+Later actions:
 
-- [ ] Draft
-- [ ] Organized
-- [ ] Reviewing
-- [ ] Archived
+- Challenge this claim.
+- Convert selection to prompt.
+- Convert selection to flashcards.
+- Translate and simplify.
 
-### 3. Document Detail
+### 2.3 Prompt Factory
+
+Prompt Factory turns documents and context packs into reusable prompts.
+
+Prompt types:
+
+- Summary prompt
+- Teaching prompt
+- Q&A prompt
+- Code review prompt
+- Paper analysis prompt
+- Requirement analysis prompt
+- Project resume prompt
+
+MVP requirements:
+
+- Generate prompt from document.
+- Generate prompt from context pack.
+- Copy prompt.
+- Save prompt template.
+- Run prompt with selected model.
+
+### 2.4 Project Debrief Generator
+
+This feature makes the project useful for students, developers, resumes, reports, and software copyright materials.
+
+Input:
+
+- Project name
+- Tech stack
+- Feature list
+- Source documents
+- Optional repo link
+
+Generated outputs:
+
+- Project introduction
+- Architecture summary
+- Feature modules
+- Database design summary
+- Technical highlights
+- Challenges and solutions
+- Resume bullet points
+- Software copyright description draft
+
+### 2.5 Webpage and GitHub Import
+
+MVP import:
+
+- Paste URL.
+- Save source URL.
+- Let user paste extracted text manually if crawler fails.
+- AI generates title, summary, tags, and document type.
+
+Later import:
+
+- Fetch webpage title and body.
+- Import GitHub README and docs.
+- Generate repository summary.
+- Generate learning route from repository.
+- Save import as context pack.
+
+### 2.6 Model Routing
+
+AI config should evolve from "one active model" to a model routing center.
+
+Task routes:
+
+- chat
+- summary
+- extraction
+- coding
+- long-context
+- private-local
+
+Supported providers:
+
+- OpenAI-compatible API
+- DeepSeek
+- Volcano Ark
+- Ollama, later
+
+## 3. Rename Map
+
+- Blog -> Knowledge Base
+- Article -> Document
+- Write Article -> New Document
+- My Works -> My Documents
+- My Likes -> Favorites
+- Comment -> Discussion
+- AI Center -> AI Workspace
+- AI Chat -> Context Chat
+- Smart Summary -> Document Insight
+- Category -> Type
+- Tags -> Knowledge Tags
+- Article Management -> Document Management
+
+## 4. Frontend Development Plan
+
+### Phase F1: Product Shell
+
+- [x] Add development blueprint.
+- [ ] Rename global brand to ContextForge.
+- [ ] Replace blog navigation with Workspace, Knowledge Base, Context Packs, AI Workspace.
+- [ ] Replace footer copy.
+- [ ] Replace home page with AI workspace dashboard.
+- [ ] Keep existing routes stable during transition.
+
+### Phase F2: Knowledge Base
+
+- [ ] Rename essays page UI to Knowledge Base.
+- [ ] Add document type filter.
+- [ ] Add document status filter.
+- [ ] Replace likes wording with favorites.
+- [ ] Add card fields for type, status, source URL, and updated time.
+- [ ] Add empty-state actions for import and new document.
+
+### Phase F3: Document Detail
 
 - [ ] Rename article detail to document detail.
-- [ ] Add AI insight panel.
-- [ ] Show AI summary.
-- [ ] Show extracted keywords.
-- [ ] Show generated review questions.
-- [ ] Show related documents placeholder.
-- [ ] Add action: ask AI about this document.
-- [ ] Add action: generate summary.
-- [ ] Add action: generate keywords.
-- [ ] Add action: generate questions.
-- [ ] Convert like behavior into favorite behavior.
-- [ ] Rename comments to discussion.
+- [ ] Add right-side AI insight panel.
+- [ ] Add summary, keywords, and questions sections.
+- [ ] Add "Ask with this document" action.
+- [ ] Add "Add to Context Pack" placeholder action.
+- [ ] Rename comment area to discussion.
 
-### 4. Document Editor
+### Phase F4: Document Editor
 
-- [ ] Rename writing page to document editor.
-- [ ] Keep Quill editor.
-- [ ] Add document type.
-- [ ] Add document status.
-- [ ] Add source URL.
-- [ ] Add visibility: private, public, team.
-- [ ] Keep title, content, summary, tags.
-- [ ] Replace AI article generation with AI document drafting.
-- [ ] Add AI title generation.
-- [ ] Add AI summary generation.
-- [ ] Add AI tag extraction.
-- [ ] Add AI structure optimization.
-- [ ] Connect image upload to the backend instead of mock image URLs.
+- [ ] Rename write article page to document editor.
+- [ ] Add type field.
+- [ ] Add status field.
+- [ ] Add visibility field.
+- [ ] Add source URL field.
+- [ ] Replace AI writing modal with AI document drafting.
+- [ ] Replace mock image upload with backend upload.
 
-### 5. AI Workspace
+### Phase F5: Context Packs
 
-- [ ] Rename AI center to AI workspace.
-- [ ] Keep streaming chat.
-- [ ] Support normal chat.
-- [ ] Support current-document Q&A.
-- [ ] Support selected-documents Q&A.
-- [ ] Support summarize selected document.
-- [ ] Support compare documents.
-- [ ] Support generate review cards.
-- [ ] Support save AI conversation as document.
-- [ ] Persist chat history beyond localStorage in a later phase.
+- [ ] Add context pack list page.
+- [ ] Add context pack detail page.
+- [ ] Add create/edit pack modal.
+- [ ] Add document-to-pack action.
+- [ ] Add pack summary placeholder.
+- [ ] Add pack AI chat placeholder.
 
-### 6. My Space
+### Phase F6: Prompt Factory
 
-- [ ] Merge profile, my works, and my likes into a personal space.
-- [ ] Show my documents.
-- [ ] Show my favorites.
-- [ ] Show my drafts.
-- [ ] Show my tags.
-- [ ] Show recent browsing history.
-- [ ] Show saved AI conversations.
+- [ ] Add prompt factory page.
+- [ ] Add prompt templates.
+- [ ] Add generate-from-document action.
+- [ ] Add generate-from-pack action.
+- [ ] Add copy/run/save actions.
 
-## Admin Requirements
+## 5. Backend Development Plan
 
-### 1. Branding
+### Phase B1: Transitional Document Layer
 
-- [ ] Rename admin system to ContextForge Admin.
-- [ ] Replace blog wording with document/knowledge wording.
-- [ ] Update login screen copy.
-- [ ] Update dashboard metrics.
-- [ ] Update menu labels.
+- [ ] Keep `/api/articles` working.
+- [ ] Add document-compatible fields to existing table.
+- [ ] Add `/api/documents` aliases or routes.
+- [ ] Normalize response field names.
 
-### 2. Document Management
+Suggested transitional fields:
 
-- [ ] Rename article management to document management.
-- [ ] Add document type column.
-- [ ] Add document status column.
-- [ ] Add visibility column.
-- [ ] Add favorite count column.
-- [ ] Add AI summary status column.
-- [ ] Keep title, author, tags, views, created time, updated time.
-- [ ] Support filtering by type, status, author, and visibility.
+- `resource_type`
+- `visibility`
+- `source_url`
+- `ai_summary`
+- `ai_keywords`
+- `ai_questions`
+- `favorite_count`
 
-### 3. AI Config Management
+### Phase B2: AI Insight APIs
 
-- [ ] Keep provider, base URL, API key, model, system prompt, active switch.
-- [ ] Add connection test.
-- [ ] Add default model flag.
-- [ ] Add streaming enabled switch.
-- [ ] Add OpenAI-compatible provider preset.
-- [ ] Add Ollama preset in a later phase.
-
-### 4. System Management
-
-- [ ] Keep user management.
-- [ ] Keep role management.
-- [ ] Keep permission management.
-- [ ] Add tag management if backend schema is split.
-- [ ] Add discussion moderation.
-
-## Backend Requirements
-
-### 1. API Compatibility
-
-- [ ] Keep existing `/api/articles` routes during transition.
-- [ ] Add document aliases or new document routes.
-- [ ] Avoid breaking the current frontend until the new frontend is ready.
-
-### 2. Document APIs
-
-- [ ] `GET /api/documents`
-- [ ] `POST /api/documents`
-- [ ] `GET /api/documents/<id>`
-- [ ] `PUT /api/documents/<id>`
-- [ ] `DELETE /api/documents/<id>`
-- [ ] `POST /api/documents/<id>/favorite`
-- [ ] `POST /api/documents/<id>/view`
-- [ ] `GET /api/documents/<id>/comments`
-- [ ] `POST /api/documents/<id>/comments`
-
-### 3. AI APIs
-
-- [ ] `POST /api/ai/chat`
-- [ ] `POST /api/ai/chat/stream`
 - [ ] `POST /api/ai/generate-document`
 - [ ] `POST /api/ai/summarize`
 - [ ] `POST /api/ai/extract-tags`
 - [ ] `POST /api/ai/generate-questions`
-- [ ] `POST /api/ai/ask-documents`
-- [ ] `GET /api/ai/configs`
-- [ ] `POST /api/ai/configs`
-- [ ] `PUT /api/ai/configs/<id>`
-- [ ] `DELETE /api/ai/configs/<id>`
-- [ ] `POST /api/ai/configs/<id>/activate`
+- [ ] `POST /api/ai/generate-prompt`
+- [ ] `POST /api/ai/project-debrief`
 
-### 4. Upload APIs
+### Phase B3: Context Pack APIs
 
-- [ ] `POST /api/upload/image`
-- [ ] Return stable uploaded file URLs.
-- [ ] Validate file type.
-- [ ] Validate file size.
-- [ ] Store uploads under a predictable public path.
+- [ ] `GET /api/context-packs`
+- [ ] `POST /api/context-packs`
+- [ ] `GET /api/context-packs/<id>`
+- [ ] `PUT /api/context-packs/<id>`
+- [ ] `DELETE /api/context-packs/<id>`
+- [ ] `POST /api/context-packs/<id>/documents`
+- [ ] `DELETE /api/context-packs/<id>/documents/<document_id>`
+- [ ] `POST /api/context-packs/<id>/summary`
+- [ ] `POST /api/context-packs/<id>/ask`
 
-### 5. Security
+### Phase B4: Security and Open Source Readiness
 
-- [ ] Move `SECRET_KEY` to environment variables.
+- [ ] Move Flask secret key to environment variables.
 - [ ] Add `.env.example`.
-- [ ] Protect admin APIs with token and permissions.
-- [ ] Protect user update/delete APIs.
-- [ ] Keep public document read routes open only for public documents.
-- [ ] Hide full API keys in all responses.
-- [ ] Replace default admin password guidance with setup instructions.
+- [ ] Add `.gitignore`.
+- [ ] Protect management APIs.
+- [ ] Mask API keys.
+- [ ] Add Docker Compose.
 
-## Database Requirements
+## 6. Admin Development Plan
 
-### Minimum Transitional Fields
+### Phase A1: Branding
 
-Add these to the existing `articles` table or migrate to a new `documents` table:
+- [ ] Rename admin title to ContextForge Admin.
+- [ ] Replace blog wording.
+- [ ] Update dashboard metrics around documents, packs, AI calls, users.
+- [ ] Update login copy.
 
-- [ ] `resource_type VARCHAR(50)`
-- [ ] `visibility VARCHAR(20) DEFAULT 'private'`
-- [ ] `source_url VARCHAR(500)`
-- [ ] `ai_summary TEXT`
-- [ ] `ai_keywords JSON`
-- [ ] `ai_questions JSON`
-- [ ] `favorite_count INT DEFAULT 0`
+### Phase A2: Document Management
 
-### Ideal Tables
+- [ ] Rename article management to document management.
+- [ ] Add document type.
+- [ ] Add document status.
+- [ ] Add visibility.
+- [ ] Add source URL.
+- [ ] Add AI summary status.
 
-- [ ] `documents`
-- [ ] `document_favorites`
-- [ ] `document_comments`
-- [ ] `document_tags`
-- [ ] `ai_conversations`
-- [ ] `ai_messages`
-- [ ] `ai_configs`
-- [ ] `workspaces`
-- [ ] `workspace_members`
+### Phase A3: AI Operations
 
-MVP can skip team workspaces and keep a personal workspace model.
+- [ ] Add provider presets.
+- [ ] Add connection test.
+- [ ] Add task routing.
+- [ ] Add streaming switch.
+- [ ] Add Ollama roadmap slot.
 
-## Open Source Requirements
+## 7. Database Roadmap
 
-- [ ] Root `README.md`
+MVP can use the existing `articles` table as `documents` to reduce risk.
+
+Ideal schema:
+
+- `documents`
+- `document_favorites`
+- `document_comments`
+- `context_packs`
+- `context_pack_documents`
+- `prompt_templates`
+- `ai_conversations`
+- `ai_messages`
+- `ai_configs`
+- `workspaces`
+- `workspace_members`
+
+## 8. Open Source Checklist
+
+- [ ] Root README
 - [ ] Screenshots
 - [ ] Architecture diagram
-- [ ] Quick start guide
-- [ ] `.env.example`
-- [ ] `.gitignore`
+- [ ] Quick start
+- [ ] Environment variable guide
+- [ ] Database setup guide
 - [ ] Docker Compose
-- [ ] Database initialization guide
-- [ ] Demo account instructions
+- [ ] Demo account guide
 - [ ] Roadmap
-- [ ] License
 - [ ] Contributing guide
-- [ ] Issue templates
+- [ ] Issue template
 - [ ] Pull request template
+- [ ] License confirmation
 
-## Visual Direction
+## 9. MVP Release Scope
 
-Preferred UI direction:
+### v0.1.0
 
-- [ ] AI console/workspace feel.
-- [ ] Left knowledge-space navigation.
-- [ ] Center document list or document body.
-- [ ] Right AI context assistant.
-- [ ] Dense but clean surfaces.
-- [ ] Less blog-like hero design.
-- [ ] Avoid a one-note warm blog palette.
-- [ ] Use icons for actions.
-- [ ] Keep cards for documents, modals, and framed tools only.
+- Product shell rename.
+- Knowledge Base rename.
+- AI Workspace rename.
+- Document detail AI insight panel.
+- Document editor rename.
+- Backend fields for document metadata.
+- README and setup docs.
 
-Potential design references from `design-md`:
+### v0.2.0
 
-- [ ] Linear-style engineering workspace.
-- [ ] Mintlify-style documentation clarity.
-- [ ] Open WebUI-style AI console flow.
-- [ ] Notion-style personal knowledge calmness.
+- Context Packs MVP.
+- Prompt Factory MVP.
+- AI project debrief generator.
+- Webpage manual import.
 
-## MVP Scope
+### v0.3.0
 
-### Version 0.1.0
+- Multi-document Q&A.
+- Saved AI conversations.
+- GitHub repository import.
+- Export context pack as Markdown.
 
-- [ ] Product rename to ContextForge.
-- [ ] Frontend copy rename.
-- [ ] Admin copy rename.
-- [ ] Knowledge base page.
-- [ ] Document editor page.
-- [ ] Document detail page with AI insight panel.
-- [ ] AI workspace streaming chat.
-- [ ] AI document generation.
-- [ ] AI document summary.
-- [ ] Favorite behavior.
-- [ ] Backend document-compatible fields.
-- [ ] README and setup documentation.
+### v0.4.0
 
-### Version 0.2.0
+- Model routing.
+- Ollama provider.
+- Local-first mode.
+- AI config connection test.
 
-- [ ] Document type and status filtering.
-- [ ] AI tag extraction.
-- [ ] AI review question generation.
-- [ ] My Space redesign.
-- [ ] Real image upload.
-- [ ] Admin document filters.
+### v1.0.0
 
-### Version 0.3.0
-
-- [ ] Multi-document Q&A.
-- [ ] Save AI conversation as document.
-- [ ] Related document recommendation.
-- [ ] Persistent AI conversation history.
-
-### Version 0.4.0
-
-- [ ] OpenAI-compatible model presets.
-- [ ] Ollama local model support.
-- [ ] Model connection test.
-- [ ] Better AI config validation.
-
-### Version 0.5.0
-
-- [ ] File upload and parsing.
-- [ ] Markdown import.
-- [ ] Word document import.
-- [ ] Basic RAG retrieval.
-- [ ] Vector database research and optional integration.
-
-### Version 1.0.0
-
-- [ ] Workspace/team model.
-- [ ] Team permissions.
-- [ ] Production Docker deployment.
-- [ ] Full documentation.
-- [ ] Stable API naming.
-- [ ] Public demo environment.
-
+- Team workspace.
+- Stable document API.
+- Docker production deployment.
+- Full open-source documentation.

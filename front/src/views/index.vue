@@ -1,149 +1,187 @@
 <template>
-    <div class="home-page">
-        <section class="hero-section">
+    <div class="workspace-page">
+        <section class="workspace-hero">
             <div class="hero-copy">
-                <span class="eyebrow">AI-native developer blog</span>
-                <h1>智汇博客</h1>
+                <span class="eyebrow">AI Context Workspace</span>
+                <h1>Forge reusable context from everything you learn.</h1>
                 <p>
-                    一个面向开发者的知识创作空间。把文章、AI 摘要、阅读上下文和个人作品管理放在同一个干净工作台里。
+                    ContextForge turns documents, notes, webpages, repositories, and AI conversations into context packs
+                    that can be summarized, searched, reused, and shared.
                 </p>
                 <div class="hero-actions">
-                    <router-link to="/essays" class="primary-action">浏览文章</router-link>
-                    <router-link to="/ai-center" class="secondary-action">打开 AI 中心</router-link>
+                    <router-link to="/context-packs" class="primary-action">Explore Context Packs</router-link>
+                    <router-link to="/essays/write" class="secondary-action">New Document</router-link>
                 </div>
             </div>
 
-            <div class="console-card" aria-label="平台预览">
-                <div class="console-topbar">
+            <div class="command-panel" aria-label="ContextForge workflow preview">
+                <div class="panel-topbar">
                     <span></span>
                     <span></span>
                     <span></span>
-                    <strong>knowledge.run</strong>
+                    <strong>context.run</strong>
                 </div>
-                <div class="console-body">
-                    <div class="pipeline">
-                        <div v-for="step in workflow" :key="step.name" class="pipeline-step">
-                            <span class="step-dot" :style="{ background: step.color }"></span>
-                            <span class="step-label">{{ step.name }}</span>
+                <div class="panel-body">
+                    <div v-for="step in workflow" :key="step.title" class="workflow-step">
+                        <span class="step-index">{{ step.index }}</span>
+                        <div>
                             <strong>{{ step.title }}</strong>
+                            <p>{{ step.description }}</p>
                         </div>
-                    </div>
-                    <div class="insight-panel">
-                        <span>智能写作工作台</span>
-                        <p>围绕阅读、摘要、创作和作品管理建立完整流程，帮助内容稳定沉淀。</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="metrics-row" aria-label="平台能力">
+        <section class="metrics-row" aria-label="Workspace metrics">
             <article v-for="metric in metrics" :key="metric.label" class="metric-card">
                 <strong>{{ metric.value }}</strong>
                 <span>{{ metric.label }}</span>
             </article>
         </section>
 
-        <section class="section-block">
-            <div class="section-heading">
-                <span class="eyebrow">Workflow</span>
-                <h2>从阅读到创作，保持同一种节奏。</h2>
-            </div>
-            <div class="feature-grid">
-                <article v-for="feature in features" :key="feature.title" class="feature-card">
-                    <span class="feature-index">{{ feature.index }}</span>
-                    <h3>{{ feature.title }}</h3>
-                    <p>{{ feature.description }}</p>
-                </article>
-            </div>
+        <section class="workspace-grid">
+            <article class="feature-panel feature-panel-large">
+                <span class="eyebrow">Signature Feature</span>
+                <h2>Context Packs are reusable AI memory bundles.</h2>
+                <p>
+                    Group documents, links, notes, repository findings, and AI conversations into one portable context
+                    pack. Use it for Q&A, project handoff, exam prep, research, or writing.
+                </p>
+                <div class="pack-preview">
+                    <div v-for="pack in contextPacks" :key="pack.name" class="pack-row">
+                        <span>{{ pack.name }}</span>
+                        <strong>{{ pack.count }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article v-for="feature in features" :key="feature.title" class="feature-panel">
+                <span class="feature-kicker">{{ feature.kicker }}</span>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.description }}</p>
+            </article>
         </section>
 
-        <section class="cta-section">
-            <span class="eyebrow">Start writing</span>
-            <h2>把零散想法变成可沉淀的技术资产。</h2>
-            <router-link to="/essays/write" class="primary-action">写一篇文章</router-link>
+        <section class="quick-actions">
+            <div>
+                <span class="eyebrow">Next Actions</span>
+                <h2>Start with a document, then forge context around it.</h2>
+            </div>
+            <div class="action-list">
+                <router-link to="/essays" class="action-card">Browse Knowledge Base</router-link>
+                <router-link to="/ai-center/chat" class="action-card">Open Context Chat</router-link>
+                <router-link to="/context-packs" class="action-card">Build a Context Pack</router-link>
+            </div>
         </section>
     </div>
 </template>
 
 <script setup lang="ts">
 const workflow = [
-    { name: '阅读', title: '整理上下文', color: 'var(--terracotta)' },
-    { name: '摘要', title: 'AI 生成摘要', color: 'var(--coral)' },
-    { name: '发布', title: '发布文章', color: '#4d4c48' }
+    {
+        index: '01',
+        title: 'Collect',
+        description: 'Save documents, notes, links, project records, and AI conversations in one workspace.'
+    },
+    {
+        index: '02',
+        title: 'Forge',
+        description: 'Bundle related materials into context packs that preserve intent, sources, and decisions.'
+    },
+    {
+        index: '03',
+        title: 'Reuse',
+        description: 'Ask, summarize, generate prompts, write debriefs, and export context whenever needed.'
+    }
 ]
 
 const metrics = [
-    { value: 'Vue 3', label: '前端体验' },
-    { value: 'Flask', label: '内容接口' },
-    { value: 'AI', label: '阅读与创作辅助' }
+    { value: 'Docs', label: 'Knowledge entries' },
+    { value: 'Packs', label: 'Reusable context' },
+    { value: 'AI', label: 'Insight and drafting' }
+]
+
+const contextPacks = [
+    { name: 'Graduation Defense Pack', count: '12 docs' },
+    { name: 'Vue 3 Interview Pack', count: '8 docs' },
+    { name: 'Flask Refactor Pack', count: '6 docs' }
 ]
 
 const features = [
     {
-        index: '01',
-        title: '文章库',
-        description: '用清晰的标签、列表和搜索组织技术内容，减少读者在信息之间来回切换的成本。'
+        kicker: 'AI Reading',
+        title: 'Ask with the current document.',
+        description: 'Turn selected text into explanations, examples, review questions, and reusable context snippets.'
     },
     {
-        index: '02',
-        title: 'AI 中心',
-        description: '面向摘要、问答和上下文解释的智能入口，让阅读不只停留在浏览。'
+        kicker: 'Prompt Factory',
+        title: 'Convert knowledge into prompts.',
+        description: 'Generate summary, teaching, Q&A, code review, and project debrief prompts from documents or packs.'
     },
     {
-        index: '03',
-        title: '创作工作台',
-        description: '保留写作、作品、喜欢和个人数据入口，让知识生产有完整闭环。'
+        kicker: 'Project Debrief',
+        title: 'Generate project narratives.',
+        description: 'Draft architecture summaries, feature modules, resume bullets, and software copyright descriptions.'
+    },
+    {
+        kicker: 'Import Pipeline',
+        title: 'Bring in webpages and repositories.',
+        description: 'Prepare the workspace for URL, Markdown, Word, and GitHub repository imports in later releases.'
     }
 ]
-
 </script>
 
 <style scoped>
-.home-page {
+.workspace-page {
     width: 100%;
-    background: transparent;
     color: var(--text-primary);
 }
 
-.hero-section {
+.workspace-hero {
     width: var(--page-width);
-    min-height: calc(100vh - 96px);
+    min-height: calc(100vh - 112px);
     margin: 0 auto;
-    padding: 96px 0 56px;
+    padding: 72px 0 48px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
     align-items: center;
     gap: 48px;
 }
 
+.eyebrow,
+.feature-kicker,
+.step-index {
+    font-family: var(--font-mono);
+}
+
 .eyebrow {
     display: inline-flex;
     align-items: center;
-    height: 24px;
+    min-height: 24px;
     padding: 0 10px;
     border-radius: 9999px;
-    background: #ebf5ff;
-    color: #0068d6;
-    font-family: var(--font-mono);
+    background: var(--badge-bg);
+    color: var(--badge-fg);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .hero-copy h1 {
     margin: 18px 0 20px;
     color: var(--text-primary);
-    font-size: clamp(48px, 8vw, 88px);
-    font-weight: 600;
-    line-height: 0.96;
+    font-size: clamp(44px, 7vw, 84px);
+    font-weight: 650;
+    line-height: 0.98;
     letter-spacing: 0;
 }
 
 .hero-copy p {
-    max-width: 620px;
+    max-width: 660px;
     margin: 0;
     color: var(--text-secondary);
-    font-size: 20px;
-    line-height: 1.8;
+    font-size: 19px;
+    line-height: 1.75;
 }
 
 .hero-actions {
@@ -154,15 +192,16 @@ const features = [
 }
 
 .primary-action,
-.secondary-action {
+.secondary-action,
+.action-card {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
+    min-height: 40px;
     padding: 0 16px;
     border-radius: 10px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
@@ -176,25 +215,33 @@ const features = [
     background: var(--button-hover);
 }
 
-.secondary-action {
+.secondary-action,
+.action-card {
     color: var(--text-primary);
     background: var(--surface);
     box-shadow: var(--ring);
 }
 
-.secondary-action:hover {
+.secondary-action:hover,
+.action-card:hover {
     background: var(--surface-hover);
 }
 
-.console-card {
-    border-radius: 12px;
+.command-panel,
+.metric-card,
+.feature-panel,
+.quick-actions {
     background: var(--surface);
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
+}
+
+.command-panel {
     overflow: hidden;
 }
 
-.console-topbar {
-    height: 42px;
+.panel-topbar {
+    min-height: 42px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -202,14 +249,14 @@ const features = [
     box-shadow: var(--ring);
 }
 
-.console-topbar span {
+.panel-topbar span {
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background: var(--line);
 }
 
-.console-topbar strong {
+.panel-topbar strong {
     margin-left: auto;
     color: var(--text-muted);
     font-family: var(--font-mono);
@@ -217,92 +264,57 @@ const features = [
     font-weight: 500;
 }
 
-.console-body {
+.panel-body {
     padding: 24px;
-}
-
-.pipeline {
     display: grid;
     gap: 12px;
 }
 
-.pipeline-step {
-    min-height: 72px;
+.workflow-step {
     display: grid;
-    grid-template-columns: 12px 92px 1fr;
-    align-items: center;
+    grid-template-columns: 44px minmax(0, 1fr);
     gap: 14px;
-    padding: 0 14px;
+    padding: 16px;
     border-radius: 12px;
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
 
-.step-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.step-label {
-    color: var(--text-secondary);
-    font-family: var(--font-mono);
+.step-index {
+    color: var(--text-muted);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-.pipeline-step strong {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0;
+.workflow-step strong {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
 }
 
-.insight-panel {
-    margin-top: 16px;
-    padding: 18px;
-    border-radius: 12px;
-    color: var(--text-primary);
-    background: var(--surface-subtle);
-    box-shadow: var(--ring);
-}
-
-.insight-panel span {
-    color: var(--terracotta);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.insight-panel p {
-    margin: 8px 0 0;
+.workflow-step p {
+    margin: 6px 0 0;
     color: var(--text-secondary);
     font-size: 14px;
-    line-height: 1.7;
+    line-height: 1.6;
 }
 
 .metrics-row,
-.section-block {
+.workspace-grid,
+.quick-actions {
     width: var(--page-width);
     margin: 0 auto;
-    padding: 56px 0;
 }
 
 .metrics-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    padding-top: 0;
-}
-
-.metric-card,
-.feature-card,
-.cta-section {
-    background: var(--surface);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
+    padding-bottom: 56px;
 }
 
 .metric-card {
-    min-height: 128px;
+    min-height: 124px;
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -310,10 +322,9 @@ const features = [
 }
 
 .metric-card strong {
-    font-size: 40px;
-    font-weight: 600;
+    font-size: 38px;
+    font-weight: 700;
     line-height: 1;
-    letter-spacing: 0;
 }
 
 .metric-card span {
@@ -321,131 +332,140 @@ const features = [
     font-size: 14px;
 }
 
-.section-heading {
-    max-width: 760px;
-    margin-bottom: 32px;
-}
-
-.section-heading h2,
-.cta-section h2 {
-    margin: 14px 0 0;
-    color: var(--text-primary);
-    font-size: clamp(32px, 5vw, 48px);
-    font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: 0;
-}
-
-.feature-grid {
+.workspace-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
+    padding-bottom: 56px;
 }
 
-.feature-card {
+.feature-panel {
+    min-height: 260px;
     padding: 24px;
 }
 
-.feature-index {
-    font-family: var(--font-mono);
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 500;
+.feature-panel-large {
+    grid-column: span 2;
+    grid-row: span 2;
 }
 
-.feature-card h3 {
-    margin: 18px 0 10px;
-    color: var(--text-primary);
+.feature-panel h2,
+.quick-actions h2 {
+    margin: 14px 0 14px;
+    font-size: clamp(32px, 5vw, 50px);
+    font-weight: 650;
+    line-height: 1.05;
+}
+
+.feature-panel h3 {
+    margin: 16px 0 10px;
     font-size: 24px;
-    font-weight: 600;
-    line-height: 1.25;
-    letter-spacing: 0;
+    font-weight: 650;
+    line-height: 1.2;
 }
 
-.feature-card p {
+.feature-panel p,
+.quick-actions p {
     margin: 0;
     color: var(--text-secondary);
     font-size: 15px;
     line-height: 1.7;
 }
 
-.cta-section {
-    width: var(--page-width);
-    margin: 56px auto 80px;
-    padding: 48px 0;
-    text-align: center;
+.feature-kicker {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-.cta-section h2 {
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 28px;
+.pack-preview {
+    margin-top: 26px;
+    display: grid;
+    gap: 10px;
+}
+
+.pack-row {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+}
+
+.pack-row span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-@media (max-width: 980px) {
-    .hero-section {
-        grid-template-columns: 1fr;
-        min-height: auto;
-        padding-top: 72px;
-    }
+.pack-row strong {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
 
-    .console-card {
-        max-width: 640px;
-    }
+.quick-actions {
+    margin-bottom: 80px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 32px;
+}
 
-    .feature-grid {
-        grid-template-columns: 1fr;
+.quick-actions h2 {
+    max-width: 720px;
+    margin-bottom: 0;
+}
+
+.action-list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 1100px) {
+    .workspace-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 680px) {
-    .hero-section,
-    .metrics-row,
-    .section-block {
-        padding-left: 0;
-        padding-right: 0;
+@media (max-width: 900px) {
+    .workspace-hero,
+    .quick-actions {
+        grid-template-columns: 1fr;
     }
 
-    .metrics-row {
+    .workspace-hero {
+        min-height: auto;
+        padding-top: 56px;
+    }
+
+    .action-list {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .metrics-row,
+    .workspace-grid {
         grid-template-columns: 1fr;
+    }
+
+    .feature-panel-large {
+        grid-column: span 1;
     }
 
     .hero-copy h1 {
-        letter-spacing: 0;
-    }
-
-    .hero-copy p {
-        font-size: 17px;
-        line-height: 1.7;
-    }
-
-    .cta-section h2 {
-        white-space: normal;
-    }
-
-    .pipeline-step {
-        grid-template-columns: 12px 1fr;
-    }
-
-    .pipeline-step strong {
-        grid-column: 2;
+        font-size: clamp(38px, 14vw, 58px);
     }
 }
-
-:where(h1, h2, h3) {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: 0;
-}
-
-:where(p, li, small) {
-    line-height: 1.6;
-}
-
-:where(button, .el-button, a) {
-    letter-spacing: 0;
-}
-
 </style>

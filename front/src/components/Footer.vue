@@ -4,19 +4,20 @@
             <div class="footer-brand">
                 <span class="footer-mark" aria-hidden="true"></span>
                 <div>
-                    <h2>智汇博客</h2>
-                    <p>面向开发者的 AI 知识创作与阅读工作台。</p>
+                    <h2>ContextForge</h2>
+                    <p>Open-source AI context workspace for documents, packs, prompts, and reusable knowledge.</p>
                 </div>
             </div>
 
             <div class="footer-links">
-                <a href="https://lindablog.xyz" target="_blank" rel="noopener noreferrer">线上站点</a>
-                <router-link to="/essays">文章库</router-link>
-                <router-link to="/ai-center">AI 中心</router-link>
+                <router-link to="/">Workspace</router-link>
+                <router-link to="/essays">Knowledge Base</router-link>
+                <router-link to="/context-packs">Context Packs</router-link>
+                <router-link to="/ai-center">AI Workspace</router-link>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© 2026 智汇博客</span>
+            <span>Copyright 2026 ContextForge</span>
             <span class="mono">VUE3 / FLASK / AI</span>
         </div>
     </footer>
@@ -51,8 +52,8 @@
     width: 32px;
     height: 32px;
     flex: 0 0 auto;
-    border-radius: 50%;
-    background: var(--terracotta);
+    border-radius: 8px;
+    background: var(--button-bg);
     box-shadow: var(--ring);
 }
 
@@ -60,11 +61,12 @@
     margin: 0;
     color: var(--text-primary);
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0;
 }
 
 .footer-brand p {
+    max-width: 560px;
     margin: 4px 0 0;
     color: var(--text-secondary);
     font-size: 14px;
@@ -74,11 +76,13 @@
 .footer-links {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 8px;
 }
 
 .footer-links a {
-    height: 34px;
+    min-height: 34px;
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -99,7 +103,6 @@
     color: var(--text-primary);
     background: var(--surface-hover);
 }
-
 
 .footer-bottom {
     width: var(--page-width);
@@ -126,7 +129,7 @@
     }
 
     .footer-links {
-        flex-wrap: wrap;
+        justify-content: flex-start;
     }
 }
 
@@ -137,19 +140,4 @@
         gap: 8px;
     }
 }
-
-:where(h1, h2, h3) {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: 0;
-}
-
-:where(p, li, small) {
-    line-height: 1.6;
-}
-
-:where(button, .el-button, a) {
-    letter-spacing: 0;
-}
-
 </style>
