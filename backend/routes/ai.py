@@ -1,5 +1,5 @@
 # routes/ai.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response, stream_with_context
 import os
 from openai import OpenAI
 from typing import Dict, List, Optional
@@ -27,6 +27,34 @@ SUPPORTED_MODELS = {
         'models': ['deepseek-chat']
     }
 }
+
+def get_active_ai_config():
+    active_config = None
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT * FROM ai_configs WHERE is_active = 1 LIMIT 1")).mappings().fetchone()
+            if result:
+                active_config = dict(result)
+    except Exception as e:
+        print(f"Error fetching active config: {e}")
+
+    if not active_config:
+        active_config = {
+            'provider': 'volcano',
+            'api_key': os.environ.get('ARK_API_KEY', ''),
+            'base_url': 'https://ark.cn-beijing.volces.com/api/v3',
+            'model': 'ep-20260125005850-g97x2',
+            'system_prompt': 'You are a helpful assistant.'
+        }
+
+    return active_config
+
+def format_sse_event(payload):
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+def trim_context(user_id):
+    if len(context_store[user_id]) > 20:
+        context_store[user_id] = context_store[user_id][0:1] + context_store[user_id][-18:]
 
 @ai_bp.route('/api/ai/chat', methods=['POST'])
 def chat():
@@ -135,6 +163,104 @@ def chat():
         
     except Exception as e:
         return jsonify({'status': 1, 'msg': f'请求失败: {str(e)}'}), 500
+
+@ai_bp.route('/api/ai/chat/stream', methods=['POST'])
+def chat_stream():
+    data = request.get_json() or {}
+    user_id = data.get('user_id', 'default')
+    message = data.get('message')
+    reset_context = data.get('reset_context', False)
+    active_config = get_active_ai_config()
+
+    model_provider = data.get('model_provider', active_config.get('provider'))
+    model_name = data.get('model_name', active_config.get('model'))
+    system_prompt = data.get('system_prompt', active_config.get('system_prompt'))
+    api_key = active_config.get('api_key')
+    base_url = active_config.get('base_url')
+    temperature = data.get('temperature', 0.3)
+    max_tokens = data.get('max_tokens', 500)
+
+    if reset_context:
+        context_store[user_id] = []
+
+    def generate():
+        if reset_context and not message:
+            yield format_sse_event({
+                'type': 'done',
+                'message': '上下文已重置',
+                'context_length': 0,
+                'model_used': model_name,
+                'provider_used': model_provider
+            })
+            return
+
+        if not message:
+            yield format_sse_event({'type': 'error', 'message': '消息不能为空'})
+            return
+
+        if not api_key:
+            yield format_sse_event({'type': 'error', 'message': '未配置有效的 API Key，请联系管理员配置 AI'})
+            return
+
+        if user_id not in context_store or reset_context:
+            context_store[user_id] = [
+                {"role": "system", "content": system_prompt}
+            ]
+
+        context_store[user_id].append({"role": "user", "content": message})
+        assistant_reply = ''
+
+        try:
+            client = OpenAI(
+                base_url=base_url,
+                api_key=api_key
+            )
+
+            yield format_sse_event({
+                'type': 'start',
+                'model_used': model_name,
+                'provider_used': model_provider
+            })
+
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=context_store[user_id],
+                stream=True,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+
+            for chunk in response:
+                if not chunk.choices:
+                    continue
+
+                delta = chunk.choices[0].delta.content
+                if not delta:
+                    continue
+
+                assistant_reply += delta
+                yield format_sse_event({
+                    'type': 'delta',
+                    'content': delta
+                })
+
+            context_store[user_id].append({"role": "assistant", "content": assistant_reply})
+            trim_context(user_id)
+
+            yield format_sse_event({
+                'type': 'done',
+                'context_length': len(context_store[user_id]),
+                'model_used': model_name,
+                'provider_used': model_provider
+            })
+        except Exception as e:
+            yield format_sse_event({'type': 'error', 'message': f'请求失败: {str(e)}'})
+
+    headers = {
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no'
+    }
+    return Response(stream_with_context(generate()), mimetype='text/event-stream', headers=headers)
 
 @ai_bp.route('/api/ai/generate-article', methods=['POST'])
 def generate_article():

@@ -1,0 +1,23 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vitejs.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+[33mbuild.terserOptions is specified but build.minify is not set to use Terser. Note Vite now defaults to use esbuild for minification. If you still prefer Terser, set build.minify to "terser".[39m
+[2m17:16:19[22m [31m[1m[vite][22m[39m Pre-transform error: Failed to load url /src/lang/zh.js (resolved id: C:/Users/EDY/Desktop/个人/AI-Vue3-python-flask-Blog/avue-cli/src/lang/zh.js) in C:/Users/EDY/Desktop/个人/AI-Vue3-python-flask-Blog/avue-cli/src/lang/index.js. Does the file exist?
+[2m17:33:12[22m [31m[1m[vite][22m[39m [31mInternal server error: Duplicate attribute.[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/EDY/Desktop/个人/AI-Vue3-python-flask-Blog/avue-cli/src/page/index/top/index.vue[39m:4:102
+[33m  2  |    <div class="avue-top">
+  3  |      <div class="top-bar__left">
+  4  |        <div class="avue-breadcrumb"`r`n           :class="[{ 'avue-breadcrumb--active': isCollapse }]"`r`n           v-if="setting.collapse&&!isHorizontal"`r`n           @click="setCollapse">`r`n        <i class="icon-navicon"></i>
+     |                                                                                                        ^
+  5  |        </div>
+  6  |      </div>[39m
+      at createCompilerError (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1329:17)
+      at emitError (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2822:5)
+      at Object.onattribnameend (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2303:7)
+      at Tokenizer.handleAttrNameEnd (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:876:14)
+      at Tokenizer.stateInAttrName (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:816:12)
+      at Tokenizer.parse (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1067:16)
+      at Object.baseParse (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2861:13)
+      at Object.parse (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:707:23)
+      at Object.parse$2 [as parse] (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1853:24)
+      at createDescriptor (C:\Users\EDY\Desktop\个人\AI-Vue3-python-flask-Blog\avue-cli\node_modules\@vitejs\plugin-vue\dist\index.cjs:86:43)
+[2m17:34:27[22m [31m[1m[vite][22m[39m Pre-transform error: Failed to load url /src/page/index/top/index.vue (resolved id: C:/Users/EDY/Desktop/个人/AI-Vue3-python-flask-Blog/avue-cli/src/page/index/top/index.vue) in C:/Users/EDY/Desktop/个人/AI-Vue3-python-flask-Blog/avue-cli/src/page/index/index.vue. Does the file exist?

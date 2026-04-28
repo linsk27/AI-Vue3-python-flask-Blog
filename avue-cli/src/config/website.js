@@ -2,10 +2,10 @@
  * 全局配置文件
  */
 export default {
-    title: '智汇云',
+    title: '智汇管理台',
     logo: 'AI',
     key: 'ai-admin', //配置主键,目前用于存储
-    indexTitle: '智汇 • 博客管理系统',
+    indexTitle: '智汇 Ops Console',
     tokenTime: 6000, //token过期时间
     Authorization: 'Authorization',
     //http的status默认放行不才用统一处理的,
@@ -22,10 +22,10 @@ export default {
         screenshot: true,
         fullscren: true,
         theme: true,
-        menu: true
+        menu: false
     },
     fistPage: {
-        name: '首页',
+        name: '工作台',
         path: '/wel/index'
     },
     //配置菜单的属性

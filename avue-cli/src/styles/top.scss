@@ -1,13 +1,14 @@
 .avue-top {
     position: relative;
-    background-color: #fff;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
-    color: rgba(0, 0, 0, .65);
-    font-size: 28px;
+    background-color: #ffffff;
+    box-shadow: inset 0 -1px 0 #dce2ea;
+    color: #4c5563;
+    font-size: 14px;
     height: $top_height;
-    line-height: $top_height;
     box-sizing: border-box;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
     .el-menu-item{
         i,span{
             font-size: 13px;
@@ -15,9 +16,25 @@
     }
 }
 .avue-breadcrumb {
-    height: 100%;
+    width: 42px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #4c5563;
+    border-radius: 6px;
+    font: inherit;
+    transition: background .18s ease, color .18s ease;
     i{
         font-size: 30px !important;
+    }
+    &:hover {
+        color: var(--admin-primary, var(--el-color-primary));
+        background: var(--admin-primary-soft, #edf3ff);
     }
     &--active {
         transform:rotate(90deg);
@@ -28,6 +45,7 @@
   margin-left: 20px;
   display: flex;
   align-items: center;
+  height: 100%;
   i{
     margin-left: 5px;
   }
@@ -40,11 +58,13 @@
 }
 
 .top-search {
-    line-height: $top_height;
+    height: $top_height;
     position: absolute !important;
-    right: 200px;
+    right: 330px;
     top:0;
-    width: 300px;
+    width: 260px;
+    display: flex;
+    align-items: center;
     .el-input__wrapper {
       font-size: 13px;
       border: none;
@@ -60,7 +80,7 @@
     height: 30px;
     border-radius: 100%;
     box-sizing: border-box;
-    border: 1px solid #eee;
+    border: 1px solid #dce2ea;
     vertical-align: middle;
 }
 
@@ -68,10 +88,12 @@
 .top-bar__right {
     height: $top_height;
     position: absolute;
-    margin-top: 2px;
     top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
     i{
-        line-height: $top_height;
+        line-height: 1;
     }
 }
 
@@ -87,7 +109,9 @@
 
 .top-bar__item {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     height: $top_height;
     margin:0 7px;
     font-size: 16px;
@@ -99,35 +123,43 @@
 
 .top-bar__title {
     height: 100%;
-    padding-left: 50px;
+    padding-left: 54px;
     box-sizing: border-box;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: inherit;
-    font-weight: 400;
+    font-size: 14px;
+    font-weight: 600;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.top-search {
+    pointer-events: auto;
 }
 
 .avue-logo {
   height: $top_height;
   line-height: $top_height;
-  background-color: #031527;
+  background-color: #111827;
   font-size: 20px;
   overflow: hidden;
   box-sizing: border-box;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .08);
   color: #fff;
   &_title {
     display: block;
     text-align: center;
-    font-weight: bold;
-    font-size: 20px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0;
   }
   &_subtitle {
     display: block;
     text-align: center;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 700;
     color: #fff;
   }
 }

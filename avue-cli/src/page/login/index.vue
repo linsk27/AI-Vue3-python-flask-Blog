@@ -6,15 +6,28 @@
     </div>
     <div class="login-weaper">
       <div class="login-left animate__animated animate__fadeInLeft">
-        <img class="img"
-             src="/img/logo.png"
-             alt="">
-        <p class="title">{{ $t('login.info') }}</p>
+        <div class="login-product-mark">AI</div>
+        <p class="title">智汇内容与 AI 配置控制台</p>
+        <p class="login-subtitle">集中管理用户、文章、权限与模型密钥。所有关键配置都会即时影响前台服务。</p>
+        <div class="login-feature-list">
+          <div class="login-feature-item">
+            <strong>内容运营</strong>
+            <span>文章、分类与发布状态统一维护</span>
+          </div>
+          <div class="login-feature-item">
+            <strong>权限管理</strong>
+            <span>后台访问与用户身份集中校验</span>
+          </div>
+          <div class="login-feature-item">
+            <strong>AI 服务</strong>
+            <span>模型密钥、启用状态与调用配置</span>
+          </div>
+        </div>
       </div>
       <div class="login-border animate__animated animate__fadeInRight">
         <div class="login-main">
           <p class="login-title">
-            {{ $t('login.title') }}{{website.title}}
+            管理员登录
             <top-lang></top-lang>
           </p>
           <userLogin v-if="activeName==='user'"></userLogin>

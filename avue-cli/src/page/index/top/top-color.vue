@@ -60,6 +60,9 @@ export default {
       const pre = "--el-color-primary";
       const el = document.documentElement;
       el.style.setProperty(pre, e);
+      el.style.setProperty("--admin-primary", e);
+      el.style.setProperty("--admin-primary-hover", this.getDarkColor(e, 0.16));
+      el.style.setProperty("--admin-primary-soft", this.getLightColor(e, 0.92));
       // 这里是覆盖原有颜色的核心代码
       for (let i = 1; i < 10; i += 1) {
         document.documentElement.style.setProperty(`${pre}-light-${i}`, `${this.getLightColor(e, i / 10)}`)

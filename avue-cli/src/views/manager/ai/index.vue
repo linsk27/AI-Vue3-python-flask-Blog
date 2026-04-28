@@ -1,5 +1,16 @@
 <template>
     <basic-container>
+        <div class="admin-page-head">
+            <div>
+                <span class="admin-eyebrow">AI Gateway</span>
+                <h1 class="admin-page-title">模型配置中心</h1>
+                <p class="admin-page-desc">管理前台 AI 对话、摘要和文章生成使用的 OpenAI 兼容接口配置。</p>
+            </div>
+            <div class="admin-status-note">
+                同一时间只应启用一个配置。启用后，新的 AI 请求会立即读取该模型与密钥。
+            </div>
+        </div>
+
         <avue-crud :option="option" :table-loading="loading" :data="data" @on-load="onLoad"
             @search-change="searchChange" @search-reset="searchReset" @row-save="rowSave"
             @row-update="rowUpdate" @row-del="rowDel" @refresh-change="refreshChange" ref="crud">
@@ -18,7 +29,7 @@ import option from "@/option/manager/ai";
 export default {
     data() {
         return {
-            option: option,
+            option,
             data: [],
             loading: false
         };
@@ -27,9 +38,7 @@ export default {
         onLoad(page, params = {}) {
             this.loading = true;
             getList(params).then(res => {
-                const data = res.data.data;
-                // 直接赋值，后端返回的数据已经包含了 id
-                this.data = data;
+                this.data = res.data.data;
                 this.loading = false;
             }).catch(() => {
                 this.loading = false;
@@ -37,7 +46,7 @@ export default {
         },
         rowSave(row, done, loading) {
             add(row).then(() => {
-                this.$message.success('新增成功');
+                this.$message.success('模型配置已新增');
                 done();
                 this.onLoad();
             }).catch(() => {
@@ -46,7 +55,7 @@ export default {
         },
         rowUpdate(row, index, done, loading) {
             update(row).then(() => {
-                this.$message.success('修改成功');
+                this.$message.success('模型配置已更新');
                 done();
                 this.onLoad();
             }).catch(() => {
@@ -54,30 +63,26 @@ export default {
             });
         },
         rowDel(row) {
-            this.$confirm('确定删除该配置?', {
-                confirmButtonText: '确定',
+            this.$confirm('删除后该模型配置将不可恢复，确认继续？', {
+                confirmButtonText: '删除配置',
                 cancelButtonText: '取消',
                 type: 'warning'
             })
+                .then(() => del(row))
                 .then(() => {
-                    return del(row);
-                })
-                .then(() => {
-                    this.$message.success('删除成功');
+                    this.$message.success('模型配置已删除');
                     this.onLoad();
                 });
         },
         handleStatusChange(row) {
-            // 乐观更新，如果只有这一行是启用的
             if (row.is_active === 0) {
                 update({ id: row.id, is_active: 0 }).then(() => {
-                    this.$message.success('已禁用');
+                    this.$message.success('配置已停用');
                     this.onLoad();
                 });
             } else {
-                // 启用
                 activate(row.id).then(() => {
-                    this.$message.success('已启用');
+                    this.$message.success('配置已启用');
                     this.onLoad();
                 });
             }

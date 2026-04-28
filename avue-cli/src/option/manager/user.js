@@ -8,6 +8,9 @@ export default {
     index: true,
     viewBtn: true,
     selection: true,
+    menuWidth: 176,
+    menuAlign: 'center',
+    menuHeaderAlign: 'center',
     dialogClickModal: false,
     column: [
         {

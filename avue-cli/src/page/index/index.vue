@@ -1,9 +1,10 @@
 <template>
   <div class="avue-contail"
-       :class="{'avue--collapse':isCollapse,}">
+       :class="{'avue--collapse':isCollapse, 'avue--sidebar-open': isCollapse}">
     <div class="avue-layout"
          :class="{'avue-layout--horizontal':isHorizontal}">
       <div class="avue-sidebar"
+           :class="{'avue-sidebar--open': isCollapse}"
            v-show="validSidebar">
         <!-- 左侧导航栏 -->
         <logo />
@@ -27,7 +28,7 @@
           </router-view>
         </div>
         <div class="avue-footer">
-          <p class="copyright">© 2018-2021 Avue designed by smallwei</p>
+          <p class="copyright">智汇管理台 · Operations Console</p>
         </div>
       </div>
     </div>
@@ -64,11 +65,14 @@ export default {
   computed: {
     ...mapGetters(["isHorizontal", "isRefresh", "isLock", "isCollapse", "isSearch", "menu", "setting",]),
     validSidebar () {
-      return !((this.$route.meta || {}).menu == false || (this.$route.query || {}).menu == 'false')
+      return (this.$route.query || {}).menu !== 'false'
     }
   },
   props: [],
   methods: {
+    toggleSidebar () {
+      this.$store.commit("SET_COLLAPSE");
+    },
     //打开菜单
     openMenu (item = {}) {
       this.$store.dispatch("GetMenu", item.parentId).then(data => {

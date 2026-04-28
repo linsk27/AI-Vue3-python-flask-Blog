@@ -44,15 +44,11 @@
                     :aria-label="`${msg.role === 'user' ? '用户' : 'AI'}消息`">
                     <div class="message-content">
                         <div v-if="msg.role === 'user'" class="message-text">{{ msg.content }}</div>
-                        <div v-else class="message-text markdown-content" v-html="renderMarkdown(msg.content)"></div>
-                        <div class="message-time" aria-label="发送时间">{{ formatTime(msg.timestamp) }}</div>
-                    </div>
-                </div>
-                <div v-if="isLoading" class="chat-message ai">
-                    <div class="message-content">
-                        <div class="typing-indicator">
+                        <div v-else-if="!msg.content && isLoading && i === messages.length - 1" class="typing-indicator inline-typing">
                             <span></span><span></span><span></span>
                         </div>
+                        <div v-else class="message-text markdown-content" v-html="renderMarkdown(msg.content)"></div>
+                        <div class="message-time" aria-label="发送时间">{{ formatTime(msg.timestamp) }}</div>
                     </div>
                 </div>
             </div>
@@ -138,102 +134,67 @@ const aiChatStore = useAiChatStore();
 const globalStore = useGlobalStore();
 
 // 调用真实的AI接口
-async function askAi(content: string): Promise<string> {
-    try {
-        const requestData: AIChatRequest = {
-            message: content,
-            user_id: globalStore.userInfo?.id?.toString() || "anonymous" // 从全局状态获取用户ID
-        };
-
-        const response = await aiChatService.sendMessage(requestData);
-
-        // 检查是否有回复内容
-        if (response.reply || response.data?.reply) {
-            return response.reply || response.data?.reply || "AI 没有返回有效回复";
-        } else {
-            throw new Error(response.msg || "AI 服务请求失败");
-        }
-    } catch (error: any) {
-        console.error("AI 接口调用失败:", error);
-
-        // 处理具体的错误类型
-        let errorMessage = 'AI服务暂时不可用，显示模拟回复';
-        if (error.response) {
-            // 服务器返回错误
-            const errorData = error.response.data;
-            if (errorData && errorData.msg) {
-                errorMessage = errorData.msg;
-            }
-
-            // 处理特定的错误状态码
-            switch (error.response.status) {
-                case 429:
-                    errorMessage = '请求频率过高，请稍后再试';
-                    break;
-                case 504:
-                    errorMessage = '请求超时，请稍后再试';
-                    break;
-                case 401:
-                    errorMessage = 'API密钥无效';
-                    break;
-                case 400:
-                    errorMessage = '请求格式错误';
-                    break;
-            }
-        }
-
-        // 使用模拟响应作为fallback
-        return generateResponse(content);
-    }
-}
-
-// 生成模拟AI响应
-function generateResponse(content: string): string {
-    // 模拟不同类型问题的回复
-    const responses: Record<string, string> = {
-        '如何优化Vue3应用性能？': 'Vue3应用性能优化可以从以下几个方面入手：\n1. 使用Teleport优化DOM结构\n2. 合理使用KeepAlive缓存组件\n3. 使用虚拟列表处理大数据渲染\n4. 优化图片加载策略\n5. 合理使用计算属性和监听器\n6. 避免不必要的响应式数据',
-        '介绍一下智能知识库平台的功能？': '智能知识库平台是一个集成了AI技术的现代化知识管理系统，主要功能包括：\n1. 富文本编辑与知识发布\n2. 多维分类与标签系统\n3. 智能AI助手（选中文本右键呼出）\n4. 全局AI聊天功能\n5. AI辅助摘要生成\n6. 数据可视化看板\n7. 基于角色的权限管理',
-        '如何使用AI智能摘要功能？': '使用AI智能摘要功能非常简单：\n1. 进入智能AI中心的摘要页面\n2. 粘贴或上传您需要生成摘要的文章\n3. 点击"生成摘要"按钮\n4. 等待AI处理完成，即可获取结构清晰的摘要\n5. 您可以根据需要调整摘要内容或重新生成'
+async function askAi(content: string, aiMessageIndex: number) {
+    const requestData: AIChatRequest = {
+        message: content,
+        user_id: globalStore.userInfo?.id?.toString() || "anonymous"
     };
 
-    // 返回匹配的回复或默认回复
-    return responses[content] || `这是AI对"${content}"的回复。在实际项目中，这里会调用真实的LLM API来获取智能回答。`;
+    await aiChatService.sendMessageStream(requestData, {
+        onDelta: async (delta) => {
+            messages.value[aiMessageIndex].content += delta;
+            await nextTick(() => {
+                scrollToBottom();
+            });
+        },
+        onError: (errorMessage) => {
+            if (!messages.value[aiMessageIndex].content) {
+                messages.value[aiMessageIndex].content = errorMessage;
+            }
+        }
+    });
+}
+
+function generateResponse(content: string): string {
+    const responses: Record<string, string> = {
+        '如何优化Vue3应用性能？': 'Vue3 应用性能优化可以从组件拆分、KeepAlive 缓存、虚拟列表、图片加载策略、计算属性缓存和减少不必要的响应式数据几方面入手。',
+        '介绍一下智能知识库平台的功能？': '智能知识库平台通常包含富文本发布、多维分类标签、AI 助手、全局聊天、摘要生成、数据看板和权限管理等能力。',
+        '如何使用AI智能摘要功能？': '进入智能 AI 中心的摘要页面，粘贴需要处理的文章，设置摘要长度后点击生成即可。生成后可以继续编辑或重新生成。'
+    };
+
+    return responses[content] || `我理解你想处理“${content}”。可以先告诉我目标、读者和期望输出格式，我会继续帮你整理。`;
 }
 
 async function send() {
     const content = input.value.trim();
     if (!content || isLoading.value) return;
 
-    // 添加用户消息
     messages.value.push({ role: "user", content, timestamp: new Date() });
     input.value = "";
 
-    // 滚动到底部
     await nextTick(() => {
         scrollToBottom();
     });
 
-    // 显示加载状态
     isLoading.value = true;
+    const aiMessageIndex = messages.value.length;
+    messages.value.push({ role: "ai", content: "", timestamp: new Date() });
 
     try {
-        // AI 回复
-        const reply = await askAi(content);
-        messages.value.push({ role: "ai", content: reply, timestamp: new Date() });
+        await askAi(content, aiMessageIndex);
     } catch (error) {
-        messages.value.push({
-            role: "ai",
-            content: "抱歉，AI服务暂时不可用，请稍后重试。",
-            timestamp: new Date()
-        });
+        console.error("AI stream request failed:", error);
+        messages.value[aiMessageIndex].content = generateResponse(content);
     } finally {
+        if (!messages.value[aiMessageIndex].content) {
+            messages.value[aiMessageIndex].content = "AI 回复失败";
+        }
         isLoading.value = false;
         await nextTick(() => {
             scrollToBottom();
         });
     }
 }
-
 function scrollToBottom() {
     messagesRef.value?.scrollTo({
         top: messagesRef.value.scrollHeight,
@@ -519,7 +480,7 @@ onBeforeUnmount(() => {
 
 .message-content {
     max-width: 86%;
-    padding: 13px 15px;
+    padding: 15px 20px;
     border-radius: 16px;
     word-break: break-word;
     box-shadow: var(--ring);
@@ -725,6 +686,7 @@ textarea::-webkit-scrollbar {
 
     .message-content {
         max-width: 90%;
+        padding: 14px 18px;
     }
 }
 </style>

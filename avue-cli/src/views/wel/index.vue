@@ -43,9 +43,7 @@
       </div>
     </div>
   </div>
-  <basic-container>
-    <dashboard></dashboard>
-  </basic-container>
+  <dashboard></dashboard>
 </template>
 
 <script>
@@ -67,12 +65,15 @@ export default {
 <style scoped="scoped" lang="scss">
 .wel {
   &__header {
-    padding: 25px 40px;
-    border-bottom: 1px solid #e8e8e8;
-    background-color: #fff;
+    margin-bottom: 14px;
+    padding: 24px;
+    border-radius: 6px;
+    background: var(--admin-surface);
+    box-shadow: var(--admin-shadow);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
   }
   &__info {
     display: flex;
@@ -91,35 +92,36 @@ export default {
     &-content {
       position: relative;
       margin-left: 24px;
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--admin-ink-soft);
       line-height: 22px;
     }
     &-title {
       font-size: 20px;
       line-height: 28px;
-      font-weight: 500;
-      color: rgba(0, 0, 0, 0.85);
+      font-weight: 700;
+      color: var(--admin-ink);
       margin-bottom: 12px;
     }
     &-subtitle {
       position: relative;
       font-size: 14px;
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--admin-muted);
       line-height: 22px;
     }
   }
   &__extra {
+    display: flex;
+    align-items: center;
     &-item {
       position: relative;
-      padding: 0 32px;
-      display: inline-block;
+      padding: 0 24px;
       &:last-child {
         &::after {
           display: none;
         }
       }
       &:after {
-        background-color: #e8e8e8;
+        background-color: var(--admin-line);
         position: absolute;
         top: 30px;
         right: 0;
@@ -129,19 +131,37 @@ export default {
       }
     }
     &-title {
-      color: rgba(0, 0, 0, 0.45);
+      color: var(--admin-muted);
       font-size: 14px;
       line-height: 22px;
       margin-bottom: 4px;
     }
     &-subtitle {
-      color: rgba(0, 0, 0, 0.85);
-      font-size: 30px;
+      color: var(--admin-ink);
+      font-size: 26px;
       line-height: 38px;
       margin: 0;
       span {
-        color: rgba(0, 0, 0, 0.45);
+        color: var(--admin-muted);
         font-size: 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .wel {
+    &__header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    &__extra {
+      width: 100%;
+      justify-content: space-between;
+
+      &-item {
+        padding: 0 16px 0 0;
       }
     }
   }

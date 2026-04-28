@@ -4,11 +4,18 @@
       top:0;
       left: -265px;
       z-index:1024;
+      width: $sidebar_width;
+      min-width: $sidebar_width;
+      flex: 0 0 $sidebar_width;
     }
-    .avue--collapse{
-      .avue-sidebar{
+    .avue--collapse,
+    .avue--sidebar-open {
+      .avue-sidebar,
+      .avue-sidebar--open{
         left:0;
         width: $sidebar_width;
+        min-width: $sidebar_width;
+        flex-basis: $sidebar_width;
       }   
       .avue-logo{
         width: $sidebar_width;

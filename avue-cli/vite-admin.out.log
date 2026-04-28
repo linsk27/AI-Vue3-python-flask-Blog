@@ -1,0 +1,39 @@
+
+> avue-cli@3.0.0 dev
+> vite --host --host 127.0.0.1
+
+
+  [32m[1mVITE[22m v5.2.12[39m  [2mready in [0m[1m504[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5001[22m/[39m
+[2m17:12:36[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:12:50[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:13:00[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:13:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:13:27[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/config/website.js[22m
+[2m17:13:35[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/login/index.vue[22m
+[2m17:13:46[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:14:17[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/login/userlogin.vue[22m
+[2m17:14:36[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/option/manager/ai.js[22m
+[2m17:14:58[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/option/manager/ai.js[22m
+[2m17:15:29[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/manager/ai/index.vue[22m
+[2m17:15:35[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/manager/ai/index.vue[22m
+[2m17:15:55[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/manager/ai/index.vue[22m
+[2m17:16:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/index/index.vue[22m
+[2m17:16:19[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/lang/zh.js[22m
+[2m17:16:41[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/lang/zh.js[22m
+[2m17:16:55[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/wel/index.vue?vue&type=style&index=0&scoped=3d3ab72b&lang.scss[22m
+[2m17:29:58[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/index/top/index.vue[22m
+[2m17:30:07[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/index/top/index.vue[22m
+[2m17:30:13[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/config/website.js[22m
+[2m17:30:21[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:30:25[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/wel/dashboard.vue[22m
+[2m17:31:04[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/views/wel/dashboard.vue[22m
+[2m17:31:10[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/wel/index.vue[22m
+[2m17:31:19[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/views/wel/index.vue?vue&type=style&index=0&scoped=3d3ab72b&lang.scss[22m
+[2m17:31:27[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:33:12[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/page/index/top/index.vue[22m
+[2m17:33:20[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m
+[2m17:34:27[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/page/index/top/index.vue[22m
+[2m17:34:49[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/page/index/top/index.vue[22m
+[2m17:34:54[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/styles/common.scss[22m

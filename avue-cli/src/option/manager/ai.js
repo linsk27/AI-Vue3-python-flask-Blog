@@ -8,6 +8,9 @@ export default {
     index: true,
     viewBtn: true,
     selection: false,
+    menuWidth: 176,
+    menuAlign: 'center',
+    menuHeaderAlign: 'center',
     dialogClickModal: false,
     rowKey: 'id',
     refreshBtn: true,
@@ -17,10 +20,14 @@ export default {
     addBtn: true,
     editBtn: true,
     delBtn: true,
-    dragHandler: false, // 禁用行拖拽
-    rowDrag: false, // 彻底禁用行拖拽
-    columnDrag: false, // 彻底禁用列拖拽
-    sortable: false, // 禁用排序
+    addTitle: '新增模型配置',
+    editTitle: '编辑模型配置',
+    viewTitle: '查看模型配置',
+    emptyText: '暂无模型配置。请新增并启用一个可用配置。',
+    dragHandler: false,
+    rowDrag: false,
+    columnDrag: false,
+    sortable: false,
     column: [
         {
             label: 'ID',
@@ -29,7 +36,7 @@ export default {
             display: false
         },
         {
-            label: '提供商',
+            label: '模型提供商',
             prop: 'provider',
             type: 'select',
             search: true,
@@ -40,13 +47,13 @@ export default {
             rules: [
                 {
                     required: true,
-                    message: '请选择提供商',
+                    message: '请选择模型提供商',
                     trigger: 'change'
                 }
             ]
         },
         {
-            label: '模型',
+            label: '模型名称',
             prop: 'model',
             search: true,
             rules: [
@@ -74,7 +81,7 @@ export default {
             label: 'API Key',
             prop: 'api_key_masked',
             display: false,
-            width: 150
+            width: 160
         },
         {
             label: 'Base URL',
@@ -94,25 +101,25 @@ export default {
             type: 'switch',
             value: 0,
             dicData: [
-                { label: '禁用', value: 0 },
+                { label: '停用', value: 0 },
                 { label: '启用', value: 1 }
             ],
             slot: true,
-            width: 100,
+            width: 110,
             align: 'center'
         },
         {
             label: '系统提示词',
             prop: 'system_prompt',
             type: 'textarea',
-            minRows: 3,
+            minRows: 4,
             hide: true,
             span: 24
         },
         {
             label: '创建时间',
             prop: 'created_at',
-            width: 160,
+            width: 170,
             display: false,
             addDisplay: false,
             editDisplay: false

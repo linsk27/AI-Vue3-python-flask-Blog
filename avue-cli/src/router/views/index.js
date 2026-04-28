@@ -6,7 +6,7 @@ export default [{
   redirect: '/wel/index',
   children: [{
     path: 'index',
-    name: '首页',
+    name: '工作台',
     meta: {
       i18n: 'dashboard'
     },
@@ -14,10 +14,9 @@ export default [{
       import( /* webpackChunkName: "views" */ '@/views/wel/index.vue')
   }, {
     path: 'more',
-    name: '控制台',
+    name: '运营概览',
     meta: {
-      i18n: 'more',
-      menu: false,
+      i18n: 'more'
     },
     component: () =>
       import( /* webpackChunkName: "views" */ '@/views/wel/dashboard.vue')
@@ -70,7 +69,7 @@ export default [{
   component: Layout,
   children: [{
     path: 'index',
-    name: '测试页面',
+    name: '调试工具',
     meta: {
       isTab: false
     },

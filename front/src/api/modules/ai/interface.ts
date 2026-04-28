@@ -32,6 +32,22 @@ export interface AIChatResponse {
     error?: string
 }
 
+export interface AIStreamPayload {
+    type: 'start' | 'delta' | 'done' | 'error'
+    content?: string
+    message?: string
+    context_length?: number
+    model_used?: string
+    provider_used?: string
+}
+
+export interface AIStreamHandlers {
+    onStart?: (payload: AIStreamPayload) => void
+    onDelta?: (content: string, payload: AIStreamPayload) => void
+    onDone?: (payload: AIStreamPayload) => void
+    onError?: (message: string, payload?: AIStreamPayload) => void
+}
+
 // AI 上下文响应数据接口
 export interface AIContextResponseData {
     context: ChatMessage[]

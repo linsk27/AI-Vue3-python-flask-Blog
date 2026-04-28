@@ -39,17 +39,12 @@
                         </div>
                         <div class="message-bubble">
                             <div v-if="item.role === 'user'" class="message-text">{{ item.content }}</div>
+                            <div v-else-if="!item.content && isLoading && index === messages.length - 1"
+                                class="typing-bubble inline-typing">
+                                <span></span><span></span><span></span>
+                            </div>
                             <div v-else class="message-text markdown-content" v-html="renderMarkdown(item.content)"></div>
-                            <button class="copy-btn" type="button" @click="copyMessage(item.content)">复制</button>
-                        </div>
-                    </div>
-                </article>
-
-                <article v-if="isLoading" class="chat-message ai loading-row">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <div class="message-bubble typing-bubble">
-                            <span></span><span></span><span></span>
+                            <button v-if="item.content" class="copy-btn" type="button" @click="copyMessage(item.content)">复制</button>
                         </div>
                     </div>
                 </article>
@@ -124,34 +119,36 @@ async function sendMessage() {
     inputMessage.value = ''
     await nextTick(scrollToBottom)
     isLoading.value = true
+    const aiMessageIndex = messages.value.length
+    messages.value.push({ role: 'ai', content: '', timestamp: new Date() })
 
     try {
-        const response = await aiChatService.sendMessage({ message: content, user_id: '123' })
-        messages.value.push({
-            role: 'ai',
-            content: response.reply || response.data?.reply || 'AI 回复失败',
-            timestamp: new Date()
+        await aiChatService.sendMessageStream({ message: content, user_id: '123' }, {
+            onDelta: async (delta) => {
+                messages.value[aiMessageIndex].content += delta
+                saveMessagesToStorage(messages.value)
+                await nextTick(scrollToBottom)
+            },
+            onError: (errorMessage) => {
+                if (!messages.value[aiMessageIndex].content) {
+                    messages.value[aiMessageIndex].content = errorMessage
+                }
+                message.warning(errorMessage)
+            }
         })
     } catch (error: any) {
         console.error('AI chat API failed:', error)
-        let errorMessage = 'AI 服务暂时不可用，已显示本地示例回复'
-        if (error.response) {
-            const errorData = error.response.data
-            if (errorData?.msg) errorMessage = errorData.msg
-            if (error.response.status === 429) errorMessage = '请求频率过高，请稍后再试'
-            if (error.response.status === 504) errorMessage = '请求超时，请稍后再试'
-            if (error.response.status === 401) errorMessage = 'API 密钥无效'
-            if (error.response.status === 400) errorMessage = '请求格式错误'
-        }
-        messages.value.push({ role: 'ai', content: await generateResponse(content), timestamp: new Date() })
-        message.warning(errorMessage)
+        messages.value[aiMessageIndex].content = await generateResponse(content)
+        message.warning('AI 服务暂时不可用，已显示本地示例回复')
     } finally {
+        if (!messages.value[aiMessageIndex].content) {
+            messages.value[aiMessageIndex].content = 'AI 回复失败'
+        }
         isLoading.value = false
         saveMessagesToStorage(messages.value)
         await nextTick(scrollToBottom)
     }
 }
-
 async function resetContext() {
     try {
         await aiChatService.sendMessage({ user_id: '123', reset_context: true })
@@ -431,7 +428,7 @@ onMounted(() => {
 .message-bubble {
     position: relative;
     max-width: min(760px, 100%);
-    padding: 14px 44px 14px 16px;
+    padding: 16px 58px 16px 22px;
     border-radius: 12px;
     background: var(--surface-subtle);
     color: var(--text-primary);
@@ -446,8 +443,8 @@ onMounted(() => {
 
 .copy-btn {
     position: absolute;
-    right: 8px;
-    top: 8px;
+    right: 12px;
+    top: 12px;
     height: 28px;
     padding: 0 8px;
     font-size: 12px;
@@ -577,6 +574,15 @@ onMounted(() => {
     .message-avatar {
         width: 34px;
         height: 34px;
+    }
+
+    .message-bubble {
+        padding: 14px 50px 14px 18px;
+    }
+
+    .copy-btn {
+        right: 10px;
+        top: 10px;
     }
 }
 

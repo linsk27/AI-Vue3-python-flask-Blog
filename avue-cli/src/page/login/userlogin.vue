@@ -71,15 +71,15 @@ export default {
             },
             loginRules: {
                 username: [
-                    { required: true, message: "请输入用户名", trigger: "blur" }
+                    { required: true, message: "请输入管理员账号", trigger: "blur" }
                 ],
                 password: [
-                    { required: true, message: "请输入密码", trigger: "blur" },
-                    { min: 5, message: "密码长度最少为5位", trigger: "blur" }
+                    { required: true, message: "请输入登录密码", trigger: "blur" },
+                    { min: 5, message: "密码长度不能少于 5 位", trigger: "blur" }
                 ],
                 code: [
                     { required: true, message: "请输入验证码", trigger: "blur" },
-                    { min: 4, max: 4, message: "验证码长度为4位", trigger: "blur" },
+                    { min: 4, max: 4, message: "验证码长度为 4 位", trigger: "blur" },
                     { required: true, trigger: "blur", validator: validateCode }
                 ]
             }
@@ -109,14 +109,14 @@ export default {
                         const userInfo = this.$store.getters.userInfo;
                         // 校验角色，如果不是管理员则禁止登录
                         if (userInfo && userInfo.role !== 'admin') {
-                            this.$message.error("只有管理员才能登录后台系统");
+                            this.$message.error("当前账号没有后台访问权限，请使用管理员账号登录");
                             this.$store.dispatch("LogOut");
                             return;
                         }
                         this.$router.push(this.tagWel);
                     }).catch(error => {
                         // 错误提示优化，使用后端返回的 msg
-                        const msg = error.response?.data?.msg || error.message || '登录失败';
+                        const msg = error.response?.data?.msg || error.message || '登录失败，请检查账号或服务状态';
                         this.$message.error(msg);
                     });
                 }

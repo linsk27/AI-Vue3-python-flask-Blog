@@ -1,6 +1,58 @@
 import request from '@/api'
-import { AI_CHAT_API, AI_CONTEXT_API, AI_SUMMARY_API } from './url.const'
-import type { AIChatRequest, AIChatResponse, AISummaryRequest, AISummaryResponse, AIContextResponse } from './interface'
+import { useGlobalStore } from '@/store'
+import { AI_CHAT_API, AI_CHAT_STREAM_API, AI_CONTEXT_API, AI_SUMMARY_API } from './url.const'
+import type { AIChatRequest, AIChatResponse, AISummaryRequest, AISummaryResponse, AIContextResponse, AIStreamHandlers, AIStreamPayload } from './interface'
+
+const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+const AppId = import.meta.env.VITE_APP_ID
+
+function getApiUrl(url: string) {
+    return `${baseURL}${url}`
+}
+
+function dispatchStreamPayload(payload: AIStreamPayload, handlers: AIStreamHandlers) {
+    if (payload.type === 'start') {
+        handlers.onStart?.(payload)
+        return
+    }
+
+    if (payload.type === 'delta') {
+        handlers.onDelta?.(payload.content || '', payload)
+        return
+    }
+
+    if (payload.type === 'done') {
+        handlers.onDone?.(payload)
+        return
+    }
+
+    if (payload.type === 'error') {
+        handlers.onError?.(payload.message || 'AI 服务请求失败', payload)
+    }
+}
+
+function parseSseChunk(chunk: string, handlers: AIStreamHandlers) {
+    const events = chunk.split('\n\n')
+    const rest = events.pop() || ''
+
+    events.forEach(eventText => {
+        const dataLines = eventText
+            .split('\n')
+            .filter(line => line.startsWith('data:'))
+            .map(line => line.replace(/^data:\s?/, ''))
+
+        if (!dataLines.length) return
+
+        try {
+            const payload = JSON.parse(dataLines.join('\n')) as AIStreamPayload
+            dispatchStreamPayload(payload, handlers)
+        } catch (error) {
+            console.error('Parse AI stream payload failed:', error)
+        }
+    })
+
+    return rest
+}
 
 /**
  * AI 聊天服务
@@ -13,6 +65,47 @@ export const aiChatService = {
      */
     sendMessage: (params: AIChatRequest) => {
         return request.post<AIChatResponse>(AI_CHAT_API, params)
+    },
+
+    sendMessageStream: async (params: AIChatRequest, handlers: AIStreamHandlers = {}) => {
+        const globalStore = useGlobalStore()
+        const response = await fetch(getApiUrl(AI_CHAT_STREAM_API), {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                Authorization: globalStore.token || '',
+                'APP-ID': AppId || '',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+        })
+
+        if (!response.ok || !response.body) {
+            const message = `AI 服务请求失败：${response.status}`
+            handlers.onError?.(message)
+            throw new Error(message)
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder('utf-8')
+        let buffer = ''
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                buffer += decoder.decode(value, { stream: true })
+                buffer = parseSseChunk(buffer, handlers)
+            }
+
+            buffer += decoder.decode()
+            if (buffer.trim()) {
+                parseSseChunk(`${buffer}\n\n`, handlers)
+            }
+        } finally {
+            reader.releaseLock()
+        }
     },
 
     /**

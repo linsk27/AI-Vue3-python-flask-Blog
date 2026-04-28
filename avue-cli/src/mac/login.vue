@@ -60,11 +60,14 @@ export default {
         }, 1000)
         return
       }
-      this.$store.dispatch("LoginByUsername", this.loginForm).then(() => {
+      this.$store.dispatch("LoginByUsername", { ...this.form }).then(() => {
         this.pass = true
         setTimeout(() => {
           this.$router.push(this.tagWel);
         }, 1000)
+      }).catch(error => {
+        const msg = error.response?.data?.msg || error.message || '登录失败，请检查账号或服务状态';
+        this.$message.error(msg);
       });
     }
   }

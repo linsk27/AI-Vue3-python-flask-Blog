@@ -64,6 +64,7 @@ import { mapGetters } from "vuex";
 import $Mode from './mode/index'
 import index from '@/mixins/index'
 import topLock from '@/page/index/top/top-lock.vue'
+import { isURL } from 'utils/validate'
 export default {
   mixins: [index],
   components: {
@@ -138,9 +139,17 @@ export default {
       }, 1000)
     },
     openApp (item) {
-      $Mode({
-        title: item[this.labelKey],
-        path: item[this.hrefKey] ? item[this.hrefKey] : item[this.pathKey]
+      const target = item[this.hrefKey] || item[this.pathKey]
+      if (!target) return
+
+      if (isURL(target)) {
+        window.open(target, '_blank')
+        return
+      }
+
+      this.$router.push({
+        path: target,
+        query: item[this.queryKey] || {}
       })
     }
   }

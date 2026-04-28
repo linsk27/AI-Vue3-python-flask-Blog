@@ -1,14 +1,13 @@
 .avue-sidebar {
   width: $sidebar_width;
+  min-width: $sidebar_width;
   height: 100%;
   user-select: none;
   position: relative;
-  height: 100%;
-  position: relative;
-  background-color: #031527;
-  transition: width .2s;
+  background: #111827;
+  transition: width .2s ease, min-width .2s ease, flex-basis .2s ease, left .2s ease;
   box-sizing: border-box;
-  box-shadow: 2px 0 6px rgba(0, 21, 41, .35);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .08);
 
   .el-scrollbar__wrap {
     overflow-x: hidden;
@@ -16,35 +15,50 @@
 
   .avue-menu {
     height: calc(100% - #{$top_height});
+    background: transparent;
   }
 
-  &--tip {
-    width: 90%;
-    height: 140px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    position: absolute;
-    top: 5px;
-    left: 5%;
-    color: #ccc;
-    z-index: 2;
-    text-align: center;
-    font-size: 14px;
-    background-color: rgba(0, 0, 0, .4);
+  .el-menu {
+    width: 100%;
+    background: transparent;
   }
 
   .el-menu-item,
   .el-sub-menu__title {
+    height: 42px;
+    margin: 4px 10px;
+    padding: 0 14px !important;
+    border-radius: 6px;
+    line-height: 42px;
+    color: rgba(255, 255, 255, .72);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    transition: background .18s ease, color .18s ease;
 
-    i,
+    i {
+      width: 20px;
+      margin-right: 0;
+      color: rgba(255, 255, 255, .6);
+      font-size: 17px !important;
+      text-align: center;
+      line-height: 1;
+      flex: 0 0 20px;
+    }
+
     span {
-      color: hsla(0, 0%, 100%, .7);
+      color: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     &:hover {
-      background: transparent;
+      background: rgba(255, 255, 255, .07);
+      color: #fff;
 
       i,
       span {
@@ -53,17 +67,19 @@
     }
 
     &.is-active {
+      background-color: rgba(21, 99, 255, .22);
+      color: #fff;
+
       &:before {
         content: '';
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 4px;
-        background: var(--el-color-primary);
         position: absolute;
+        top: 9px;
+        left: 0;
+        bottom: 9px;
+        width: 3px;
+        border-radius: 0 999px 999px 0;
+        background: var(--admin-primary, var(--el-color-primary));
       }
-
-      background-color: rgba(0, 0, 0, .8);
 
       i,
       span {
@@ -72,4 +88,57 @@
     }
   }
 
+  .el-sub-menu .el-menu {
+    padding: 2px 0 6px;
+  }
+
+  .el-sub-menu__icon-arrow {
+    margin-top: -6px;
+    right: 14px;
+    color: rgba(255, 255, 255, .45);
+  }
+
+  &--tip {
+    width: calc(100% - 20px);
+    min-height: 112px;
+    margin: 10px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, .68);
+    background-color: rgba(255, 255, 255, .06);
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.avue--collapse {
+  .avue-sidebar,
+  .avue-logo {
+    width: $sidebar_collapse;
+    min-width: $sidebar_collapse;
+    flex: 0 0 $sidebar_collapse;
+  }
+
+  .avue-sidebar {
+    .el-menu {
+      width: $sidebar_collapse;
+    }
+
+    .el-menu-item,
+    .el-sub-menu__title {
+      margin: 4px 8px;
+      padding: 0 !important;
+      justify-content: center;
+      gap: 0;
+
+      i {
+        margin: 0;
+      }
+    }
+  }
 }

@@ -51,6 +51,13 @@ a{
     .avue-sidebar,
     .avue-logo {
         width: $sidebar_collapse;
+        min-width: $sidebar_collapse;
+        flex: 0 0 $sidebar_collapse;
+    }
+
+    .avue-menu,
+    .el-menu--collapse {
+        width: $sidebar_collapse;
     }
 }
 
@@ -116,3 +123,5 @@ a{
 @import './media.scss';
 //滚动条样式
 @include scrollBar;
+
+@import './admin-design.scss';
