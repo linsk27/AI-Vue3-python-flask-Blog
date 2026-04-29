@@ -7,14 +7,23 @@ from routes.upload import upload_bp
 from routes.role import role_bp
 
 app = Flask(__name__)
-# 正确写法 ↓↓↓ 必须加 supports_credentials=True
-CORS(app, supports_credentials=True)
+
+# ================================
+# ✅ 【最正确跨域配置】
+# 只允许你的 Vercel 前端访问 + 支持凭证
+# ================================
+CORS(
+    app,
+    origins="https://ai-vue3-python-flask-blog.vercel.app",
+    supports_credentials=True
+)
 
 app.config['SECRET_KEY'] = 'your-very-secret-key-123!@#'
 
-# ======================================
-# 🔥 全局处理 OPTIONS（所有接口自动解决跨域）
-# ======================================
+# ================================
+# ✅ 全局处理 OPTIONS 预检
+# 所有接口通用，不用每个接口单独写
+# ================================
 @app.before_request
 def handle_options():
     if request.method == "OPTIONS":
