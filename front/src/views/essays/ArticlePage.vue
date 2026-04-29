@@ -2,7 +2,7 @@
     <div class="document-page">
         <div class="document-layout">
             <main class="document-main">
-                <button class="back-btn" @click="$router.back()">Back to Knowledge Base</button>
+                <button class="back-btn" @click="$router.back()">返回知识库</button>
 
                 <header class="document-header" v-if="article">
                     <div class="document-kicker">
@@ -11,12 +11,12 @@
                     </div>
                     <h1 class="document-title">{{ article.title }}</h1>
                     <div class="document-meta">
-                        <span v-if="article.created_at">Created {{ formatDate(article.created_at) }}</span>
-                        <span v-if="article.author_name">By {{ article.author_name }}</span>
-                        <span>{{ article.views || 0 }} views</span>
+                        <span v-if="article.created_at">创建于 {{ formatDate(article.created_at) }}</span>
+                        <span v-if="article.author_name">作者 {{ article.author_name }}</span>
+                        <span>{{ article.views || 0 }} 次浏览</span>
                         <button class="favorite-btn" type="button" @click="toggleLike" :class="{ 'is-liked': article.is_liked }">
                             <Star class="meta-icon" />
-                            <span>{{ article.likes || 0 }} favorites</span>
+                            <span>{{ article.likes || 0 }} 次收藏</span>
                         </button>
                     </div>
                     <div class="document-tags">
@@ -31,26 +31,26 @@
                         <component :is="activeComponent" />
                     </div>
                     <div v-else-if="article" class="document-html-content ql-editor" v-html="parsedContent"></div>
-                    <div v-else class="not-found">Document not found.</div>
+                    <div v-else class="not-found">文档不存在。</div>
                 </section>
 
                 <section class="discussion-section" v-if="article">
                     <div class="section-title">
-                        <h2>Discussion ({{ comments.length }})</h2>
+                        <h2>讨论 ({{ comments.length }})</h2>
                     </div>
 
                     <div class="comment-input-box">
-                        <textarea v-model="commentContent" placeholder="Add a note, question, or discussion point..." class="comment-textarea"></textarea>
+                        <textarea v-model="commentContent" placeholder="写下问题、补充说明或讨论内容..." class="comment-textarea"></textarea>
                         <div class="input-footer">
                             <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment">
-                                {{ submittingComment ? 'Submitting...' : 'Post Discussion' }}
+                                {{ submittingComment ? '提交中...' : '发布讨论' }}
                             </button>
                         </div>
                     </div>
 
                     <div class="comments-list">
                         <div v-if="comments.length === 0" class="no-comments">
-                            No discussion yet. Add the first context note.
+                            暂无讨论。写下第一条上下文备注吧。
                         </div>
                         <div v-for="comment in comments" :key="comment.id" class="comment-item">
                             <div class="comment-user-avatar">
@@ -73,52 +73,52 @@
 
             <aside class="ai-insight-panel" v-if="article && !loading">
                 <div class="insight-header">
-                    <span class="eyebrow">AI Insight</span>
-                    <h2>Reading Assistant</h2>
-                    <p>Generate reusable understanding from this document.</p>
+                    <span class="eyebrow">AI 洞察</span>
+                    <h2>阅读助手</h2>
+                    <p>从当前文档生成可复用的理解、摘要和问题。</p>
                 </div>
 
                 <div class="insight-actions">
                     <button type="button" @click="generateAiSummary" :disabled="isAiGenerating">
                         <DocumentChecked class="action-icon" />
-                        <span>{{ isAiGenerating ? 'Summarizing...' : 'Generate Summary' }}</span>
+                        <span>{{ isAiGenerating ? '摘要生成中...' : '生成摘要' }}</span>
                     </button>
                     <button type="button" @click="generateLocalKeywords">
                         <PriceTag class="action-icon" />
-                        <span>Extract Keywords</span>
+                        <span>提取关键词</span>
                     </button>
                     <button type="button" @click="generateLocalQuestions">
                         <QuestionFilled class="action-icon" />
-                        <span>Review Questions</span>
+                        <span>生成复习问题</span>
                     </button>
                     <router-link class="panel-link" to="/context-packs">
                         <FolderAdd class="action-icon" />
-                        <span>Add to Context Pack</span>
+                        <span>加入上下文包</span>
                     </router-link>
                     <router-link class="panel-link" to="/ai-center/chat">
                         <ChatDotRound class="action-icon" />
-                        <span>Ask in Context Chat</span>
+                        <span>进入上下文对话</span>
                     </router-link>
                 </div>
 
                 <div class="insight-block">
-                    <h3>Summary</h3>
+                    <h3>摘要</h3>
                     <div v-if="isAiGenerating" class="ai-loading">
                         <div class="spinner"></div>
-                        <p>AI is reading this document...</p>
+                        <p>AI 正在阅读这份文档...</p>
                     </div>
-                    <p v-else>{{ aiSummary || article.summary || 'Generate a summary to create a compact context note.' }}</p>
+                    <p v-else>{{ aiSummary || article.summary || '生成摘要后，这里会形成一段紧凑的上下文备注。' }}</p>
                 </div>
 
                 <div class="insight-block">
-                    <h3>Keywords</h3>
+                    <h3>关键词</h3>
                     <div class="keyword-list">
                         <span v-for="keyword in insightKeywords" :key="keyword">{{ keyword }}</span>
                     </div>
                 </div>
 
                 <div class="insight-block">
-                    <h3>Review Questions</h3>
+                    <h3>复习问题</h3>
                     <ol class="question-list">
                         <li v-for="question in insightQuestions" :key="question">{{ question }}</li>
                     </ol>
@@ -158,9 +158,9 @@ const aiSummary = ref('')
 const isAiGenerating = ref(false)
 const insightKeywords = ref<string[]>([])
 const insightQuestions = ref<string[]>([
-    'What is the main problem this document helps solve?',
-    'Which parts should be added to a context pack?',
-    'What follow-up action does this document suggest?'
+    '这份文档主要解决什么问题？',
+    '哪些部分最适合加入上下文包？',
+    '读完这份文档后下一步应该做什么？'
 ])
 
 marked.setOptions({
@@ -211,24 +211,24 @@ const slugifyType = (value?: string) => {
 }
 
 const typeLabels: Record<string, string> = {
-    note: 'Note',
-    'technical-doc': 'Technical Doc',
-    tutorial: 'Tutorial',
-    'project-record': 'Project Record',
-    paper: 'Paper',
-    idea: 'Idea'
+    note: '笔记',
+    'technical-doc': '技术文档',
+    tutorial: '教程',
+    'project-record': '项目记录',
+    paper: '论文',
+    idea: '灵感'
 }
 
 const statusLabels: Record<string, string> = {
-    published: 'Published',
-    draft: 'Draft',
-    organized: 'Organized',
-    reviewing: 'Reviewing',
-    archived: 'Archived'
+    published: '已发布',
+    draft: '草稿',
+    organized: '已整理',
+    reviewing: '待复习',
+    archived: '已归档'
 }
 
-const getDocumentTypeLabel = (item: IArticle) => typeLabels[slugifyType(item.resource_type || item.category)] || 'Document'
-const getDocumentStatusLabel = (item: IArticle) => statusLabels[item.document_status || item.status || 'published'] || 'Published'
+const getDocumentTypeLabel = (item: IArticle) => typeLabels[slugifyType(item.resource_type || item.category)] || '文档'
+const getDocumentStatusLabel = (item: IArticle) => statusLabels[item.document_status || item.status || 'published'] || '已发布'
 
 const fetchComments = async () => {
     const id = route.params.id as string
@@ -243,7 +243,7 @@ const fetchComments = async () => {
 
 const submitComment = async () => {
     if (!commentContent.value.trim()) {
-        message.warning('Please enter discussion content')
+        message.warning('请输入讨论内容')
         return
     }
 
@@ -251,12 +251,12 @@ const submitComment = async () => {
     submittingComment.value = true
     try {
         await articleApi.createComment(id, commentContent.value)
-        message.success('Discussion posted')
+        message.success('讨论已发布')
         commentContent.value = ''
         await fetchComments()
     } catch (error) {
         console.error('Failed to post discussion:', error)
-        message.error('Failed to post. Please sign in first.')
+        message.error('发布失败，请先登录')
     } finally {
         submittingComment.value = false
     }
@@ -272,7 +272,7 @@ const toggleLike = async () => {
         }
     } catch (error) {
         console.error('Favorite failed:', error)
-        message.error('Action failed. Please sign in first.')
+        message.error('操作失败，请先登录')
     }
 }
 
@@ -298,7 +298,7 @@ const generateAiSummary = async () => {
         const contentToSummarize = getReadableText()
 
         if (!contentToSummarize || contentToSummarize.length < 50) {
-            aiSummary.value = 'This document is too short for a useful AI summary.'
+            aiSummary.value = '这份文档内容较短，暂时无法生成有效摘要。'
             return
         }
 
@@ -316,7 +316,7 @@ const generateAiSummary = async () => {
         }
     } catch (error) {
         console.error('AI summary generation failed:', error)
-        message.error('Summary generation failed. Please try again later.')
+        message.error('摘要生成失败，请稍后重试')
     } finally {
         isAiGenerating.value = false
     }
@@ -337,9 +337,9 @@ const generateLocalKeywords = () => {
 const generateLocalQuestions = () => {
     if (!article.value) return
     insightQuestions.value = [
-        `What reusable context does "${article.value.title}" provide?`,
-        'Which parts should be packed with related documents?',
-        'What decision, explanation, or workflow should be extracted from this document?'
+        `《${article.value.title}》提供了哪些可复用上下文？`,
+        '哪些部分应该和相关文档一起打包？',
+        '这份文档中有什么决策、解释或流程值得提取？'
     ]
 }
 
@@ -357,7 +357,7 @@ onMounted(async () => {
             document_status: 'organized',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-            author_name: 'ContextForge Team',
+            author_name: '语境工坊团队',
             views: 0,
             likes: 0,
             content: ''
@@ -371,7 +371,7 @@ onMounted(async () => {
                 activeComponent.value = compModule.default || compModule
             } catch (err) {
                 console.error('Failed to load component:', err)
-                message.error('Component failed to load')
+                message.error('组件加载失败')
             }
         }
         loading.value = false
@@ -424,7 +424,7 @@ onMounted(async () => {
         }
     } catch (error) {
         console.error('Failed to load document:', error)
-        message.error('Failed to load document')
+        message.error('文档加载失败')
     } finally {
         loading.value = false
     }

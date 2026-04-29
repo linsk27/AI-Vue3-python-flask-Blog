@@ -2,13 +2,13 @@
     <div class="document-editor-page">
         <section class="editor-header">
             <div>
-                <span class="eyebrow">Document Studio</span>
+                <span class="eyebrow">文档工作室</span>
                 <h1>{{ pageTitle }}</h1>
-                <p>Capture source material, structure it clearly, and prepare it for context packs and AI reuse.</p>
+                <p>沉淀来源材料，补齐结构与元数据，让它可以被加入上下文包并被 AI 复用。</p>
             </div>
             <el-button class="ai-help-btn" @click="openAiDialog">
                 <Grid />
-                <span>AI Draft</span>
+                <span>AI 起草</span>
             </el-button>
         </section>
 
@@ -17,35 +17,34 @@
                 <div class="ai-dialog-header">
                     <span class="ai-dialog-mark">AI</span>
                     <div>
-                        <span class="ai-dialog-eyebrow">Draft Assistant</span>
-                        <h2>Generate a reusable knowledge document</h2>
+                        <span class="ai-dialog-eyebrow">草稿助手</span>
+                        <h2>生成一份可复用的知识文档</h2>
                     </div>
                 </div>
             </template>
             <div class="ai-dialog-content">
                 <p class="ai-tip">
-                    Describe the source, topic, or project context. AI will draft a document that you can edit, tag, and
-                    add to a context pack later.
+                    描述资料来源、主题或项目背景，AI 会生成一份可以继续编辑、打标签并加入上下文包的文档草稿。
                 </p>
                 <div class="ai-dialog-tags">
-                    <span>Structure</span>
-                    <span>Summary</span>
-                    <span>Tags</span>
+                    <span>结构</span>
+                    <span>摘要</span>
+                    <span>标签</span>
                 </div>
-                <label class="ai-input-label">Draft request</label>
+                <label class="ai-input-label">起草要求</label>
                 <el-input
                     v-model="aiTopic"
                     type="textarea"
                     :rows="6"
-                    placeholder="Example: Create a Vue 3 Composition API note with core concepts, examples, and interview questions."
+                    placeholder="例如：生成一份 Vue 3 Composition API 笔记，包含核心概念、示例和面试问题。"
                     class="ai-input"
                 />
             </div>
             <template #footer>
                 <span class="dialog-footer">
-                    <el-button class="dialog-cancel" @click="aiDialogVisible = false">Cancel</el-button>
+                    <el-button class="dialog-cancel" @click="aiDialogVisible = false">取消</el-button>
                     <el-button class="dialog-generate" type="primary" @click="handleAiGenerate" :loading="aiGenerating">
-                        {{ aiGenerating ? 'Generating...' : 'Generate Draft' }}
+                        {{ aiGenerating ? '生成中...' : '生成草稿' }}
                     </el-button>
                 </span>
             </template>
@@ -53,10 +52,10 @@
 
         <section class="editor-content">
             <div class="form-section title-section">
-                <label class="field-label">Title</label>
+                <label class="field-label">标题</label>
                 <el-input
                     v-model="article.title"
-                    placeholder="Name this document"
+                    placeholder="给这份文档起个名字"
                     class="title-input"
                     :prefix-icon="Document"
                 />
@@ -64,46 +63,46 @@
 
             <div class="form-row four-cols">
                 <div class="form-section">
-                    <label class="field-label">Type</label>
-                    <el-select v-model="article.resource_type" placeholder="Select type" class="meta-select" :prefix-icon="Grid">
+                    <label class="field-label">类型</label>
+                    <el-select v-model="article.resource_type" placeholder="选择类型" class="meta-select" :prefix-icon="Grid">
                         <el-option v-for="type in documentTypes" :key="type.value" :label="type.label" :value="type.value" />
                     </el-select>
                 </div>
                 <div class="form-section">
-                    <label class="field-label">Status</label>
-                    <el-select v-model="article.document_status" placeholder="Select status" class="meta-select" :prefix-icon="Flag">
+                    <label class="field-label">状态</label>
+                    <el-select v-model="article.document_status" placeholder="选择状态" class="meta-select" :prefix-icon="Flag">
                         <el-option v-for="status in documentStatuses" :key="status.value" :label="status.label" :value="status.value" />
                     </el-select>
                 </div>
                 <div class="form-section">
-                    <label class="field-label">Visibility</label>
-                    <el-select v-model="article.visibility" placeholder="Select visibility" class="meta-select" :prefix-icon="View">
-                        <el-option label="Private" value="private" />
-                        <el-option label="Public" value="public" />
-                        <el-option label="Team" value="team" />
+                    <label class="field-label">可见性</label>
+                    <el-select v-model="article.visibility" placeholder="选择可见性" class="meta-select" :prefix-icon="View">
+                        <el-option label="私有" value="private" />
+                        <el-option label="公开" value="public" />
+                        <el-option label="团队" value="team" />
                     </el-select>
                 </div>
                 <div class="form-section">
-                    <label class="field-label">Legacy Category</label>
-                    <el-select v-model="article.category" placeholder="Compatibility" class="meta-select" :prefix-icon="Collection">
+                    <label class="field-label">兼容分类</label>
+                    <el-select v-model="article.category" placeholder="兼容旧文章分类" class="meta-select" :prefix-icon="Collection">
                         <el-option v-for="category in categories" :key="category.value" :label="category.label" :value="category.value" />
                     </el-select>
                 </div>
             </div>
 
             <div class="form-section">
-                <label class="field-label">Source URL</label>
+                <label class="field-label">来源链接</label>
                 <el-input
                     v-model="article.source_url"
-                    placeholder="Optional source link, repository, paper, or webpage URL"
+                    placeholder="可选：网页、仓库、论文或资料来源链接"
                     class="source-input"
                     :prefix-icon="Link"
                 />
             </div>
 
             <div class="form-section">
-                <label class="field-label">Tags</label>
-                <el-input v-model="newTag" placeholder="Type a tag and press Enter" class="tag-input" @keyup.enter="addTag" clearable />
+                <label class="field-label">标签</label>
+                <el-input v-model="newTag" placeholder="输入标签后按 Enter" class="tag-input" @keyup.enter="addTag" clearable />
             </div>
 
             <div v-if="article.tags.length" class="tags-display-section">
@@ -115,12 +114,12 @@
             <div class="form-section editor-section">
                 <div class="editor-toolbar-row">
                     <div>
-                        <label class="field-label">Body</label>
-                        <h2>Document Content</h2>
+                        <label class="field-label">正文</label>
+                        <h2>文档内容</h2>
                     </div>
                     <div class="editor-tools">
-                        <span class="content-stats">{{ contentStats.words }} words / {{ contentStats.paragraphs }} paragraphs</span>
-                        <el-button size="small" @click="handleClearContent" class="clear-button">Clear</el-button>
+                        <span class="content-stats">{{ contentStats.words }} 词 / {{ contentStats.paragraphs }} 段</span>
+                        <el-button size="small" @click="handleClearContent" class="clear-button">清空</el-button>
                     </div>
                 </div>
                 <div class="editor-wrapper">
@@ -129,11 +128,11 @@
             </div>
 
             <div class="form-section">
-                <label class="field-label">Summary</label>
+                <label class="field-label">摘要</label>
                 <el-input
                     v-model="article.summary"
                     type="textarea"
-                    placeholder="Write a compact summary. If left empty, a summary will be derived from the content."
+                    placeholder="写一段简洁摘要。留空时会根据正文自动截取。"
                     :rows="3"
                     class="summary-input"
                     :prefix-icon="CopyDocument"
@@ -143,11 +142,11 @@
             <div class="action-section">
                 <el-button @click="handleCancel" class="cancel-button">
                     <ArrowLeft />
-                    <span>Cancel</span>
+                    <span>取消</span>
                 </el-button>
                 <el-button type="primary" @click="handleSave" :loading="saving" class="save-button">
                     <Upload />
-                    <span>{{ isEditing ? 'Save Changes' : 'Publish Document' }}</span>
+                    <span>{{ isEditing ? '保存修改' : '发布文档' }}</span>
                 </el-button>
             </div>
         </section>
@@ -194,38 +193,38 @@ const editorRef = ref<HTMLElement | null>(null)
 let quillEditor: Quill | null = null
 
 const documentTypes = [
-    { value: 'note', label: 'Note' },
-    { value: 'technical-doc', label: 'Technical Doc' },
-    { value: 'tutorial', label: 'Tutorial' },
-    { value: 'project-record', label: 'Project Record' },
-    { value: 'paper', label: 'Paper' },
-    { value: 'idea', label: 'Idea' },
-    { value: 'qa-record', label: 'Q&A Record' },
-    { value: 'other', label: 'Other' }
+    { value: 'note', label: '笔记' },
+    { value: 'technical-doc', label: '技术文档' },
+    { value: 'tutorial', label: '教程' },
+    { value: 'project-record', label: '项目记录' },
+    { value: 'paper', label: '论文' },
+    { value: 'idea', label: '灵感' },
+    { value: 'qa-record', label: '问答记录' },
+    { value: 'other', label: '其他' }
 ]
 
 const documentStatuses = [
-    { value: 'published', label: 'Published' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'organized', label: 'Organized' },
-    { value: 'reviewing', label: 'Reviewing' },
-    { value: 'archived', label: 'Archived' }
+    { value: 'published', label: '已发布' },
+    { value: 'draft', label: '草稿' },
+    { value: 'organized', label: '已整理' },
+    { value: 'reviewing', label: '待复习' },
+    { value: 'archived', label: '已归档' }
 ]
 
 const categories = [
-    { value: 'frontend', label: 'Frontend' },
-    { value: 'backend', label: 'Backend' },
-    { value: 'database', label: 'Database' },
-    { value: 'algorithm', label: 'Algorithm' },
+    { value: 'frontend', label: '前端' },
+    { value: 'backend', label: '后端' },
+    { value: 'database', label: '数据库' },
+    { value: 'algorithm', label: '算法' },
     { value: 'devops', label: 'DevOps' },
-    { value: 'architecture', label: 'Architecture' },
+    { value: 'architecture', label: '架构' },
     { value: 'ai', label: 'AI' },
-    { value: 'other', label: 'Other' }
+    { value: 'other', label: '其他' }
 ]
 
 const articleId = computed(() => route.params.id as string)
 const isEditing = computed(() => !!articleId.value)
-const pageTitle = computed(() => isEditing.value ? 'Edit Document' : 'New Document')
+const pageTitle = computed(() => isEditing.value ? '编辑文档' : '新建文档')
 
 const article = reactive({
     id: '',
@@ -254,7 +253,7 @@ const openAiDialog = () => {
 
 const handleAiGenerate = async () => {
     if (!aiTopic.value.trim()) {
-        message.warning('Please enter a topic or document brief')
+        message.warning('请输入主题或文档概要')
         return
     }
 
@@ -276,11 +275,11 @@ const handleAiGenerate = async () => {
             highlightEditorCode()
         }
 
-        message.success('AI draft generated')
+        message.success('AI 草稿已生成')
         aiDialogVisible.value = false
     } catch (error: any) {
         console.error('AI generation failed', error)
-        message.error('AI generation failed. Please check AI configuration.')
+        message.error('AI 生成失败，请检查 AI 配置')
     } finally {
         aiGenerating.value = false
     }
@@ -354,23 +353,23 @@ const initEditor = () => {
 
                 const file = target.files[0]
                 try {
-                    message.info('Uploading image...')
+                    message.info('正在插入图片...')
                     const imageUrl = await handleImageUpload(file)
-                    message.success('Image inserted')
+                    message.success('图片已插入')
 
                     const selection = quillEditor?.getSelection()
                     quillEditor?.insertEmbed(selection?.index ?? quillEditor.getLength(), 'image', imageUrl)
                 } catch (error) {
-                    message.error('Image upload failed')
+                    message.error('图片插入失败')
                     console.error('Image upload error:', error)
                 }
             }
             input.click()
         },
         clean: function () {
-            if (confirm('Clear all document content?')) {
+            if (confirm('确定清空全部文档内容吗？')) {
                 quillEditor?.setText('')
-                message.success('Content cleared')
+                message.success('内容已清空')
             }
         }
     }
@@ -383,7 +382,7 @@ const initEditor = () => {
                 handlers: toolbarHandlers
             }
         },
-        placeholder: 'Start writing a reusable knowledge document...',
+        placeholder: '开始编写一份可复用的知识文档...',
         scrollingContainer: '.quill-editor'
     })
 
@@ -428,13 +427,13 @@ const loadArticle = async () => {
         }
     } catch (err) {
         console.error('Failed to load document:', err)
-        message.error('Failed to load document')
+        message.error('文档加载失败')
     }
 }
 
 onMounted(async () => {
     if (!hasPermission('article:create')) {
-        message.warning('You do not have permission to create documents')
+        message.warning('你没有创建文档的权限')
         router.push('/')
         return
     }
@@ -447,12 +446,12 @@ onMounted(async () => {
 
 const handleSave = async () => {
     if (!article.title.trim()) {
-        message.warning('Please enter a title')
+        message.warning('请输入标题')
         return
     }
 
     if (!article.content.trim()) {
-        message.warning('Please enter document content')
+        message.warning('请输入文档内容')
         return
     }
 
@@ -478,16 +477,16 @@ const handleSave = async () => {
 
         if (isEditing.value) {
             await articleApi.update(article.id, params)
-            message.success('Document updated')
+            message.success('文档已更新')
         } else {
             const res = await articleApi.create(params)
             article.id = String(res.id)
-            message.success('Document published')
+            message.success('文档已发布')
         }
 
         router.push('/essays')
     } catch (error) {
-        message.error('Save failed. Please try again later.')
+        message.error('保存失败，请稍后重试')
         console.error('Save error:', error)
     } finally {
         saving.value = false
@@ -495,18 +494,18 @@ const handleSave = async () => {
 }
 
 const handleClearContent = () => {
-    if (confirm('Clear all document content?')) {
+    if (confirm('确定清空全部文档内容吗？')) {
         quillEditor?.setText('')
         article.content = ''
         contentStats.words = 0
         contentStats.paragraphs = 0
-        message.success('Content cleared')
+        message.success('内容已清空')
     }
 }
 
 const handleCancel = () => {
     if (article.title || article.content) {
-        if (confirm('Discard current edits?')) {
+        if (confirm('确定放弃当前编辑吗？')) {
             router.push('/essays')
         }
     } else {

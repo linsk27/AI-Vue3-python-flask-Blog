@@ -2,15 +2,15 @@
     <div class="workspace-page">
         <section class="workspace-hero">
             <div class="hero-copy">
-                <span class="eyebrow">AI Context Workspace</span>
-                <h1>Forge reusable context from everything you learn.</h1>
+                <span class="eyebrow">AI 上下文工作台</span>
+                <h1>把零散知识锻造成可复用的 AI 上下文。</h1>
                 <p>
-                    ContextForge turns documents, notes, webpages, repositories, and AI conversations into context packs
-                    that can be summarized, searched, reused, and shared.
+                    ContextForge / 语境工坊可以把文档、笔记、网页、代码仓库和 AI 对话整理成上下文包，
+                    用于摘要、问答、复盘、写作和项目交接。
                 </p>
                 <div class="hero-actions">
-                    <router-link to="/context-packs" class="primary-action">Explore Context Packs</router-link>
-                    <router-link to="/essays/write" class="secondary-action">New Document</router-link>
+                    <router-link to="/context-packs" class="primary-action">查看上下文包</router-link>
+                    <router-link to="/essays/write" class="secondary-action">新建文档</router-link>
                 </div>
             </div>
 
@@ -42,11 +42,11 @@
 
         <section class="workspace-grid">
             <article class="feature-panel feature-panel-large">
-                <span class="eyebrow">Signature Feature</span>
-                <h2>Context Packs are reusable AI memory bundles.</h2>
+                <span class="eyebrow">核心特色</span>
+                <h2>上下文包是可复用的 AI 记忆容器。</h2>
                 <p>
-                    Group documents, links, notes, repository findings, and AI conversations into one portable context
-                    pack. Use it for Q&A, project handoff, exam prep, research, or writing.
+                    把文档、链接、笔记、仓库分析和 AI 对话组织到一个上下文包里，用于问答、项目交接、
+                    复习备考、研究整理或内容创作。
                 </p>
                 <div class="pack-preview">
                     <div v-for="pack in contextPacks" :key="pack.name" class="pack-row">
@@ -65,13 +65,13 @@
 
         <section class="quick-actions">
             <div>
-                <span class="eyebrow">Next Actions</span>
-                <h2>Start with a document, then forge context around it.</h2>
+                <span class="eyebrow">下一步</span>
+                <h2>先沉淀一份文档，再围绕它锻造上下文。</h2>
             </div>
             <div class="action-list">
-                <router-link to="/essays" class="action-card">Browse Knowledge Base</router-link>
-                <router-link to="/ai-center/chat" class="action-card">Open Context Chat</router-link>
-                <router-link to="/context-packs" class="action-card">Build a Context Pack</router-link>
+                <router-link to="/essays" class="action-card">浏览知识库</router-link>
+                <router-link to="/ai-center/chat" class="action-card">打开上下文对话</router-link>
+                <router-link to="/context-packs" class="action-card">构建上下文包</router-link>
             </div>
         </section>
     </div>
@@ -81,53 +81,53 @@
 const workflow = [
     {
         index: '01',
-        title: 'Collect',
-        description: 'Save documents, notes, links, project records, and AI conversations in one workspace.'
+        title: '收集',
+        description: '把文档、笔记、链接、项目记录和 AI 对话放进同一个工作台。'
     },
     {
         index: '02',
-        title: 'Forge',
-        description: 'Bundle related materials into context packs that preserve intent, sources, and decisions.'
+        title: '锻造',
+        description: '把相关材料组合成上下文包，保留目标、来源、决策和关键线索。'
     },
     {
         index: '03',
-        title: 'Reuse',
-        description: 'Ask, summarize, generate prompts, write debriefs, and export context whenever needed.'
+        title: '复用',
+        description: '随时用它问答、摘要、生成提示词、产出复盘，或导出给其他工具。'
     }
 ]
 
 const metrics = [
-    { value: 'Docs', label: 'Knowledge entries' },
-    { value: 'Packs', label: 'Reusable context' },
-    { value: 'AI', label: 'Insight and drafting' }
+    { value: 'Docs', label: '知识文档' },
+    { value: 'Packs', label: '可复用上下文' },
+    { value: 'AI', label: '洞察与草稿' }
 ]
 
 const contextPacks = [
-    { name: 'Graduation Defense Pack', count: '12 docs' },
-    { name: 'Vue 3 Interview Pack', count: '8 docs' },
-    { name: 'Flask Refactor Pack', count: '6 docs' }
+    { name: '毕业答辩上下文包', count: '12 份文档' },
+    { name: 'Vue 3 面试上下文包', count: '8 份文档' },
+    { name: 'Flask 重构上下文包', count: '6 份文档' }
 ]
 
 const features = [
     {
-        kicker: 'AI Reading',
-        title: 'Ask with the current document.',
-        description: 'Turn selected text into explanations, examples, review questions, and reusable context snippets.'
+        kicker: 'AI 阅读',
+        title: '围绕当前文档提问。',
+        description: '把选中的内容转成解释、例子、复习问题和可复用的上下文片段。'
     },
     {
-        kicker: 'Prompt Factory',
-        title: 'Convert knowledge into prompts.',
-        description: 'Generate summary, teaching, Q&A, code review, and project debrief prompts from documents or packs.'
+        kicker: '提示词工坊',
+        title: '把知识转成提示词。',
+        description: '从文档或上下文包生成摘要、教学、问答、代码审查和项目复盘提示词。'
     },
     {
-        kicker: 'Project Debrief',
-        title: 'Generate project narratives.',
-        description: 'Draft architecture summaries, feature modules, resume bullets, and software copyright descriptions.'
+        kicker: '项目复盘',
+        title: '生成项目表达材料。',
+        description: '辅助生成架构总结、功能模块、简历描述和软著说明草稿。'
     },
     {
-        kicker: 'Import Pipeline',
-        title: 'Bring in webpages and repositories.',
-        description: 'Prepare the workspace for URL, Markdown, Word, and GitHub repository imports in later releases.'
+        kicker: '导入管线',
+        title: '接入网页和代码仓库。',
+        description: '后续支持 URL、Markdown、Word 和 GitHub 仓库导入，让资料入口更完整。'
     }
 ]
 </script>

@@ -1,13 +1,13 @@
 <template>
     <header class="site-header">
-        <nav class="nav-shell" aria-label="Primary navigation">
-            <button class="brand" type="button" aria-label="Go to workspace" @click="goToHome">
+        <nav class="nav-shell" aria-label="主导航">
+            <button class="brand" type="button" aria-label="返回工作台" @click="goToHome">
                 <span class="brand-mark" aria-hidden="true">
                     <span class="brand-mark-inner"></span>
                 </span>
                 <span class="brand-copy">
                     <span class="brand-name">ContextForge</span>
-                    <span class="brand-subtitle">AI Context Workspace</span>
+                    <span class="brand-subtitle">AI 上下文工作台</span>
                 </span>
             </button>
 
@@ -22,10 +22,10 @@
             <div class="nav-actions">
                 <router-link to="/essays/write" class="write-link">
                     <EditPen class="action-icon" />
-                    <span>New Document</span>
+                    <span>新建文档</span>
                 </router-link>
                 <el-dropdown trigger="hover" @command="handleCommand" placement="bottom-end">
-                    <button class="user-profile" type="button" aria-label="Open user menu">
+                    <button class="user-profile" type="button" aria-label="打开用户菜单">
                         <el-avatar :size="28" :src="userAvatar" class="avatar" />
                         <span class="username">{{ userName }}</span>
                         <ArrowDown class="chevron" />
@@ -34,19 +34,19 @@
                         <el-dropdown-menu class="profile-menu">
                             <el-dropdown-item command="profile">
                                 <User class="menu-icon" />
-                                <span>My Space</span>
+                                <span>我的空间</span>
                             </el-dropdown-item>
                             <el-dropdown-item command="my-works">
                                 <Document class="menu-icon" />
-                                <span>My Documents</span>
+                                <span>我的文档</span>
                             </el-dropdown-item>
                             <el-dropdown-item command="my-likes">
                                 <Star class="menu-icon" />
-                                <span>Favorites</span>
+                                <span>我的收藏</span>
                             </el-dropdown-item>
                             <el-dropdown-item divided command="logout" v-if="globalStore.token">
                                 <SwitchButton class="menu-icon" />
-                                <span>Sign out</span>
+                                <span>退出登录</span>
                             </el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
@@ -67,14 +67,14 @@ const { message } = useElMessage()
 const router = useRouter()
 const globalStore = useGlobalStore()
 
-const userName = computed(() => globalStore.userInfo?.username || 'Guest')
+const userName = computed(() => globalStore.userInfo?.username || '访客')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
 
 const navItems = [
-    { path: '/', label: 'Workspace' },
-    { path: '/essays', label: 'Knowledge Base' },
-    { path: '/context-packs', label: 'Context Packs' },
-    { path: '/ai-center', label: 'AI Workspace' }
+    { path: '/', label: '工作台' },
+    { path: '/essays', label: '知识库' },
+    { path: '/context-packs', label: '上下文包' },
+    { path: '/ai-center', label: 'AI 工作台' }
 ]
 
 const goToHome = () => {
@@ -94,7 +94,7 @@ const handleCommand = (command: string) => {
             break
         case 'logout':
             globalStore.clearLoginInfo()
-            message.success('Signed out')
+            message.success('已退出登录')
             router.push('/login')
             break
     }

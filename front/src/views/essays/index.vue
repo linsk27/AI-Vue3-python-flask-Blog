@@ -2,11 +2,10 @@
     <div class="knowledge-page">
         <section class="library-hero">
             <div>
-                <span class="eyebrow">Knowledge Base</span>
-                <h1>Documents that can become AI context.</h1>
+                <span class="eyebrow">知识库</span>
+                <h1>能成为 AI 上下文的知识文档。</h1>
                 <p>
-                    Collect technical notes, project records, papers, tutorials, and source materials. Search them,
-                    filter them, and turn the right set into context packs when you need deeper AI help.
+                    收集技术笔记、项目记录、论文、教程和资料来源。你可以搜索、筛选，并在需要深度 AI 协作时把它们加入上下文包。
                 </p>
             </div>
             <div class="hero-actions">
@@ -15,7 +14,7 @@
                         class="layout-btn"
                         :class="{ active: layoutMode === 'grid' }"
                         type="button"
-                        title="Grid view"
+                        title="网格视图"
                         @click="layoutMode = 'grid'"
                     >
                         <Grid class="icon" />
@@ -24,7 +23,7 @@
                         class="layout-btn"
                         :class="{ active: layoutMode === 'list' }"
                         type="button"
-                        title="List view"
+                        title="列表视图"
                         @click="layoutMode = 'list'"
                     >
                         <List class="icon" />
@@ -32,20 +31,20 @@
                 </div>
                 <button class="write-btn" type="button" @click="goToWrite">
                     <EditPen class="icon" />
-                    <span>New Document</span>
+                    <span>新建文档</span>
                 </button>
             </div>
         </section>
 
         <section class="search-panel">
             <Search class="search-icon" />
-            <input v-model="search" class="knowledge-search" type="search" placeholder="Search title, summary, or tags..." />
-            <span class="search-count">{{ filteredArticles.length }} docs</span>
+            <input v-model="search" class="knowledge-search" type="search" placeholder="搜索标题、摘要或标签..." />
+            <span class="search-count">{{ filteredArticles.length }} 份文档</span>
         </section>
 
         <section class="filter-panel">
             <div class="filter-group">
-                <span>Type</span>
+                <span>类型</span>
                 <div class="filter-options">
                     <button
                         v-for="type in documentTypes"
@@ -60,7 +59,7 @@
                 </div>
             </div>
             <div class="filter-group">
-                <span>Status</span>
+                <span>状态</span>
                 <div class="filter-options">
                     <button
                         v-for="statusItem in documentStatuses"
@@ -78,8 +77,8 @@
 
         <section class="tags-section" v-if="allTags.length > 0">
             <div class="tags-header">
-                <span>Knowledge Tags</span>
-                <button v-if="selectedTags.length > 0" type="button" @click="clearSelectedTags">Clear tags</button>
+                <span>知识标签</span>
+                <button v-if="selectedTags.length > 0" type="button" @click="clearSelectedTags">清除标签</button>
             </div>
             <div class="tags-list">
                 <button
@@ -115,7 +114,7 @@
                         <span>{{ getDocumentStatusLabel(article) }}</span>
                     </div>
                     <h2>{{ article.title }}</h2>
-                    <p>{{ article.summary || 'A knowledge document ready to be summarized, reused, and packed into context.' }}</p>
+                    <p>{{ article.summary || '一份可被摘要、复用并加入上下文包的知识文档。' }}</p>
                 </div>
                 <div class="card-footer">
                     <div class="card-tags">
@@ -124,8 +123,8 @@
                     <div class="card-meta">
                         <span v-if="article.author_name">{{ article.author_name }}</span>
                         <span>{{ formatDate(article.updated_at || article.created_at) }}</span>
-                        <span>{{ article.views || 0 }} views</span>
-                        <span>{{ article.likes || 0 }} favorites</span>
+                        <span>{{ article.views || 0 }} 次浏览</span>
+                        <span>{{ article.likes || 0 }} 次收藏</span>
                     </div>
                 </div>
             </article>
@@ -133,11 +132,11 @@
 
         <section class="no-results" v-else>
             <Search class="empty-icon" />
-            <h2>No documents found</h2>
-            <p>Try a different keyword, clear filters, or create a new document.</p>
+            <h2>没有找到相关文档</h2>
+            <p>换一个关键词、清除筛选条件，或者新建一份文档。</p>
             <button class="write-btn" type="button" @click="goToWrite">
                 <EditPen class="icon" />
-                <span>New Document</span>
+                <span>新建文档</span>
             </button>
         </section>
     </div>
@@ -164,29 +163,29 @@ const loading = ref(false)
 const layoutMode = ref<'grid' | 'list'>('list')
 
 const documentTypes = [
-    { value: 'all', label: 'All' },
-    { value: 'note', label: 'Note' },
-    { value: 'technical-doc', label: 'Technical Doc' },
-    { value: 'tutorial', label: 'Tutorial' },
-    { value: 'project-record', label: 'Project Record' },
-    { value: 'paper', label: 'Paper' },
-    { value: 'idea', label: 'Idea' }
+    { value: 'all', label: '全部' },
+    { value: 'note', label: '笔记' },
+    { value: 'technical-doc', label: '技术文档' },
+    { value: 'tutorial', label: '教程' },
+    { value: 'project-record', label: '项目记录' },
+    { value: 'paper', label: '论文' },
+    { value: 'idea', label: '灵感' }
 ]
 
 const documentStatuses = [
-    { value: 'all', label: 'All' },
-    { value: 'published', label: 'Published' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'organized', label: 'Organized' },
-    { value: 'reviewing', label: 'Reviewing' },
-    { value: 'archived', label: 'Archived' }
+    { value: 'all', label: '全部' },
+    { value: 'published', label: '已发布' },
+    { value: 'draft', label: '草稿' },
+    { value: 'organized', label: '已整理' },
+    { value: 'reviewing', label: '待复习' },
+    { value: 'archived', label: '已归档' }
 ]
 
 const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'Recently updated'
+    if (!dateStr) return '最近更新'
     const date = new Date(dateStr)
-    if (Number.isNaN(date.getTime())) return 'Recently updated'
-    return date.toLocaleDateString('en-US', {
+    if (Number.isNaN(date.getTime())) return '最近更新'
+    return date.toLocaleDateString('zh-CN', {
         year: 'numeric',
         month: 'short',
         day: '2-digit'
@@ -214,7 +213,7 @@ const getDocumentStatus = (article: IArticle) => article.document_status || arti
 
 const getDocumentTypeLabel = (article: IArticle) => {
     const type = getDocumentType(article)
-    return documentTypes.find(item => item.value === type)?.label || 'Document'
+    return documentTypes.find(item => item.value === type)?.label || '文档'
 }
 
 const getDocumentStatusLabel = (article: IArticle) => {
@@ -238,7 +237,7 @@ const processedLocalArticles = localArticles.map(article => ({
     document_status: 'organized',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    author_name: 'ContextForge Team',
+    author_name: '语境工坊团队',
     views: 0,
     likes: 0,
     content: ''

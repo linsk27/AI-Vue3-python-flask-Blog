@@ -5,19 +5,19 @@
                 <span class="footer-mark" aria-hidden="true"></span>
                 <div>
                     <h2>ContextForge</h2>
-                    <p>Open-source AI context workspace for documents, packs, prompts, and reusable knowledge.</p>
+                    <p>开源 AI 上下文工作台，用文档、上下文包、提示词和知识复用组织你的思考材料。</p>
                 </div>
             </div>
 
             <div class="footer-links">
-                <router-link to="/">Workspace</router-link>
-                <router-link to="/essays">Knowledge Base</router-link>
-                <router-link to="/context-packs">Context Packs</router-link>
-                <router-link to="/ai-center">AI Workspace</router-link>
+                <router-link to="/">工作台</router-link>
+                <router-link to="/essays">知识库</router-link>
+                <router-link to="/context-packs">上下文包</router-link>
+                <router-link to="/ai-center">AI 工作台</router-link>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Copyright 2026 ContextForge</span>
+            <span>Copyright 2026 ContextForge / 语境工坊</span>
             <span class="mono">VUE3 / FLASK / AI</span>
         </div>
     </footer>
