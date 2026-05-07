@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request
 from flask_cors import CORS
 from routes.auth import auth_bp
@@ -8,26 +10,35 @@ from routes.role import role_bp
 
 app = Flask(__name__)
 
-# ================================
-# ✅ 【最正确跨域配置】
-# 只允许你的 Vercel 前端访问 + 支持凭证
-# ================================
+def parse_env_list(name, defaults):
+    value = os.environ.get(name, "")
+    items = [item.strip().rstrip("/") for item in value.split(",") if item.strip()]
+    return items or defaults
+
+
+ALLOWED_ORIGINS = parse_env_list("CORS_ORIGINS", [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "https://ai-vue3-python-flask-blog.vercel.app",
+    "https://ai-vue3-python-flask-blog-copy.vercel.app",
+    "https://lindablog.xyz",
+    "https://www.lindablog.xyz",
+])
+
 CORS(
     app,
-    origins="https://ai-vue3-python-flask-blog.vercel.app",
-    supports_credentials=True
+    resources={r"/*": {"origins": ALLOWED_ORIGINS}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization", "APP-ID"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 )
 
 app.config['SECRET_KEY'] = 'your-very-secret-key-123!@#'
 
-# ================================
-# ✅ 全局处理 OPTIONS 预检
-# 所有接口通用，不用每个接口单独写
-# ================================
 @app.before_request
 def handle_options():
     if request.method == "OPTIONS":
-        return "", 200
+        return "", 204
 
 @app.route('/')
 def home():
@@ -41,6 +52,5 @@ app.register_blueprint(upload_bp)
 app.register_blueprint(role_bp)
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
