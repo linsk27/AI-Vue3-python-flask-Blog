@@ -10,6 +10,7 @@ import store from '@/store/';
 import router from '@/router/'
 import { serialize } from 'utils/util'
 import { getToken } from 'utils/auth'
+import { getApiUrl } from '@/config/env'
 import { ElMessage } from 'element-plus'
 import website from '@/config/website';
 import NProgress from 'nprogress' // progress bar
@@ -28,6 +29,7 @@ NProgress.configure({
 //HTTPrequest拦截
 axios.interceptors.request.use(config => {
   NProgress.start() // start progress bar
+  config.url = getApiUrl(config.url)
   const meta = (config.meta || {});
   const isToken = meta.isToken === false;
   if (getToken() && !isToken) {

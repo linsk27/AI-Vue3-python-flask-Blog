@@ -25,6 +25,8 @@ ALLOWED_ORIGINS = parse_env_list("CORS_ORIGINS", [
     "https://www.lindablog.xyz",
 ]) + parse_env_list("CORS_ORIGIN_REGEXES", [
     r"^https://ai-vue3-python-flask-blog-[a-z0-9-]+-linsk27s-projects\.vercel\.app$",
+    r"^https://[a-z0-9-]+\.vercel\.app$",
+    r"^https://[a-z0-9-]+-[a-z0-9-]+-linsk27s-projects\.vercel\.app$",
 ])
 
 CORS(

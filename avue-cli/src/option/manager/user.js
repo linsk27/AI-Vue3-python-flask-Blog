@@ -1,3 +1,5 @@
+import { getApiUrl } from '@/config/env'
+
 export default {
     height: 'auto',
     calcHeight: 30,
@@ -51,7 +53,7 @@ export default {
             span: 24,
             width: 100,
             align: 'center',
-            action: '/api/upload', // 配置上传地址
+            action: getApiUrl('/api/upload'), // 配置上传地址
             propsHttp: {
                 res: 'data',
                 url: 'url',
