@@ -108,42 +108,45 @@ def login():
     if not username or not password:
         return jsonify({'status': 1, 'msg': '用户名和密码不能为空'}), 400
 
-    with engine.connect() as conn:
-        result = conn.execute(
-            text(
-                "SELECT * FROM users WHERE username=:username "
-            ), {"username": username}
-        ).mappings().fetchone()
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text(
+                    "SELECT * FROM users WHERE username=:username "
+                ), {"username": username}
+            ).mappings().fetchone()
 
-    if result and check_password_hash(result['password'], password):
-        # 获取权限列表
-        permissions = []
-        if result.get('role_id'):
-            with engine.connect() as conn:
-                perms = conn.execute(text("""
-                    SELECT p.code FROM permissions p
-                    JOIN role_permissions rp ON p.id = rp.permission_id
-                    WHERE rp.role_id = :rid
-                """), {"rid": result['role_id']}).scalars().all()
-                permissions = list(perms)
+        if result and check_password_hash(result['password'], password):
+            # 获取权限列表
+            permissions = []
+            if result.get('role_id'):
+                with engine.connect() as conn:
+                    perms = conn.execute(text("""
+                        SELECT p.code FROM permissions p
+                        JOIN role_permissions rp ON p.id = rp.permission_id
+                        WHERE rp.role_id = :rid
+                    """), {"rid": result['role_id']}).scalars().all()
+                    permissions = list(perms)
 
-        # 生成JWT token
-        token = jwt.encode({
-            'user_id': result['id'],
-            'username': result['username'],
-            'role': result.get('role', 'user'),
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-        }, current_app.config['SECRET_KEY'], algorithm='HS256')
+            # 生成JWT token
+            token = jwt.encode({
+                'user_id': result['id'],
+                'username': result['username'],
+                'role': result.get('role', 'user'),
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            }, current_app.config['SECRET_KEY'], algorithm='HS256')
 
-        return jsonify({'status': 0, 'msg': '登录成功','data':{
-            'id':result['id'],
-            'username':result['username'],
-            'role': result.get('role', 'user'),
-            'email': result.get('email'),
-            'permissions': permissions,
-            'token':token,
-        }})
-    return jsonify({'status': 1, 'msg': '用户名或密码错误'}), 401
+            return jsonify({'status': 0, 'msg': '登录成功','data':{
+                'id':result['id'],
+                'username':result['username'],
+                'role': result.get('role', 'user'),
+                'email': result.get('email'),
+                'permissions': permissions,
+                'token':token,
+            }})
+        return jsonify({'status': 1, 'msg': '用户名或密码错误'}), 401
+    except Exception as e:
+        return jsonify({'status': 1, 'msg': '登录失败', 'error': str(e)}), 500
 
 @auth_bp.route('/api/users', methods=['GET'])
 def get_users():
