@@ -1,9 +1,10 @@
 import request from '@/api'
+import { getApiBaseUrl } from '@/api/config'
 import { useGlobalStore } from '@/store'
 import { AI_CHAT_API, AI_CHAT_STREAM_API, AI_CONTEXT_API, AI_SUMMARY_API } from './url.const'
 import type { AIChatRequest, AIChatResponse, AISummaryRequest, AISummaryResponse, AIContextResponse, AIStreamHandlers, AIStreamPayload } from './interface'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+const baseURL = getApiBaseUrl()
 const AppId = import.meta.env.VITE_APP_ID
 
 function getApiUrl(url: string) {

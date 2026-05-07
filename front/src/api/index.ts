@@ -2,10 +2,11 @@ import { useElMessage } from './../hooks/useMessage'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useGlobalStore } from '@/store'
 import { createVueRouter } from '@/routers/router'
+import { getApiBaseUrl } from './config'
 const { message } = useElMessage()
 const router = createVueRouter()
 // 环境变量配置
-const baseURL = import.meta.env.VITE_API_BASE_URL
+const baseURL = getApiBaseUrl()
 const AppId = import.meta.env.VITE_APP_ID
 
 class RequestHttp {
