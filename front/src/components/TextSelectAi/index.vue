@@ -40,10 +40,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import AiChatBox from "./AiChatBox.vue";
+import { defineAsyncComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useAiChatStore } from "@/store/aiChat";
 import { usePermission } from "@/hooks/usePermission";
+
+const AiChatBox = defineAsyncComponent(() => import("./AiChatBox.vue"));
 
 const selectedText = ref(""); // 缓存选中的文本
 const menuVisible = ref(false);
@@ -283,6 +284,7 @@ onBeforeUnmount(() => {
 
 .slide-fade-leave-active {
     transition: all 0.2s ease-in;
+    pointer-events: none;
 }
 
 .slide-fade-enter-from {
@@ -293,5 +295,6 @@ onBeforeUnmount(() => {
 .slide-fade-leave-to {
     opacity: 0;
     transform: translateY(10px) scale(0.95);
+    pointer-events: none;
 }
 </style>

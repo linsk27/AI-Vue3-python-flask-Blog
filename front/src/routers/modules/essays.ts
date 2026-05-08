@@ -17,12 +17,12 @@ const essaysRouters: Array<RouteRecordRaw> = [
     {
         path: '/essays/my-works',
         component: () => import('@/views/essays/MyWorks.vue'),
-        meta: { title: '我的作品' }
+        meta: { title: '我的作品', requiresAuth: true }
     },
     {
         path: '/essays/my-likes',
         component: () => import('@/views/essays/MyLikes.vue'),
-        meta: { title: '我的喜欢' }
+        meta: { title: '我的喜欢', requiresAuth: true }
     },
     {
         path: `/essays/:id`,
@@ -33,13 +33,13 @@ const essaysRouters: Array<RouteRecordRaw> = [
     {
         path: '/essays/write',
         component: () => import('@/views/essays/WriteArticle.vue'), // 写文章
-        meta: { title: '写文章' }
+        meta: { title: '写文章', requiresAuth: true }
     },
     {
         path: '/essays/edit/:id',
         component: () => import('@/views/essays/WriteArticle.vue'), // 编辑文章
         props: true,
-        meta: { title: '编辑文章' }
+        meta: { title: '编辑文章', requiresAuth: true }
     }
 ]
 export default essaysRouters

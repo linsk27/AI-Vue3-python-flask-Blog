@@ -11,30 +11,72 @@ import { useGlobalStore } from '@/store'
 import NProgress from 'nprogress'
 import { useElMessage } from '@/hooks/useMessage'
 import { NavigationGuardNext, RouteLocationNormalized, Router } from 'vue-router'
+import authApi from '@/api/modules/auth'
 
 export const setupRouterGuards = (router: Router) => {
     const { message } = useElMessage()
 
-    router.beforeEach((to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
+    router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
         NProgress.start()
-        // 在这里使用 Pinia store 是安全的，因为 Pinia 已经在 main.ts 中 use() 了
         const globalStore = useGlobalStore()
+        const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+        const requiredPermissions = to.matched.flatMap(record => {
+            const permissions = record.meta.permissions
+            return Array.isArray(permissions) ? permissions as string[] : []
+        })
+        const anyPermissions = to.matched.flatMap(record => {
+            const permissions = record.meta.anyPermissions
+            return Array.isArray(permissions) ? permissions as string[] : []
+        })
 
-        // 检查是否需要登录
-        // if (!globalStore.token && to.path !== '/login') {
-        //     console.log(123)
-        //     // 如果没有登录，重定向到登录页面
-        //     message.warning('请先登录')
-        //     next({ path: '/login' })
-        //     NProgress.done()
-        //     return
-        // }
-        // ... 你的守卫逻辑 ...
-        if (to.path === '/login' && globalStore?.token) {
-            next({ path: '/' })
+        if (requiresAuth && !globalStore.token) {
+            message.warning('请先登录')
+            next({ path: '/login', query: { redirect: to.fullPath } })
             NProgress.done()
             return
         }
+
+        const needsPermissionSnapshot = requiredPermissions.length > 0 || anyPermissions.length > 0
+        if (globalStore.token && (!globalStore.userInfo?.id || !Array.isArray(globalStore.userInfo.permissions) || needsPermissionSnapshot)) {
+            try {
+                const userInfo = await authApi.getUserInfo()
+                if (userInfo) {
+                    globalStore.setLoginInfo(globalStore.token, {
+                        ...userInfo,
+                        token: globalStore.token
+                    })
+                }
+            } catch (error: any) {
+                globalStore.clearLoginInfo()
+                if (requiresAuth) {
+                    message.warning('登录状态已失效，请重新登录')
+                    next({ path: '/login', query: { redirect: to.fullPath } })
+                    NProgress.done()
+                    return
+                }
+            }
+        }
+
+        const userInfo = globalStore.userInfo
+        const isAdmin = userInfo?.role === 'admin'
+        const permissions = userInfo?.permissions || []
+        const hasAllRequired = !requiredPermissions.length || requiredPermissions.every(permission => permissions.includes(permission))
+        const hasAnyRequired = !anyPermissions.length || anyPermissions.some(permission => permissions.includes(permission))
+
+        if (globalStore.token && userInfo && !isAdmin && (!hasAllRequired || !hasAnyRequired)) {
+            message.warning('当前账号无权访问该页面')
+            next({ path: '/403', query: { from: to.fullPath } })
+            NProgress.done()
+            return
+        }
+
+        if (to.path === '/login' && globalStore?.token) {
+            const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : '/'
+            next({ path: redirect })
+            NProgress.done()
+            return
+        }
+
         next()
     })
 

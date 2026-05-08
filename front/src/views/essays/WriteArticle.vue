@@ -6,49 +6,85 @@
                 <h1>{{ pageTitle }}</h1>
                 <p>沉淀来源材料，补齐结构与元数据，让它可以被加入上下文包并被 AI 复用。</p>
             </div>
-            <el-button class="ai-help-btn" @click="openAiDialog">
+            <el-button class="ai-help-btn" native-type="button" :disabled="aiGenerating" @click.stop="openAiDialog">
                 <Grid />
                 <span>AI 起草</span>
             </el-button>
         </section>
 
-        <el-dialog v-model="aiDialogVisible" width="640px" :close-on-click-modal="false" custom-class="ai-dialog">
-            <template #header>
-                <div class="ai-dialog-header">
-                    <span class="ai-dialog-mark">AI</span>
-                    <div>
-                        <span class="ai-dialog-eyebrow">草稿助手</span>
-                        <h2>生成一份可复用的知识文档</h2>
-                    </div>
+        <section v-if="aiDialogVisible" class="ai-draft-panel">
+            <div class="ai-draft-header">
+                <span class="ai-dialog-mark">AI</span>
+                <div>
+                    <span class="ai-dialog-eyebrow">草稿助手</span>
+                    <h2>生成一份可复用的知识文档</h2>
                 </div>
-            </template>
-            <div class="ai-dialog-content">
-                <p class="ai-tip">
-                    描述资料来源、主题或项目背景，AI 会生成一份可以继续编辑、打标签并加入上下文包的文档草稿。
-                </p>
-                <div class="ai-dialog-tags">
-                    <span>结构</span>
-                    <span>摘要</span>
-                    <span>标签</span>
-                </div>
-                <label class="ai-input-label">起草要求</label>
-                <el-input
-                    v-model="aiTopic"
-                    type="textarea"
-                    :rows="6"
-                    placeholder="例如：生成一份 Vue 3 Composition API 笔记，包含核心概念、示例和面试问题。"
-                    class="ai-input"
-                />
+                <el-button class="dialog-cancel" native-type="button" @click="aiDialogVisible = false">收起</el-button>
             </div>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button class="dialog-cancel" @click="aiDialogVisible = false">取消</el-button>
-                    <el-button class="dialog-generate" type="primary" @click="handleAiGenerate" :loading="aiGenerating">
-                        {{ aiGenerating ? '生成中...' : '生成草稿' }}
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
+
+            <p class="ai-tip">写下主题、资料来源、目标读者或想要的结构，AI 会把草稿填入下面的编辑器。</p>
+            <div class="ai-dialog-tags">
+                <span>结构</span>
+                <span>摘要</span>
+                <span>标签</span>
+                <span>RAG</span>
+            </div>
+            <div class="ai-context-controls">
+                <div>
+                    <label class="ai-input-label">可选上下文包</label>
+                    <el-select
+                        v-model="aiDraftContextPackId"
+                        clearable
+                        filterable
+                        :loading="aiDraftPacksLoading"
+                        placeholder="选择后，AI 会先检索相关片段再起草"
+                        class="ai-context-select"
+                    >
+                        <el-option
+                            v-for="pack in aiDraftPacks"
+                            :key="pack.id"
+                            :label="`${pack.name} · ${pack.sources.length} 份资料`"
+                            :value="pack.id"
+                        />
+                    </el-select>
+                </div>
+                <label class="ai-rag-toggle" :class="{ disabled: !selectedAiDraftPack }">
+                    <input v-model="aiDraftAllowEmbedding" type="checkbox" :disabled="!selectedAiDraftPack" />
+                    <span>允许语义检索</span>
+                    <small>{{ aiDraftRagHint }}</small>
+                </label>
+            </div>
+            <label class="ai-input-label">起草要求</label>
+            <el-input
+                v-model="aiTopic"
+                type="textarea"
+                :rows="6"
+                placeholder="例如：生成一份 Vue 3 Composition API 笔记，包含核心概念、示例和面试问题。"
+                class="ai-input"
+            />
+            <div v-if="aiDraftRetrieval" class="ai-rag-result">
+                <strong>{{ getDraftRetrievalLabel(aiDraftRetrieval) }}</strong>
+                <span>命中 {{ aiDraftRetrieval.snippets.length }} 段 · 约 {{ aiDraftRetrieval.used_tokens_estimate }} tokens</span>
+                <small v-if="aiDraftRetrieval.semantic_requested && aiDraftRetrieval.mode !== 'semantic'">
+                    语义检索已回退：{{ aiDraftRetrieval.semantic_unavailable_reason || '条件不足' }}
+                </small>
+            </div>
+            <div class="ai-draft-actions">
+                <el-button class="dialog-cancel" native-type="button" @click="aiTopic = buildAiDraftSeed()">使用当前内容填充</el-button>
+                <el-button
+                    class="dialog-cancel"
+                    native-type="button"
+                    :disabled="!selectedAiDraftPack || !aiTopic.trim() || aiDraftRetrievalLoading"
+                    :loading="aiDraftRetrievalLoading"
+                    @click="previewAiDraftRetrieval"
+                >
+                    预览引用
+                </el-button>
+                <el-button class="dialog-generate" type="primary" native-type="button" @click="handleAiGenerate" :loading="aiGenerating">
+                    {{ aiGenerating ? '生成中...' : '生成草稿' }}
+                </el-button>
+            </div>
+        </section>
 
         <section class="editor-content">
             <div class="form-section title-section">
@@ -170,24 +206,37 @@ import {
     View
 } from '@element-plus/icons-vue'
 import articleApi from '@/api/modules/article'
-import { aiArticleService } from '@/api/modules/ai'
+import { aiArticleService, aiOpsService } from '@/api/modules/ai'
+import type { AIRetrievalMeta } from '@/api/modules/ai/interface'
+import contextPackApi, { type ContextPack } from '@/api/modules/contextPacks'
+import { getApiUrl } from '@/api/config'
+import { useGlobalStore } from '@/store'
 import { marked } from 'marked'
 
 // @ts-ignore
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 
-import hljs from 'highlight.js'
+import { getHighlight } from '@/utils/highlight'
 import 'highlight.js/styles/github.css'
 
 const router = useRouter()
 const route = useRoute()
 const { message } = useElMessage()
 const { hasPermission } = usePermission()
+const globalStore = useGlobalStore()
+const hljs = getHighlight()
+const AppId = import.meta.env.VITE_APP_ID
 
 const aiDialogVisible = ref(false)
 const aiTopic = ref('')
 const aiGenerating = ref(false)
+const aiDraftPacks = ref<ContextPack[]>([])
+const aiDraftPacksLoading = ref(false)
+const aiDraftContextPackId = ref<number | null>(null)
+const aiDraftAllowEmbedding = ref(false)
+const aiDraftRetrieval = ref<AIRetrievalMeta | null>(null)
+const aiDraftRetrievalLoading = ref(false)
 
 const editorRef = ref<HTMLElement | null>(null)
 let quillEditor: Quill | null = null
@@ -225,6 +274,16 @@ const categories = [
 const articleId = computed(() => route.params.id as string)
 const isEditing = computed(() => !!articleId.value)
 const pageTitle = computed(() => isEditing.value ? '编辑文档' : '新建文档')
+const canUseAiDraft = computed(() => hasPermission('ai:access') || hasPermission('ai:manage'))
+const selectedAiDraftPack = computed(() => {
+    return aiDraftPacks.value.find(pack => pack.id === aiDraftContextPackId.value) || null
+})
+const aiDraftRagHint = computed(() => {
+    if (!selectedAiDraftPack.value) return '不选择上下文包时不会检索资料'
+    return aiDraftAllowEmbedding.value
+        ? '仅在已配置向量并建好索引时调用 embedding'
+        : '默认使用关键词检索，不产生 embedding 成本'
+})
 
 const article = reactive({
     id: '',
@@ -247,39 +306,340 @@ const contentStats = reactive({
 })
 const saving = ref(false)
 
-const openAiDialog = () => {
-    aiDialogVisible.value = true
+const stripHtmlToText = (value = '') => {
+    return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-const handleAiGenerate = async () => {
-    if (!aiTopic.value.trim()) {
-        message.warning('请输入主题或文档概要')
+const buildAiDraftSeed = () => {
+    const pieces = []
+    if (article.title.trim()) pieces.push(`标题：${article.title.trim()}`)
+    if (article.summary.trim()) pieces.push(`摘要：${article.summary.trim()}`)
+    if (article.tags.length) pieces.push(`标签：${article.tags.join('、')}`)
+
+    const currentText = stripHtmlToText(article.content).slice(0, 500)
+    if (currentText) pieces.push(`已有内容：${currentText}`)
+
+    return pieces.join('\n')
+}
+
+const loadAiDraftPacks = async () => {
+    if (!globalStore.token || aiDraftPacksLoading.value || aiDraftPacks.value.length) return
+
+    aiDraftPacksLoading.value = true
+    try {
+        aiDraftPacks.value = await contextPackApi.getList()
+    } catch (error) {
+        console.error('Load AI draft context packs failed:', error)
+        aiDraftPacks.value = []
+    } finally {
+        aiDraftPacksLoading.value = false
+    }
+}
+
+const getDraftRetrievalLabel = (retrieval: AIRetrievalMeta | null) => {
+    if (!retrieval) return '未检索上下文'
+    if (retrieval.mode === 'semantic') return '已使用语义 RAG'
+    if (retrieval.semantic_requested && retrieval.mode !== 'semantic') return '已回退关键词 RAG'
+    return '已使用关键词 RAG'
+}
+
+const resolveAiErrorMessage = (error: any) => {
+    return error?.response?.data?.msg
+        || error?.response?.data?.message
+        || error?.msg
+        || error?.message
+        || 'AI 起草失败，请检查 AI 配置或稍后重试'
+}
+
+const extractJsonText = (value: string) => {
+    const trimmed = value.trim()
+    const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i)
+    const candidate = fenced?.[1]?.trim() || trimmed
+    if (candidate.startsWith('{') && candidate.endsWith('}')) return candidate
+    const match = candidate.match(/\{[\s\S]*\}/)
+    return match?.[0] || ''
+}
+
+const decodeJsonishStringValue = (value: string) => {
+    try {
+        return JSON.parse(`"${value}"`)
+    } catch {
+        return value
+            .replace(/\\r\\n/g, '\n')
+            .replace(/\\n/g, '\n')
+            .replace(/\\r/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, '\\')
+    }
+}
+
+const readJsonishStringField = (source: string, field: string) => {
+    const keys = [`"${field}"`, `'${field}'`]
+
+    for (const key of keys) {
+        const keyIndex = source.indexOf(key)
+        if (keyIndex < 0) continue
+
+        const colonIndex = source.indexOf(':', keyIndex + key.length)
+        if (colonIndex < 0) continue
+
+        let cursor = colonIndex + 1
+        while (cursor < source.length && /\s/.test(source[cursor])) cursor++
+
+        const quote = source[cursor]
+        if (quote !== '"' && quote !== "'") continue
+
+        cursor++
+        let value = ''
+        let escaped = false
+
+        while (cursor < source.length) {
+            const char = source[cursor]
+
+            if (escaped) {
+                value += `\\${char}`
+                escaped = false
+                cursor++
+                continue
+            }
+
+            if (char === '\\') {
+                escaped = true
+                cursor++
+                continue
+            }
+
+            if (char === quote) {
+                const rest = source.slice(cursor + 1)
+                if (/^\s*(,|\})/.test(rest)) {
+                    return decodeJsonishStringValue(value).trim()
+                }
+            }
+
+            value += char
+            cursor++
+        }
+    }
+
+    return ''
+}
+
+const readJsonishTags = (source: string) => {
+    const match = source.match(/["']tags["']\s*:\s*\[([\s\S]*?)\]/)
+    if (!match) return []
+
+    try {
+        const parsed = JSON.parse(`[${match[1]}]`)
+        return Array.isArray(parsed) ? parsed.map((tag: unknown) => String(tag).trim()).filter(Boolean) : []
+    } catch {
+        return Array.from(match[1].matchAll(/["']([^"']+)["']/g))
+            .map(item => item[1].trim())
+            .filter(Boolean)
+    }
+}
+
+const repairJsonishDraft = (value: unknown) => {
+    if (typeof value !== 'string') return null
+
+    const candidate = extractJsonText(value) || value.trim()
+    if (!candidate || !/["'](?:title|content|summary|category|tags)["']\s*:/.test(candidate)) return null
+
+    const content = readJsonishStringField(candidate, 'content')
+    if (!content) return null
+
+    return {
+        title: readJsonishStringField(candidate, 'title'),
+        content,
+        summary: readJsonishStringField(candidate, 'summary'),
+        category: readJsonishStringField(candidate, 'category'),
+        tags: readJsonishTags(candidate)
+    }
+}
+
+const looksLikeDraftEnvelope = (value: string) => {
+    const trimmed = value.trim()
+    return trimmed.startsWith('{') && /["']content["']\s*:/.test(trimmed)
+}
+
+const parseJsonDraft = (value: unknown): any | null => {
+    if (!value) return null
+    if (typeof value === 'object') return value
+    if (typeof value !== 'string') return null
+
+    const jsonText = extractJsonText(value)
+    if (!jsonText) return null
+
+    try {
+        return JSON.parse(jsonText)
+    } catch {
+        return null
+    }
+}
+
+const normalizeAiDraft = (raw: any, fallbackTitle: string) => {
+    let payload = raw?.data || raw
+    const parsedPayload = parseJsonDraft(payload)
+    if (parsedPayload) {
+        payload = parsedPayload
+    } else {
+        const repairedPayload = repairJsonishDraft(payload)
+        if (repairedPayload) payload = repairedPayload
+    }
+
+    if (!payload || typeof payload !== 'object') {
+        throw new Error('AI 返回格式不正确')
+    }
+
+    let nestedContent = payload.content
+    const parsedContent = parseJsonDraft(nestedContent)
+    if (parsedContent && typeof parsedContent === 'object' && (parsedContent.content || parsedContent.title)) {
+        payload = { ...payload, ...parsedContent }
+        nestedContent = parsedContent.content
+    } else {
+        const repairedContent = repairJsonishDraft(nestedContent)
+        if (repairedContent) {
+            payload = { ...payload, ...repairedContent }
+            nestedContent = repairedContent.content
+        }
+    }
+
+    if (typeof nestedContent !== 'string') {
+        throw new Error('AI 返回的正文不是可编辑文本')
+    }
+
+    let content = decodeJsonishStringValue(nestedContent).trim()
+    const repairedEnvelope = repairJsonishDraft(content)
+    if (repairedEnvelope) {
+        payload = { ...payload, ...repairedEnvelope }
+        content = repairedEnvelope.content
+    }
+
+    if (!content) {
+        throw new Error('AI 没有返回正文内容')
+    }
+    if (looksLikeDraftEnvelope(content)) {
+        throw new Error('AI 返回仍是 JSON 外壳，已阻止写入编辑器，请重新生成')
+    }
+
+    return {
+        title: typeof payload.title === 'string' ? payload.title.trim() : fallbackTitle.slice(0, 28),
+        content,
+        summary: typeof payload.summary === 'string' ? payload.summary.trim() : '',
+        category: typeof payload.category === 'string' ? payload.category : '',
+        tags: Array.isArray(payload.tags)
+            ? payload.tags.map((tag: unknown) => String(tag).trim()).filter(Boolean)
+            : []
+    }
+}
+
+const openAiDialog = () => {
+    if (!globalStore.token) {
+        message.warning('请先登录后再使用 AI 起草')
+        return
+    }
+    if (!canUseAiDraft.value) {
+        message.warning('当前账号没有 AI 起草权限')
         return
     }
 
-    aiGenerating.value = true
+    if (!aiTopic.value.trim()) {
+        aiTopic.value = buildAiDraftSeed()
+    }
+
+    aiDialogVisible.value = true
+    void loadAiDraftPacks()
+    message.info('已打开 AI 起草面板')
+}
+
+const previewAiDraftRetrieval = async () => {
+    if (!selectedAiDraftPack.value) {
+        message.warning('请先选择上下文包')
+        return
+    }
+
+    const query = aiTopic.value.trim()
+    if (!query) {
+        message.warning('请先填写起草要求')
+        return
+    }
+
+    aiDraftRetrievalLoading.value = true
     try {
-        const res = await aiArticleService.generateArticle(aiTopic.value)
-        const data = (res as any).data || res
+        const result = await aiOpsService.previewContextPackRetrieval(selectedAiDraftPack.value.id, {
+            query,
+            context_token_budget: 2600,
+            allow_embedding: Boolean(aiDraftAllowEmbedding.value)
+        })
+        aiDraftRetrieval.value = result.retrieval
+        const hitCount = result.retrieval?.snippets.length ?? 0
+        message.success(`${getDraftRetrievalLabel(result.retrieval)}预览完成，命中 ${hitCount} 段`)
+    } catch (error: any) {
+        console.error('Preview AI draft retrieval failed:', error)
+        message.error(error?.msg || error?.response?.data?.msg || '预览引用失败')
+    } finally {
+        aiDraftRetrievalLoading.value = false
+    }
+}
+
+const handleAiGenerate = async () => {
+    if (!globalStore.token) {
+        message.warning('请先登录后再使用 AI 起草')
+        return
+    }
+    if (!canUseAiDraft.value) {
+        message.warning('当前账号没有 AI 起草权限')
+        return
+    }
+
+    const topic = aiTopic.value.trim()
+    if (!topic) {
+        message.warning('请输入主题或文档概要')
+        return
+    }
+    if (aiGenerating.value) return
+
+    aiGenerating.value = true
+    aiDraftRetrieval.value = null
+    try {
+        message.info('正在调用 AI 起草，请稍候')
+        const res = await aiArticleService.generateArticle({
+            topic,
+            context_pack_id: aiDraftContextPackId.value || undefined,
+            context_token_budget: 2600,
+            allow_embedding: Boolean(aiDraftContextPackId.value && aiDraftAllowEmbedding.value)
+        })
+        const data = normalizeAiDraft(res, topic)
+        aiDraftRetrieval.value = res.retrieval || null
 
         article.title = data.title || article.title
         article.summary = data.summary || article.summary
         if (data.category) article.category = data.category
-        if (data.tags && Array.isArray(data.tags)) article.tags = data.tags
+        if (data.tags.length) article.tags = data.tags
 
-        if (quillEditor && data.content) {
-            const htmlContent = await marked.parse(data.content)
-            quillEditor.root.innerHTML = htmlContent
+        const htmlContent = await marked.parse(data.content)
+        if (quillEditor) {
+            quillEditor.setText('')
+            quillEditor.clipboard.dangerouslyPasteHTML(0, htmlContent)
             article.content = quillEditor.root.innerHTML
             updateStatsFromEditor()
             highlightEditorCode()
+        } else {
+            article.content = htmlContent
         }
 
-        message.success('AI 草稿已生成')
+        if (!article.title.trim() && !stripHtmlToText(article.content)) {
+            throw new Error('AI 没有返回可用草稿')
+        }
+
+        const retrievalText = aiDraftRetrieval.value
+            ? `，${getDraftRetrievalLabel(aiDraftRetrieval.value)}命中 ${aiDraftRetrieval.value.snippets.length} 段`
+            : ''
+        message.success(`AI 草稿已生成${retrievalText}`)
         aiDialogVisible.value = false
     } catch (error: any) {
         console.error('AI generation failed', error)
-        message.error('AI 生成失败，请检查 AI 配置')
+        message.error(resolveAiErrorMessage(error))
     } finally {
         aiGenerating.value = false
     }
@@ -297,14 +657,30 @@ const removeTag = (index: number) => {
     article.tags.splice(index, 1)
 }
 
-const handleImageUpload = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-        const formData = new FormData()
-        formData.append('image', file)
-        setTimeout(() => {
-            resolve(`https://picsum.photos/800/600?random=${Date.now()}`)
-        }, 700)
+const handleImageUpload = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch(getApiUrl('/upload'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            Authorization: globalStore.token || '',
+            'APP-ID': AppId || ''
+        },
+        body: formData
     })
+
+    const payload = await response.json()
+    if (!response.ok || payload.status !== 0) {
+        throw new Error(payload.msg || '图片上传失败')
+    }
+
+    const uploadedUrl = payload.data?.url
+    if (!uploadedUrl) throw new Error('后端未返回图片地址')
+
+    const apiPath = uploadedUrl.startsWith('/api/') ? uploadedUrl.slice(4) : uploadedUrl
+    return getApiUrl(apiPath)
 }
 
 const highlightEditorCode = () => {
@@ -432,9 +808,9 @@ const loadArticle = async () => {
 }
 
 onMounted(async () => {
-    if (!hasPermission('article:create')) {
-        message.warning('你没有创建文档的权限')
-        router.push('/')
+    if (!globalStore.token) {
+        message.warning('请先登录后再写文档')
+        router.push({ path: '/login', query: { redirect: route.fullPath } })
         return
     }
 
@@ -596,6 +972,37 @@ const handleCancel = () => {
     color: var(--button-fg);
     background: var(--button-bg);
     box-shadow: var(--ring);
+}
+
+.ai-draft-panel {
+    width: var(--page-width);
+    margin: 0 auto 18px;
+    padding: 22px;
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--card-shadow);
+}
+
+.ai-draft-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: center;
+}
+
+.ai-draft-header h2 {
+    margin: 6px 0 0;
+    color: var(--text-primary);
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+.ai-draft-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .editor-content {
@@ -872,6 +1279,77 @@ const handleCancel = () => {
     margin-bottom: 10px;
 }
 
+.ai-context-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 14px;
+    align-items: end;
+    margin-bottom: 18px;
+}
+
+.ai-context-select {
+    width: 100%;
+}
+
+.ai-rag-toggle {
+    min-height: 42px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 10px;
+    color: var(--text-primary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    cursor: pointer;
+}
+
+.ai-rag-toggle input {
+    width: 16px;
+    height: 16px;
+    grid-row: span 2;
+    accent-color: var(--button-bg);
+}
+
+.ai-rag-toggle span {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ai-rag-toggle small {
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.ai-rag-toggle.disabled {
+    cursor: not-allowed;
+    opacity: 0.68;
+}
+
+.ai-rag-result {
+    margin-top: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+}
+
+.ai-rag-result strong {
+    color: var(--text-primary);
+}
+
+.ai-rag-result small {
+    color: var(--text-muted);
+}
+
 .dialog-footer {
     display: flex;
     justify-content: flex-end;
@@ -907,12 +1385,25 @@ const handleCancel = () => {
 
 @media (max-width: 760px) {
     .editor-header,
-    .editor-toolbar-row {
+    .editor-toolbar-row,
+    .ai-draft-header {
         align-items: flex-start;
         flex-direction: column;
     }
 
     .four-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-draft-header {
+        display: flex;
+    }
+
+    .ai-draft-actions {
+        justify-content: flex-start;
+    }
+
+    .ai-context-controls {
         grid-template-columns: 1fr;
     }
 }

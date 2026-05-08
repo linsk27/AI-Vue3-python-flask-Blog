@@ -54,22 +54,29 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useGlobalStore } from '@/store'
 import articleApi from '@/api/modules/article'
 import { IArticle } from '@/api/modules/article/interface'
 import { useElMessage } from '@/hooks/useMessage'
 
 const router = useRouter()
+const globalStore = useGlobalStore()
 const { message } = useElMessage()
 
 const articles = ref<IArticle[]>([])
 const loading = ref(false)
 
 const fetchLikedArticles = async () => {
+    if (!globalStore.userInfo?.id) {
+        articles.value = []
+        message.warning('请先登录后查看我的喜欢')
+        return
+    }
+
     loading.value = true
     try {
         const res = await articleApi.getMyLikes()
-        // @ts-ignore
-        articles.value = res.data || res
+        articles.value = Array.isArray(res) ? res : (res as any)?.data || []
     } catch (error) {
         console.error('获取喜欢列表失败', error)
         message.error('获取喜欢列表失败')

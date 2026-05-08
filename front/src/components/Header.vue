@@ -20,11 +20,16 @@
             </ul>
 
             <div class="nav-actions">
-                <router-link to="/essays/write" class="write-link">
+                <router-link v-if="isLoggedIn" to="/essays/write" class="write-link">
                     <EditPen class="action-icon" />
                     <span>新建文档</span>
                 </router-link>
-                <el-dropdown trigger="hover" @command="handleCommand" placement="bottom-end">
+                <SelfCheckWidget v-if="canObserveSystem" />
+                <router-link v-if="!isLoggedIn" to="/login" class="login-link">
+                    <User class="action-icon" />
+                    <span>登录</span>
+                </router-link>
+                <el-dropdown v-else trigger="hover" @command="handleCommand" placement="bottom-end">
                     <button class="user-profile" type="button" aria-label="打开用户菜单">
                         <el-avatar :size="28" :src="userAvatar" class="avatar" />
                         <span class="username">{{ userName }}</span>
@@ -62,20 +67,51 @@ import { useRouter } from 'vue-router'
 import { ArrowDown, Document, EditPen, Star, SwitchButton, User } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
 import { useGlobalStore } from '@/store'
+import { usePermission } from '@/hooks/usePermission'
+import SelfCheckWidget from './SelfCheckWidget.vue'
 
 const { message } = useElMessage()
 const router = useRouter()
 const globalStore = useGlobalStore()
+const { hasPermission, hasAllPermissions } = usePermission()
 
+const isLoggedIn = computed(() => Boolean(globalStore.token && globalStore.userInfo?.id))
 const userName = computed(() => globalStore.userInfo?.username || '访客')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
+const canUseAi = computed(() => hasPermission('ai:access') || hasPermission('ai:manage'))
+const canManageAi = computed(() => hasPermission('ai:manage'))
+const canObserveSystem = computed(() => hasPermission('system:observe'))
+const canManageAccess = computed(() => hasAllPermissions(['user:manage', 'role:manage']))
+const canOpenAdminSettings = computed(() => canManageAi.value || canObserveSystem.value)
 
-const navItems = [
-    { path: '/', label: '工作台' },
-    { path: '/essays', label: '知识库' },
-    { path: '/context-packs', label: '上下文包' },
-    { path: '/ai-center', label: 'AI 工作台' }
-]
+const navItems = computed(() => {
+    const items = [
+        { path: '/', label: '工作台' },
+        { path: '/essays', label: '知识库' }
+    ]
+
+    if (isLoggedIn.value) {
+        items.push({ path: '/context-packs', label: '上下文包' })
+    }
+
+    if (canUseAi.value) {
+        items.push({ path: '/ai-center', label: 'AI 工作台' })
+    }
+
+    if (canObserveSystem.value) {
+        items.push({ path: '/dashboard', label: '后台看板' })
+    }
+
+    if (canOpenAdminSettings.value) {
+        items.push({ path: '/admin/settings', label: '后台设置' })
+    }
+
+    if (canManageAccess.value) {
+        items.push({ path: '/admin/access', label: '权限管理' })
+    }
+
+    return items
+})
 
 const goToHome = () => {
     router.push('/')
@@ -219,6 +255,7 @@ const handleCommand = (command: string) => {
 }
 
 .write-link,
+.login-link,
 .user-profile {
     min-height: 36px;
     display: inline-flex;
@@ -239,6 +276,17 @@ const handleCommand = (command: string) => {
 
     &:hover {
         background: var(--button-hover);
+    }
+}
+
+.login-link {
+    padding: 0 12px;
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--ring);
+
+    &:hover {
+        background: var(--surface-hover);
     }
 }
 

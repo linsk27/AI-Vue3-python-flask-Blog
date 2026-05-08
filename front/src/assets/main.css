@@ -11,32 +11,36 @@
     --font-serif: "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
     --font-sans: "Noto Sans SC", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
     --font-mono: "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
-    --anthropic-black: #141413;
-    --terracotta: #c96442;
-    --terracotta-hover: #b95739;
-    --coral: #d97757;
-    --focus-blue: #3898ec;
-    --page-bg: #f5f4ed;
-    --surface: #faf9f5;
-    --surface-subtle: #f0eee6;
-    --surface-hover: #e8e6dc;
-    --text-primary: #141413;
-    --text-secondary: #4d4c48;
-    --text-muted: #87867f;
-    --text-inverse: #faf9f5;
-    --line: #e8e6dc;
-    --button-bg: #c96442;
-    --button-fg: #faf9f5;
-    --button-hover: #b95739;
-    --badge-bg: #e8e6dc;
-    --badge-fg: #4d4c48;
-    --header-bg: rgba(245, 244, 237, 0.84);
+    --anthropic-black: #111827;
+    --terracotta: #ff6b4a;
+    --terracotta-hover: #eb5434;
+    --coral: #ff6b4a;
+    --focus-blue: #0a72ef;
+    --accent-blue: #0a72ef;
+    --accent-green: #18a058;
+    --accent-coral: #ff6b4a;
+    --accent-amber: #f59e0b;
+    --page-bg: #f7f8fb;
+    --surface: #ffffff;
+    --surface-subtle: #eef2f6;
+    --surface-hover: #e5edf7;
+    --text-primary: #111827;
+    --text-secondary: #475467;
+    --text-muted: #667085;
+    --text-inverse: #ffffff;
+    --line: #d9e2ec;
+    --button-bg: #111827;
+    --button-fg: #ffffff;
+    --button-hover: #0a72ef;
+    --badge-bg: #e8f1ff;
+    --badge-fg: #0a4fb8;
+    --header-bg: rgba(247, 248, 251, 0.86);
     --page-max: 1200px;
     --page-gutter: 16px;
     --page-width: min(var(--page-max), calc(100vw - (var(--page-gutter) * 2)));
-    --ring: #d1cfc5 0 0 0 1px;
-    --card-shadow: #f0eee6 0 0 0 1px,
-        rgba(20, 20, 19, 0.05) 0 4px 24px;
+    --ring: #d9e2ec 0 0 0 1px;
+    --card-shadow: #d9e2ec 0 0 0 1px,
+        rgba(17, 24, 39, 0.06) 0 12px 34px -18px;
 }
 
 @media (max-width: 640px) {
@@ -46,24 +50,24 @@
 }
 
 html[data-theme="dark"] {
-    --page-bg: #141413;
-    --surface: #242421;
-    --surface-subtle: #30302e;
-    --surface-hover: #3d3d3a;
-    --text-primary: #faf9f5;
-    --text-secondary: #d1cfc5;
-    --text-muted: #b0aea5;
-    --text-inverse: #141413;
-    --line: #30302e;
-    --button-bg: #d97757;
-    --button-fg: #141413;
-    --button-hover: #e8a184;
-    --badge-bg: #30302e;
-    --badge-fg: #e8e6dc;
-    --header-bg: rgba(20, 20, 19, 0.82);
-    --ring: #30302e 0 0 0 1px;
-    --card-shadow: #30302e 0 0 0 1px,
-        rgba(0, 0, 0, 0.36) 0 12px 30px -18px;
+    --page-bg: #101318;
+    --surface: #171b22;
+    --surface-subtle: #222832;
+    --surface-hover: #2d3542;
+    --text-primary: #f7f8fb;
+    --text-secondary: #c9d4e2;
+    --text-muted: #98a2b3;
+    --text-inverse: #101318;
+    --line: #2d3542;
+    --button-bg: #f7f8fb;
+    --button-fg: #101318;
+    --button-hover: #9dd2ff;
+    --badge-bg: #17324f;
+    --badge-fg: #9dd2ff;
+    --header-bg: rgba(16, 19, 24, 0.84);
+    --ring: #2d3542 0 0 0 1px;
+    --card-shadow: #2d3542 0 0 0 1px,
+        rgba(0, 0, 0, 0.38) 0 16px 36px -20px;
 }
 
 html {
@@ -78,13 +82,11 @@ body {
     min-height: 100vh;
     background-color: var(--page-bg);
     background:
-        radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--surface-subtle) 72%, transparent) 0 18%, transparent 34%),
-        radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--coral) 18%, transparent) 0 12%, transparent 28%),
-        radial-gradient(circle at 55% 95%, color-mix(in srgb, var(--terracotta) 12%, transparent) 0 16%, transparent 38%),
-        linear-gradient(var(--page-bg), var(--page-bg));
+        linear-gradient(90deg, rgba(10, 114, 239, 0.06) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(24, 160, 88, 0.05) 1px, transparent 1px),
+        linear-gradient(180deg, #fbfcfe 0%, var(--page-bg) 42%, #f2f6fb 100%);
     background-attachment: fixed;
-    background-size: 120% 120%, 130% 130%, 140% 140%, 100% 100%;
-    animation: ambient-page-drift 24s ease-in-out infinite alternate;
+    background-size: 44px 44px, 44px 44px, 100% 100%;
 }
 
 * {
@@ -166,6 +168,11 @@ textarea:focus-visible,
     border: 0 !important;
     box-shadow: var(--card-shadow) !important;
     border-radius: 8px !important;
+}
+
+body:not(.el-popup-parent--hidden) > .el-overlay:empty {
+    display: none !important;
+    pointer-events: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

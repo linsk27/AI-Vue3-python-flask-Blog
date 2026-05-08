@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ArrowRight, Key, Lock, Message, User, View } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
 import authApi from '@/api/modules/auth'
@@ -116,6 +116,7 @@ import { useGlobalStore } from '@/store'
 import { IUserInfo } from '@/api/modules/auth/interface'
 
 const router = useRouter()
+const route = useRoute()
 const { message } = useElMessage()
 const global = useGlobalStore()
 const isLoginMode = ref(true)
@@ -129,6 +130,14 @@ const formData = ref({
 
 const goHome = () => {
     router.push('/')
+}
+
+const getSafeRedirectPath = () => {
+    const redirect = route.query.redirect
+    if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')) {
+        return redirect
+    }
+    return '/'
 }
 
 const toggleMode = () => {
@@ -145,7 +154,7 @@ const login = async () => {
         if (data) {
             global.setLoginInfo(data.token, data)
             message.success('登录成功')
-            router.push('/')
+            router.push(getSafeRedirectPath())
         }
     } catch (error: any) {
         const msg = error.response?.data?.msg || error.message || '登录失败'

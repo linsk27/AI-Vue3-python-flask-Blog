@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 # jwt
 import datetime
 import jwt
-from middleware import token_required
+from middleware import permission_required, token_required
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -26,12 +26,11 @@ def register():
     
     # 获取角色，默认为 user
     # role = data.get('role', 'user') # Old logic
-    role_id = data.get('role_id') # New logic, if passed
+    role_id = None
     
     with engine.connect() as conn:
         # 如果没有指定role_id，默认使用 'user' 角色的ID
-        if not role_id:
-            role_id = conn.execute(text("SELECT id FROM roles WHERE name='user'")).scalar()
+        role_id = conn.execute(text("SELECT id FROM roles WHERE name='user'")).scalar()
             
         # 判断用户名是否存在
         existing_user = conn.execute(
@@ -146,12 +145,13 @@ def login():
     return jsonify({'status': 1, 'msg': '用户名或密码错误'}), 401
 
 @auth_bp.route('/api/users', methods=['GET'])
-def get_users():
+@permission_required('user:manage')
+def get_users(current_user_id):
     try:
         username = request.args.get('username')
         email = request.args.get('email')
         
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             sql = "SELECT id, username, avatar, created_at, role, role_id, email FROM users WHERE 1=1"
             params = {}
             
@@ -177,21 +177,32 @@ def get_users():
         return jsonify({'status': 1, 'msg': '获取用户列表失败', 'error': str(e)}), 500
 
 @auth_bp.route('/api/users/<int:user_id>', methods=['PUT'])
-def update_user(user_id):
-    data = request.get_json()
-    username = data.get('username')
-    avatar = data.get('avatar')
+@permission_required('user:manage')
+def update_user(current_user_id, user_id):
+    data = request.get_json() or {}
+    username = (data.get('username') or '').strip()
+    avatar = data.get('avatar') or ''
     password = data.get('password')
     role_id = data.get('role_id') # Accept role_id
-    email = data.get('email')
+    email = data.get('email') or ''
+
+    if not username:
+        return jsonify({'status': 1, 'msg': '用户名不能为空'}), 400
     
     try:
-        with engine.connect() as conn:
+        with engine.begin() as conn:
             # 检查用户是否存在
             existing = conn.execute(text("SELECT * FROM users WHERE id=:id"), {"id": user_id}).fetchone()
             if not existing:
                 return jsonify({'status': 1, 'msg': '用户不存在'}), 404
             
+            username_owner = conn.execute(
+                text("SELECT id FROM users WHERE username=:username AND id<>:id"),
+                {"username": username, "id": user_id}
+            ).scalar()
+            if username_owner:
+                return jsonify({'status': 1, 'msg': '用户名已存在'}), 400
+
             update_sql = "UPDATE users SET username=:username, avatar=:avatar, email=:email"
             params = {"username": username, "avatar": avatar, "id": user_id, "email": email}
             
@@ -199,9 +210,11 @@ def update_user(user_id):
                 update_sql += ", password=:password"
                 params["password"] = generate_password_hash(password)
             
-            if role_id:
+            if role_id is not None:
                 # Update role string too
                 role_name = conn.execute(text("SELECT name FROM roles WHERE id=:id"), {"id": role_id}).scalar()
+                if not role_name:
+                    return jsonify({'status': 1, 'msg': '角色不存在'}), 400
                 update_sql += ", role=:role, role_id=:role_id"
                 params["role"] = role_name
                 params["role_id"] = role_id
@@ -209,14 +222,17 @@ def update_user(user_id):
             update_sql += " WHERE id=:id"
             
             conn.execute(text(update_sql), params)
-            conn.commit()
             
             return jsonify({'status': 0, 'msg': '更新成功'})
     except Exception as e:
         return jsonify({'status': 1, 'msg': '更新失败', 'error': str(e)}), 500
 
 @auth_bp.route('/api/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@permission_required('user:manage')
+def delete_user(current_user_id, user_id):
+    if current_user_id == user_id:
+        return jsonify({'status': 1, 'msg': '不能删除当前登录用户'}), 400
+
     try:
         with engine.connect() as conn:
             conn.execute(text("DELETE FROM users WHERE id=:id"), {"id": user_id})

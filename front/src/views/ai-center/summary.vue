@@ -84,7 +84,6 @@
 import { ref } from 'vue'
 import { useElMessage } from '@/hooks/useMessage'
 import { aiSummaryService } from '@/api/modules/ai'
-import mammoth from 'mammoth'
 
 const { message } = useElMessage()
 
@@ -164,7 +163,8 @@ function handleFileUpload(event: Event) {
         const reader = new FileReader()
         reader.onload = (e) => {
             const arrayBuffer = e.target?.result as ArrayBuffer
-            mammoth.extractRawText({ arrayBuffer })
+            import('mammoth')
+                .then((module) => (module.default || module).extractRawText({ arrayBuffer }))
                 .then((result) => {
                     originalContent.value = result.value
                     message.success(`已上传 Word 文档：${file.name}`)

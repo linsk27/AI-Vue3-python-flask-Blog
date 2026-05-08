@@ -4,11 +4,59 @@ export interface ChatMessage {
     content: string
 }
 
+export interface AIRetrievalSnippet {
+    id: string
+    source_id?: number
+    source_ref_type?: string
+    source_ref_id?: number
+    title: string
+    type?: string
+    score: number
+    retrieval_mode?: 'keyword' | 'semantic'
+    tokens_estimate: number
+    content_preview?: string
+}
+
+export interface AIRetrievalMeta {
+    mode: 'keyword' | 'semantic'
+    embedding_used?: boolean
+    semantic_requested?: boolean
+    semantic_available?: boolean
+    semantic_unavailable_reason?: string
+    embedding_configured?: boolean
+    embedding_model?: string
+    embedded_chunks?: number
+    current_model_embedded_chunks?: number
+    token_budget: number
+    used_tokens_estimate: number
+    indexed_chunks?: number
+    snippets: AIRetrievalSnippet[]
+    query_terms?: string[]
+    truncated?: boolean
+}
+
+export interface AIRetrievalPreviewRequest {
+    query: string
+    context_token_budget?: number
+    allow_embedding?: boolean
+}
+
+export interface AIRetrievalPreview {
+    pack?: {
+        id: number
+        name: string
+    } | null
+    retrieval: AIRetrievalMeta | null
+    prompt_tokens_estimate: number
+}
+
 // AI 聊天请求参数接口
 export interface AIChatRequest {
     message?: string
     user_id?: string
     reset_context?: boolean
+    context_pack_id?: number | string
+    context_token_budget?: number
     system_prompt?: string
     max_tokens?: number
     temperature?: number
@@ -21,6 +69,11 @@ export interface AIChatResponseData {
     reply: string
     context_length: number
     full_response: string
+    retrieval?: AIRetrievalMeta | null
+    context_pack?: {
+        id: number
+        name: string
+    } | null
 }
 
 // AI 聊天响应接口
@@ -39,6 +92,11 @@ export interface AIStreamPayload {
     context_length?: number
     model_used?: string
     provider_used?: string
+    context_pack?: {
+        id: number
+        name: string
+    } | null
+    retrieval?: AIRetrievalMeta | null
 }
 
 export interface AIStreamHandlers {
@@ -46,6 +104,37 @@ export interface AIStreamHandlers {
     onDelta?: (content: string, payload: AIStreamPayload) => void
     onDone?: (payload: AIStreamPayload) => void
     onError?: (message: string, payload?: AIStreamPayload) => void
+}
+
+export interface AIEmbeddingConfig {
+    id?: number
+    enabled: boolean
+    configured: boolean
+    provider: string
+    model: string
+    base_url?: string
+    api_key?: string
+    api_key_masked?: string
+    notes?: string
+    source?: 'database' | 'environment'
+    updated_at?: string
+}
+
+export interface AIEmbeddingValidationCheck {
+    name: string
+    ok: boolean
+    detail: string
+}
+
+export interface AIEmbeddingValidation {
+    ok: boolean
+    network_call: boolean
+    token_cost: boolean
+    embedding_configured: boolean
+    source: 'database' | 'environment'
+    model: string
+    checks: AIEmbeddingValidationCheck[]
+    next_action: string
 }
 
 // AI 上下文响应数据接口

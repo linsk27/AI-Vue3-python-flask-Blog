@@ -155,14 +155,14 @@ async function askAi(content: string, aiMessageIndex: number) {
     });
 }
 
-function generateResponse(content: string): string {
-    const responses: Record<string, string> = {
-        '如何优化Vue3应用性能？': 'Vue3 应用性能优化可以从组件拆分、KeepAlive 缓存、虚拟列表、图片加载策略、计算属性缓存和减少不必要的响应式数据几方面入手。',
-        '介绍一下智能知识库平台的功能？': '智能知识库平台通常包含富文本发布、多维分类标签、AI 助手、全局聊天、摘要生成、数据看板和权限管理等能力。',
-        '如何使用AI智能摘要功能？': '进入智能 AI 中心的摘要页面，粘贴需要处理的文章，设置摘要长度后点击生成即可。生成后可以继续编辑或重新生成。'
-    };
-
-    return responses[content] || `我理解你想处理“${content}”。可以先告诉我目标、读者和期望输出格式，我会继续帮你整理。`;
+function buildAiFailureMessage(error?: unknown): string {
+    const errorMessage = error instanceof Error ? error.message : '';
+    if (errorMessage.includes('401')) {
+        return 'AI 请求失败：请先登录后再使用文本助手。';
+    }
+    return errorMessage
+        ? `AI 请求失败：${errorMessage}`
+        : 'AI 请求失败：请检查 AI 配置或稍后重试。';
 }
 
 async function send() {
@@ -184,10 +184,12 @@ async function send() {
         await askAi(content, aiMessageIndex);
     } catch (error) {
         console.error("AI stream request failed:", error);
-        messages.value[aiMessageIndex].content = generateResponse(content);
+        if (!messages.value[aiMessageIndex].content) {
+            messages.value[aiMessageIndex].content = buildAiFailureMessage(error);
+        }
     } finally {
         if (!messages.value[aiMessageIndex].content) {
-            messages.value[aiMessageIndex].content = "AI 回复失败";
+            messages.value[aiMessageIndex].content = buildAiFailureMessage();
         }
         isLoading.value = false;
         await nextTick(() => {

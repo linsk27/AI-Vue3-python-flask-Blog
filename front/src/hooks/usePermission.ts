@@ -11,8 +11,7 @@ export function usePermission() {
 
     // 检查是否有特定权限
     const hasPermission = (permission: string) => {
-        // 如果是管理员，通常拥有所有权限，或者特定超级权限
-        // 这里假设 role 为 admin 的用户拥有所有权限
+        // 后端同样把 admin 视为超级管理员，这里保持前端展示逻辑一致
         if (globalStore.userInfo?.role === 'admin') {
             return true
         }

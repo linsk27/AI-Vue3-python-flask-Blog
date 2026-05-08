@@ -14,7 +14,13 @@
                         <span v-if="article.created_at">创建于 {{ formatDate(article.created_at) }}</span>
                         <span v-if="article.author_name">作者 {{ article.author_name }}</span>
                         <span>{{ article.views || 0 }} 次浏览</span>
-                        <button class="favorite-btn" type="button" @click="toggleLike" :class="{ 'is-liked': article.is_liked }">
+                        <button
+                            class="favorite-btn"
+                            type="button"
+                            @click="toggleLike"
+                            :class="{ 'is-liked': article.is_liked }"
+                            :title="isLoggedIn ? '收藏这篇文档' : '登录后可收藏文档'"
+                        >
                             <Star class="meta-icon" />
                             <span>{{ article.likes || 0 }} 次收藏</span>
                         </button>
@@ -40,9 +46,14 @@
                     </div>
 
                     <div class="comment-input-box">
-                        <textarea v-model="commentContent" placeholder="写下问题、补充说明或讨论内容..." class="comment-textarea"></textarea>
+                        <textarea
+                            v-model="commentContent"
+                            :placeholder="isLoggedIn ? '写下问题、补充说明或讨论内容...' : '登录后可以参与讨论'"
+                            :disabled="!isLoggedIn"
+                            class="comment-textarea"
+                        ></textarea>
                         <div class="input-footer">
-                            <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment">
+                            <button class="submit-comment-btn" @click="submitComment" :disabled="submittingComment || !isLoggedIn">
                                 {{ submittingComment ? '提交中...' : '发布讨论' }}
                             </button>
                         </div>
@@ -91,10 +102,10 @@
                         <QuestionFilled class="action-icon" />
                         <span>生成复习问题</span>
                     </button>
-                    <router-link class="panel-link" to="/context-packs">
+                    <button type="button" @click="openAddToContextPack">
                         <FolderAdd class="action-icon" />
                         <span>加入上下文包</span>
-                    </router-link>
+                    </button>
                     <router-link class="panel-link" to="/ai-center/chat">
                         <ChatDotRound class="action-icon" />
                         <span>进入上下文对话</span>
@@ -125,27 +136,77 @@
                 </div>
             </aside>
         </div>
+
+        <el-dialog v-model="contextPackDialogVisible" width="520px" custom-class="context-pack-dialog">
+            <template #header>
+                <div class="dialog-heading">
+                    <span class="eyebrow">Context Pack</span>
+                    <h2>加入上下文包</h2>
+                </div>
+            </template>
+
+            <div class="dialog-body">
+                <p class="dialog-intro" v-if="article">
+                    将《{{ article.title }}》作为资料源加入上下文包，之后可以导出提示词或用于 AI 问答。
+                </p>
+
+                <label class="dialog-label">选择已有上下文包</label>
+                <el-select
+                    v-model="selectedContextPackId"
+                    class="dialog-control"
+                    filterable
+                    clearable
+                    :loading="loadingContextPacks"
+                    placeholder="选择一个上下文包"
+                >
+                    <el-option
+                        v-for="pack in contextPackOptions"
+                        :key="pack.id"
+                        :label="pack.name"
+                        :value="pack.id"
+                    />
+                </el-select>
+
+                <div class="or-divider">或</div>
+
+                <label class="dialog-label">创建新上下文包</label>
+                <el-input v-model="newContextPackName" placeholder="例如：项目答辩资料包" />
+            </div>
+
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="contextPackDialogVisible = false">取消</el-button>
+                    <el-button type="primary" :loading="addingToContextPack" @click="addArticleToContextPack">
+                        加入包
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { ref, onMounted, shallowRef } from 'vue'
+import { computed, ref, onMounted, shallowRef } from 'vue'
 import { ChatDotRound, DocumentChecked, FolderAdd, PriceTag, QuestionFilled, Star } from '@element-plus/icons-vue'
 import articleApi, { IComment } from '@/api/modules/article'
 import { aiSummaryService } from '@/api/modules/ai'
 import { IArticle } from '@/api/modules/article/interface'
+import contextPackApi, { type ContextPack } from '@/api/modules/contextPacks'
 import { useElMessage } from '@/hooks/useMessage'
+import { useGlobalStore } from '@/store'
 import { useCacheStore } from '@/store/cache'
 import 'quill/dist/quill.snow.css'
-import { articles as localArticles } from './articles/index'
 import { marked } from 'marked'
-import hljs from 'highlight.js'
+import { getHighlight } from '@/utils/highlight'
 import 'highlight.js/styles/atom-one-dark.css'
 
 const route = useRoute()
 const { message } = useElMessage()
+const globalStore = useGlobalStore()
 const cacheStore = useCacheStore()
+const hljs = getHighlight()
+const isLoggedIn = computed(() => Boolean(globalStore.token && globalStore.userInfo?.id))
 const article = ref<IArticle | null>(null)
 const loading = ref(false)
 const activeComponent = shallowRef<any>(null)
@@ -162,6 +223,12 @@ const insightQuestions = ref<string[]>([
     '哪些部分最适合加入上下文包？',
     '读完这份文档后下一步应该做什么？'
 ])
+const contextPackDialogVisible = ref(false)
+const contextPackOptions = ref<ContextPack[]>([])
+const selectedContextPackId = ref<number | null>(null)
+const newContextPackName = ref('')
+const loadingContextPacks = ref(false)
+const addingToContextPack = ref(false)
 
 marked.setOptions({
     highlight: function (code: string, lang: string) {
@@ -230,18 +297,31 @@ const statusLabels: Record<string, string> = {
 const getDocumentTypeLabel = (item: IArticle) => typeLabels[slugifyType(item.resource_type || item.category)] || '文档'
 const getDocumentStatusLabel = (item: IArticle) => statusLabels[item.document_status || item.status || 'published'] || '已发布'
 
+const requireLogin = (action: string) => {
+    if (isLoggedIn.value) return true
+    message.warning(`请先登录后再${action}`)
+    return false
+}
+
 const fetchComments = async () => {
     const id = route.params.id as string
     if (!id) return
     try {
         const res = await articleApi.getComments(id)
-        comments.value = (res as any).data || res
+        const payload = (res as any)?.data || res
+        comments.value = Array.isArray(payload) ? payload : []
+        if (article.value) {
+            ;(article.value as any).comments_count = comments.value.length
+        }
     } catch (error) {
         console.error('Failed to fetch discussion:', error)
+        comments.value = []
     }
 }
 
 const submitComment = async () => {
+    if (!requireLogin('发布讨论')) return
+
     if (!commentContent.value.trim()) {
         message.warning('请输入讨论内容')
         return
@@ -256,7 +336,7 @@ const submitComment = async () => {
         await fetchComments()
     } catch (error) {
         console.error('Failed to post discussion:', error)
-        message.error('发布失败，请先登录')
+        message.error('发布失败，请稍后重试')
     } finally {
         submittingComment.value = false
     }
@@ -264,15 +344,18 @@ const submitComment = async () => {
 
 const toggleLike = async () => {
     if (!article.value) return
+    if (!requireLogin('收藏文档')) return
+
     try {
         const res = await articleApi.toggleLike(article.value.id)
         if (article.value) {
-            article.value.is_liked = res.liked
-            article.value.likes = res.likes
+            article.value.is_liked = Boolean(res?.liked)
+            article.value.likes = Number(res?.likes || 0)
+            cacheStore.setArticleDetail(String(article.value.id), article.value)
         }
     } catch (error) {
         console.error('Favorite failed:', error)
-        message.error('操作失败，请先登录')
+        message.error('收藏状态更新失败')
     }
 }
 
@@ -290,7 +373,11 @@ const getReadableText = () => {
 
 const generateAiSummary = async () => {
     if (!article.value) return
-    if (aiSummary.value) return
+    if (!requireLogin('生成 AI 摘要')) return
+    if (aiSummary.value) {
+        message.info('摘要已生成')
+        return
+    }
 
     isAiGenerating.value = true
 
@@ -299,6 +386,7 @@ const generateAiSummary = async () => {
 
         if (!contentToSummarize || contentToSummarize.length < 50) {
             aiSummary.value = '这份文档内容较短，暂时无法生成有效摘要。'
+            message.info('文档内容较短，已给出本地提示')
             return
         }
 
@@ -311,6 +399,7 @@ const generateAiSummary = async () => {
 
         if (summaryText) {
             aiSummary.value = summaryText
+            article.value.ai_summary = summaryText
         } else {
             throw new Error('No summary returned')
         }
@@ -332,6 +421,9 @@ const generateLocalKeywords = () => {
         .slice(0, 6)
 
     insightKeywords.value = Array.from(new Set([...tags, ...titleWords])).slice(0, 10)
+    if (insightKeywords.value.length === 0) {
+        message.info('当前文档暂时没有可提取的关键词')
+    }
 }
 
 const generateLocalQuestions = () => {
@@ -343,40 +435,109 @@ const generateLocalQuestions = () => {
     ]
 }
 
+const getArticleSourcePayload = () => {
+    if (!article.value) return null
+
+    const articleId = Number(article.value.id)
+    if (Number.isFinite(articleId)) {
+        return {
+            article_ids: [articleId],
+            sources: []
+        }
+    }
+
+    return {
+        article_ids: [],
+        sources: [
+            {
+                title: article.value.title,
+                type: getDocumentTypeLabel(article.value),
+                ref_type: 'local-article',
+                content: getReadableText().slice(0, 1800),
+                weight: '高',
+                status: '已接入'
+            }
+        ]
+    }
+}
+
+const loadContextPackOptions = async () => {
+    loadingContextPacks.value = true
+    try {
+        contextPackOptions.value = await contextPackApi.getList()
+    } catch (error: any) {
+        console.error('Load context packs failed:', error)
+        if (error?.response?.status === 404) {
+            message.error('后端还没有上下文包接口，请重启或重新部署 backend')
+        } else {
+            message.error('上下文包列表加载失败')
+        }
+    } finally {
+        loadingContextPacks.value = false
+    }
+}
+
+const openAddToContextPack = async () => {
+    if (!article.value) return
+    if (!requireLogin('加入上下文包')) return
+
+    contextPackDialogVisible.value = true
+    selectedContextPackId.value = null
+    newContextPackName.value = ''
+    await loadContextPackOptions()
+}
+
+const addArticleToContextPack = async () => {
+    if (!article.value) return
+
+    const payload = getArticleSourcePayload()
+    if (!payload) return
+
+    if (!selectedContextPackId.value && !newContextPackName.value.trim()) {
+        message.warning('请选择已有上下文包，或填写一个新包名称')
+        return
+    }
+
+    addingToContextPack.value = true
+    try {
+        if (selectedContextPackId.value) {
+            try {
+                await contextPackApi.addSources(selectedContextPackId.value, payload)
+            } catch (error: any) {
+                if (error?.response?.status !== 404) throw error
+                await contextPackApi.addSourcesCompat(selectedContextPackId.value, payload)
+            }
+            message.success('文章已加入上下文包')
+        } else {
+            await contextPackApi.create({
+                name: newContextPackName.value.trim(),
+                type: 'project',
+                intent: '',
+                description: article.value.summary || '',
+                tags: article.value.tags || [],
+                article_ids: payload.article_ids,
+                sources: payload.sources
+            })
+            message.success('已创建上下文包并加入当前文章')
+        }
+
+        contextPackDialogVisible.value = false
+    } catch (error: any) {
+        console.error('Add article to context pack failed:', error)
+        if (error?.response?.status === 404) {
+            message.error('加入失败：后端上下文包接口未更新，请重启或重新部署 backend')
+        } else {
+            message.error(error?.msg || '加入上下文包失败')
+        }
+    } finally {
+        addingToContextPack.value = false
+    }
+}
+
 onMounted(async () => {
     window.scrollTo(0, 0)
     const id = route.params.id as string
     if (!id) return
-
-    const localArticle = localArticles.find(a => a.id === id)
-    if (localArticle) {
-        article.value = {
-            ...localArticle,
-            tags: [...(localArticle.tags || []), 'example'],
-            resource_type: 'technical-doc',
-            document_status: 'organized',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            author_name: '语境工坊团队',
-            views: 0,
-            likes: 0,
-            content: ''
-        }
-
-        generateLocalKeywords()
-
-        if (localArticle.component) {
-            try {
-                const compModule = await localArticle.component()
-                activeComponent.value = compModule.default || compModule
-            } catch (err) {
-                console.error('Failed to load component:', err)
-                message.error('组件加载失败')
-            }
-        }
-        loading.value = false
-        return
-    }
 
     const cachedArticle = cacheStore.getArticleDetail(id)
     if (cachedArticle) {
@@ -962,6 +1123,57 @@ onMounted(async () => {
     align-items: center;
     gap: 10px;
     color: var(--text-secondary);
+}
+
+.dialog-heading h2 {
+    margin: 12px 0 0;
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+.dialog-body {
+    display: grid;
+    gap: 10px;
+}
+
+.dialog-intro {
+    margin: 0 0 6px;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+.dialog-label {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.dialog-control {
+    width: 100%;
+}
+
+.or-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.or-divider::before,
+.or-divider::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: var(--line);
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 .spinner {

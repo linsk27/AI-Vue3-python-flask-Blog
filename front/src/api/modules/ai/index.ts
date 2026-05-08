@@ -1,14 +1,10 @@
 import request from '@/api'
 import { useGlobalStore } from '@/store'
+import { getApiUrl } from '@/api/config'
 import { AI_CHAT_API, AI_CHAT_STREAM_API, AI_CONTEXT_API, AI_SUMMARY_API } from './url.const'
-import type { AIChatRequest, AIChatResponse, AISummaryRequest, AISummaryResponse, AIContextResponse, AIStreamHandlers, AIStreamPayload } from './interface'
+import type { AIChatRequest, AIChatResponse, AISummaryRequest, AISummaryResponse, AIContextResponse, AIEmbeddingConfig, AIEmbeddingValidation, AIRetrievalPreview, AIRetrievalPreviewRequest, AIStreamHandlers, AIStreamPayload } from './interface'
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || ''
 const AppId = import.meta.env.VITE_APP_ID
-
-function getApiUrl(url: string) {
-    return `${baseURL}${url}`
-}
 
 function dispatchStreamPayload(payload: AIStreamPayload, handlers: AIStreamHandlers) {
     if (payload.type === 'start') {
@@ -81,7 +77,17 @@ export const aiChatService = {
         })
 
         if (!response.ok || !response.body) {
-            const message = `AI 服务请求失败：${response.status}`
+            let serverMessage = ''
+            try {
+                const payload = await response.clone().json()
+                serverMessage = payload?.msg || payload?.message || ''
+            } catch (error) {
+                serverMessage = ''
+            }
+
+            const message = response.status === 401
+                ? '请先登录后再使用 AI 对话'
+                : serverMessage || `AI 服务请求失败：${response.status}`
             handlers.onError?.(message)
             throw new Error(message)
         }
@@ -130,20 +136,46 @@ export const aiChatService = {
 /**
  * AI 摘要服务
  */
+export const aiOpsService = {
+    getEmbeddingConfig: () => {
+        return request.get<AIEmbeddingConfig>('/ai/embedding-config')
+    },
+    saveEmbeddingConfig: (params: Partial<AIEmbeddingConfig>) => {
+        return request.post<AIEmbeddingConfig>('/ai/embedding-config', params)
+    },
+    validateEmbeddingConfig: (params?: Partial<AIEmbeddingConfig>) => {
+        return request.post<AIEmbeddingValidation>('/ai/embedding-config/validate', params || {})
+    },
+    previewContextPackRetrieval: (packId: number | string, params: AIRetrievalPreviewRequest) => {
+        return request.post<AIRetrievalPreview>(`/ai/context-packs/${packId}/retrieve`, params)
+    }
+}
+
 export const aiArticleService = {
     /**
      * 生成文章
      * @param topic 文章主题或概要
      * @returns 文章内容
      */
-    generateArticle: (topic: string) => {
+    generateArticle: (params: string | {
+        topic: string
+        context_pack_id?: number | string
+        context_token_budget?: number
+        allow_embedding?: boolean
+    }) => {
+        const payload = typeof params === 'string' ? { topic: params } : params
         return request.post<{
             title: string
             content: string
             summary: string
             category: string
             tags: string[]
-        }>('/ai/generate-article', { topic })
+            retrieval?: AIRetrievalMeta | null
+            context_pack?: {
+                id: number
+                name: string
+            } | null
+        }>('/ai/generate-article', payload)
     }
 }
 

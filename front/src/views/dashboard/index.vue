@@ -5,7 +5,7 @@
             <!-- 页面头部 -->
             <header class="dashboard-header">
                 <div class="header-left">
-                    <div class="header-icon">📊</div>
+                    <DataAnalysis class="header-icon" />
                     <div class="header-info">
                         <h1 class="dashboard-title">数据分析看板</h1>
                         <p class="dashboard-subtitle">数据驱动的知识管理与决策</p>
@@ -25,61 +25,15 @@
                 <!-- 数据概览卡片 -->
                 <section class="overview-section">
                     <div class="overview-grid">
-                        <div class="overview-card">
+                        <div v-for="card in overviewCards" :key="card.label" class="overview-card">
                             <div class="card-header">
-                                <h3 class="card-title">总文章数</h3>
-                                <div class="card-icon">📄</div>
+                                <h3 class="card-title">{{ card.label }}</h3>
+                                <component :is="card.icon" class="card-icon" />
                             </div>
                             <div class="card-content">
-                                <div class="card-value">{{ overviewData.totalArticles }}</div>
-                                <div class="card-change"
-                                    :class="overviewData.articleChange >= 0 ? 'positive' : 'negative'">
-                                    {{ overviewData.articleChange >= 0 ? '+' : '' }}{{ overviewData.articleChange }}%
-                                    <span>较上月</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="overview-card">
-                            <div class="card-header">
-                                <h3 class="card-title">总阅读量</h3>
-                                <div class="card-icon">👁️</div>
-                            </div>
-                            <div class="card-content">
-                                <div class="card-value">{{ formatNumber(overviewData.totalReads) }}</div>
-                                <div class="card-change"
-                                    :class="overviewData.readChange >= 0 ? 'positive' : 'negative'">
-                                    {{ overviewData.readChange >= 0 ? '+' : '' }}{{ overviewData.readChange }}%
-                                    <span>较上月</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="overview-card">
-                            <div class="card-header">
-                                <h3 class="card-title">活跃用户</h3>
-                                <div class="card-icon">👥</div>
-                            </div>
-                            <div class="card-content">
-                                <div class="card-value">{{ overviewData.activeUsers }}</div>
-                                <div class="card-change"
-                                    :class="overviewData.userChange >= 0 ? 'positive' : 'negative'">
-                                    {{ overviewData.userChange >= 0 ? '+' : '' }}{{ overviewData.userChange }}%
-                                    <span>较上月</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="overview-card">
-                            <div class="card-header">
-                                <h3 class="card-title">AI使用次数</h3>
-                                <div class="card-icon">🤖</div>
-                            </div>
-                            <div class="card-content">
-                                <div class="card-value">{{ overviewData.aiUsage }}</div>
-                                <div class="card-change" :class="overviewData.aiChange >= 0 ? 'positive' : 'negative'">
-                                    {{ overviewData.aiChange >= 0 ? '+' : '' }}{{ overviewData.aiChange }}%
-                                    <span>较上月</span>
+                                <div class="card-value">{{ card.value }}</div>
+                                <div class="card-change neutral">
+                                    <span>{{ card.helper }}</span>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +44,7 @@
                 <section class="navigation-section">
                     <div class="navigation-grid">
                         <div class="navigation-card" @click="goToPersonalDashboard">
-                            <div class="navigation-icon">👤</div>
+                            <User class="navigation-icon" />
                             <h3 class="navigation-title">个人数据看板</h3>
                             <p class="navigation-description">查看您个人的创作、阅读和互动数据</p>
                             <div class="navigation-action">
@@ -100,7 +54,7 @@
                         </div>
 
                         <div class="navigation-card" @click="goToTeamDashboard">
-                            <div class="navigation-icon">👥</div>
+                            <UserFilled class="navigation-icon" />
                             <h3 class="navigation-title">团队数据看板</h3>
                             <p class="navigation-description">查看团队的知识产出和协作数据</p>
                             <div class="navigation-action">
@@ -134,19 +88,15 @@
                                 </div>
                             </div>
                             <div class="chart-content">
-                                <div ref="articleChartRef" class="chart-container">
-                                    <div class="article-trend-placeholder">
-                                        <div class="trend-line"></div>
-                                        <div class="trend-points">
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
-                                            <div class="trend-point"></div>
+                                <div class="chart-container">
+                                    <div class="real-bar-chart" v-if="articleTrend.length">
+                                        <div v-for="point in articleTrend" :key="point.label" class="trend-bar">
+                                            <strong :style="{ height: `${point.percent}%` }"></strong>
+                                            <span>{{ point.label }}</span>
+                                            <small>{{ point.count }}</small>
                                         </div>
                                     </div>
+                                    <div v-else class="chart-empty">所选范围内暂无文章</div>
                                 </div>
                             </div>
                         </div>
@@ -157,16 +107,17 @@
                                 <h3 class="chart-title">阅读量分布</h3>
                             </div>
                             <div class="chart-content">
-                                <div ref="readChartRef" class="chart-container">
-                                    <div class="read-distribution-placeholder">
-                                        <div class="distribution-chart">
-                                            <div class="distribution-bar"></div>
-                                            <div class="distribution-bar"></div>
-                                            <div class="distribution-bar"></div>
-                                            <div class="distribution-bar"></div>
-                                            <div class="distribution-bar"></div>
+                                <div class="chart-container">
+                                    <div class="rank-bars" v-if="readDistribution.length">
+                                        <div v-for="item in readDistribution" :key="item.id" class="rank-row">
+                                            <span>{{ item.title }}</span>
+                                            <strong>
+                                                <i :style="{ width: `${item.percent}%` }"></i>
+                                            </strong>
+                                            <small>{{ formatNumber(item.views) }}</small>
                                         </div>
                                     </div>
+                                    <div v-else class="chart-empty">暂无阅读量数据</div>
                                 </div>
                             </div>
                         </div>
@@ -223,65 +174,118 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Collection, DataAnalysis, Document, User, UserFilled, View } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
+import http from '@/api'
+import articleApi from '@/api/modules/article'
+import type { IArticle } from '@/api/modules/article/interface'
+import contextPackApi, { type ContextPackStats } from '@/api/modules/contextPacks'
 
 const { message } = useElMessage()
 
 const router = useRouter()
 
-// 时间范围
-const dateRange = ref(['2026-01-01', '2026-01-31'])
-const selectedRange = ref('month')
+interface DashboardUser {
+    id: number
+    username: string
+    created_at?: string
+}
 
-// 概览数据
-const overviewData = ref({
-    totalArticles: 125,
-    articleChange: 15.2,
-    totalReads: 35682,
-    readChange: 8.7,
-    activeUsers: 245,
-    userChange: 12.3,
-    aiUsage: 892,
-    aiChange: 25.8
+function getCurrentMonthRange() {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+    return [formatDateValue(start), formatDateValue(now)]
+}
+
+function formatDateValue(date: Date) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+const dateRange = ref(getCurrentMonthRange())
+const selectedRange = ref('month')
+const articles = ref<IArticle[]>([])
+const users = ref<DashboardUser[]>([])
+const contextStats = ref<ContextPackStats | null>(null)
+
+const totalReads = computed(() => articles.value.reduce((total, article) => total + (Number(article.views) || 0), 0))
+
+const overviewCards = computed(() => [
+    { label: '总文档数', value: articles.value.length, helper: '来自 articles 表', icon: Document },
+    { label: '总浏览量', value: formatNumber(totalReads.value), helper: '按真实浏览量汇总', icon: View },
+    { label: '用户数', value: users.value.length, helper: '来自 users 表', icon: UserFilled },
+    { label: '上下文包', value: contextStats.value?.packs ?? 0, helper: '来自 context_packs 表', icon: Collection }
+])
+
+const filteredArticles = computed(() => {
+    const [start, end] = dateRange.value || []
+    if (!start || !end) return articles.value
+    const startTime = new Date(`${start}T00:00:00`).getTime()
+    const endTime = new Date(`${end}T23:59:59`).getTime()
+    return articles.value.filter(article => {
+        const time = getArticleTime(article)
+        return time >= startTime && time <= endTime
+    })
 })
 
-// 热门标签
-const topTags = ref([
-    { name: 'Vue3', count: 45 },
-    { name: 'JavaScript', count: 38 },
-    { name: 'TypeScript', count: 32 },
-    { name: '前端开发', count: 28 },
-    { name: '性能优化', count: 22 },
-    { name: 'AI', count: 18 },
-    { name: '数据可视化', count: 15 },
-    { name: '组件设计', count: 12 },
-    { name: '响应式设计', count: 10 },
-    { name: '工程化', count: 8 }
-])
+const topTags = computed(() => {
+    const map = new Map<string, number>()
+    articles.value.forEach(article => {
+        ;(article.tags || []).forEach(tag => map.set(tag, (map.get(tag) || 0) + 1))
+    })
+    return Array.from(map.entries())
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+})
 
-// 活跃作者
-const topAuthors = ref([
-    { name: '张三', articles: 15, reads: 8952, rank: 1 },
-    { name: '李四', articles: 12, reads: 6789, rank: 2 },
-    { name: '王五', articles: 10, reads: 5421, rank: 3 },
-    { name: '赵六', articles: 8, reads: 4321, rank: 4 },
-    { name: '孙七', articles: 7, reads: 3892, rank: 5 }
-])
+const topAuthors = computed(() => {
+    const map = new Map<string, { name: string; articles: number; reads: number }>()
+    articles.value.forEach(article => {
+        const name = article.author_name || `用户 ${article.author_id || '未知'}`
+        const current = map.get(name) || { name, articles: 0, reads: 0 }
+        current.articles += 1
+        current.reads += Number(article.views) || 0
+        map.set(name, current)
+    })
+    return Array.from(map.values())
+        .sort((a, b) => b.articles - a.articles || b.reads - a.reads)
+        .slice(0, 5)
+        .map((author, index) => ({ ...author, rank: index + 1 }))
+})
 
-// 图表引用
-const articleChartRef = ref<HTMLElement | null>(null)
-const readChartRef = ref<HTMLElement | null>(null)
+const articleTrend = computed(() => {
+    const points = buildArticleTrend(filteredArticles.value, selectedRange.value)
+    const maxCount = Math.max(...points.map(point => point.count), 1)
+    return points.map(point => ({
+        ...point,
+        percent: point.count ? Math.max(8, Math.round((point.count / maxCount) * 100)) : 2
+    }))
+})
 
-// 选择时间范围
+const readDistribution = computed(() => {
+    const items = articles.value
+        .filter(article => (Number(article.views) || 0) > 0)
+        .sort((a, b) => (Number(b.views) || 0) - (Number(a.views) || 0))
+        .slice(0, 5)
+    const maxViews = Math.max(...items.map(article => Number(article.views) || 0), 1)
+    return items.map(article => ({
+        id: article.id,
+        title: article.title,
+        views: Number(article.views) || 0,
+        percent: Math.max(6, Math.round(((Number(article.views) || 0) / maxViews) * 100))
+    }))
+})
+
 function selectTimeRange(range: 'week' | 'month' | 'year') {
     selectedRange.value = range
-    // 在实际项目中，这里会更新图表数据
     message.info(`已切换到${range === 'week' ? '周' : range === 'month' ? '月' : '年'}度数据`)
 }
 
-// 格式化数字
 function formatNumber(num: number): string {
     if (num >= 10000) {
         return (num / 10000).toFixed(1) + '万'
@@ -289,31 +293,74 @@ function formatNumber(num: number): string {
     return num.toString()
 }
 
-// 跳转到个人数据看板
+function getArticleTime(article: IArticle) {
+    const date = new Date(article.created_at || article.updated_at || '')
+    return Number.isNaN(date.getTime()) ? 0 : date.getTime()
+}
+
+function buildArticleTrend(sourceArticles: IArticle[], range: string) {
+    const now = new Date()
+    const bucketCount = range === 'week' ? 7 : range === 'year' ? 12 : 6
+    const buckets = Array.from({ length: bucketCount }, (_, index) => {
+        const date = new Date(now)
+        if (range === 'year') {
+            date.setMonth(now.getMonth() - (bucketCount - 1 - index), 1)
+            return {
+                key: `${date.getFullYear()}-${date.getMonth()}`,
+                label: `${date.getMonth() + 1}月`,
+                count: 0
+            }
+        }
+
+        date.setDate(now.getDate() - (bucketCount - 1 - index))
+        return {
+            key: formatDateValue(date),
+            label: range === 'week' ? `${date.getMonth() + 1}/${date.getDate()}` : `${date.getDate()}日`,
+            count: 0
+        }
+    })
+
+    const bucketMap = new Map(buckets.map(bucket => [bucket.key, bucket]))
+    sourceArticles.forEach(article => {
+        const date = new Date(getArticleTime(article))
+        if (Number.isNaN(date.getTime())) return
+        const key = range === 'year' ? `${date.getFullYear()}-${date.getMonth()}` : formatDateValue(date)
+        const bucket = bucketMap.get(key)
+        if (bucket) bucket.count += 1
+    })
+
+    return buckets
+}
+
 function goToPersonalDashboard() {
     router.push('/dashboard/personal')
 }
 
-// 跳转到团队数据看板
 function goToTeamDashboard() {
     router.push('/dashboard/team')
 }
 
-// 初始化图表（模拟）
-function initCharts() {
-    // 在实际项目中，这里会使用ECharts或D3.js初始化图表
-    console.log('初始化图表')
+async function loadDashboardData() {
+    try {
+        const [articleList, userList, stats] = await Promise.all([
+            articleApi.getList(),
+            http.get<DashboardUser[]>('/users'),
+            contextPackApi.getStats()
+        ])
+        articles.value = Array.isArray(articleList) ? articleList : []
+        users.value = Array.isArray(userList) ? userList : []
+        contextStats.value = stats
+    } catch (error) {
+        console.error('Load dashboard data failed:', error)
+        articles.value = []
+        users.value = []
+        contextStats.value = null
+        message.error('真实看板数据加载失败')
+    }
 }
 
-// 生命周期钩子
 onMounted(() => {
-    initCharts()
-})
-
-// 监听时间范围变化
-watch(dateRange, (newRange) => {
-    // 在实际项目中，这里会根据新的时间范围更新数据
-    console.log('时间范围变化:', newRange)
+    loadDashboardData()
 })
 </script>
 
@@ -341,7 +388,10 @@ watch(dateRange, (newRange) => {
 }
 
 .header-icon {
-    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: #FF7F50;
+    flex-shrink: 0;
 }
 
 .header-info {
@@ -414,7 +464,10 @@ watch(dateRange, (newRange) => {
 }
 
 .card-icon {
-    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #FF7F50;
+    flex-shrink: 0;
 }
 
 .card-content {
@@ -443,6 +496,10 @@ watch(dateRange, (newRange) => {
 
 .card-change.negative {
     color: #F44336;
+}
+
+.card-change.neutral {
+    color: #777;
 }
 
 .card-change span {
@@ -496,8 +553,12 @@ watch(dateRange, (newRange) => {
 }
 
 .navigation-icon {
-    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #FF7F50;
     margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
 }
 
 .navigation-title {
@@ -614,125 +675,80 @@ watch(dateRange, (newRange) => {
     overflow: hidden;
 }
 
-/* 模拟图表内容 */
-.chart-placeholder {
+.chart-empty {
+    color: #999;
+    font-size: 0.95rem;
+}
+
+.real-bar-chart {
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+    align-items: end;
+    gap: 0.75rem;
+    padding: 1.25rem;
     box-sizing: border-box;
 }
 
-/* 文章增长趋势图表模拟 */
-.article-trend-placeholder {
-    position: relative;
-    width: 100%;
+.trend-bar {
+    min-width: 0;
     height: 100%;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    align-items: end;
+    gap: 0.45rem;
+    text-align: center;
 }
 
-.trend-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+.trend-bar strong {
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            transparent 0%, transparent 10%,
-            rgba(255, 127, 80, 0.1) 10%, rgba(255, 127, 80, 0.1) 15%,
-            transparent 15%, transparent 25%,
-            rgba(255, 127, 80, 0.2) 25%, rgba(255, 127, 80, 0.2) 30%,
-            transparent 30%, transparent 40%,
-            rgba(255, 127, 80, 0.3) 40%, rgba(255, 127, 80, 0.3) 45%,
-            transparent 45%, transparent 55%,
-            rgba(255, 127, 80, 0.4) 55%, rgba(255, 127, 80, 0.4) 60%,
-            transparent 60%, transparent 70%,
-            rgba(255, 127, 80, 0.5) 70%, rgba(255, 127, 80, 0.5) 75%,
-            transparent 75%, transparent 85%,
-            rgba(255, 127, 80, 0.6) 85%, rgba(255, 127, 80, 0.6) 90%,
-            transparent 90%, transparent 100%);
+    min-height: 4px;
+    border-radius: 6px 6px 2px 2px;
+    background: linear-gradient(to top, #FF7F50, rgba(255, 127, 80, 0.56));
 }
 
-.trend-points {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    padding: 0 2rem;
-    box-sizing: border-box;
+.trend-bar span,
+.trend-bar small,
+.rank-row small {
+    color: #777;
+    font-size: 0.78rem;
 }
 
-.trend-point {
-    width: 12px;
-    height: 12px;
-    background: #FF7F50;
-    border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(255, 127, 80, 0.3);
+.rank-bars {
+    width: 100%;
+    display: grid;
+    gap: 0.8rem;
+    padding: 1.25rem;
 }
 
-/* 阅读量分布图表模拟 */
-.read-distribution-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
+.rank-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 42%) 56px;
     align-items: center;
-    justify-content: center;
+    gap: 0.85rem;
 }
 
-.distribution-chart {
-    width: 100%;
+.rank-row span {
+    overflow: hidden;
+    color: #444;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rank-row strong {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 127, 80, 0.12);
+}
+
+.rank-row i {
+    display: block;
     height: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    padding: 0 2rem;
-    box-sizing: border-box;
-}
-
-.distribution-bar {
-    width: 15%;
-    background: linear-gradient(to top, #FF7F50, rgba(255, 127, 80, 0.6));
-    border-radius: 4px 4px 0 0;
-    animation: pulse 2s ease-in-out infinite alternate;
-}
-
-.distribution-bar:nth-child(1) {
-    height: 60%;
-    animation-delay: 0s;
-}
-
-.distribution-bar:nth-child(2) {
-    height: 85%;
-    animation-delay: 0.2s;
-}
-
-.distribution-bar:nth-child(3) {
-    height: 50%;
-    animation-delay: 0.4s;
-}
-
-.distribution-bar:nth-child(4) {
-    height: 75%;
-    animation-delay: 0.6s;
-}
-
-.distribution-bar:nth-child(5) {
-    height: 40%;
-    animation-delay: 0.8s;
-}
-
-@keyframes pulse {
-    from {
-        opacity: 0.6;
-    }
-
-    to {
-        opacity: 1;
-    }
+    border-radius: inherit;
+    background: #FF7F50;
 }
 
 /* 热门标签和作者 */

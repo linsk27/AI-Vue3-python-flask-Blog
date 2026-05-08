@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { onMounted } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import authApi from '@/api/modules/auth'
 import { useGlobalStore } from '@/store'
 import Header from '@/components/Header.vue'
@@ -24,6 +24,29 @@ import TextSelectAi from './components/TextSelectAi/index.vue'
 
 const route = useRoute()
 const globalStore = useGlobalStore()
+let overlayCleanupTimer: number | undefined
+let overlayObserver: MutationObserver | null = null
+
+function cleanupOrphanOverlays() {
+    const overlays = Array.from(document.querySelectorAll<HTMLElement>('.el-overlay'))
+    overlays.forEach(overlay => {
+        const hasVisibleDialog = Boolean(overlay.querySelector('.el-dialog, .el-drawer, .el-message-box'))
+        if (!hasVisibleDialog) {
+            overlay.remove()
+        }
+    })
+
+    if (!document.querySelector('.el-overlay')) {
+        document.body.classList.remove('el-popup-parent--hidden')
+        document.body.style.removeProperty('overflow')
+        document.body.style.removeProperty('padding-right')
+    }
+}
+
+function scheduleOverlayCleanup() {
+    window.clearTimeout(overlayCleanupTimer)
+    overlayCleanupTimer = window.setTimeout(cleanupOrphanOverlays, 160)
+}
 
 onMounted(async () => {
     if (globalStore.token) {
@@ -42,7 +65,25 @@ onMounted(async () => {
             }
         }
     }
+
+    scheduleOverlayCleanup()
+    overlayObserver = new MutationObserver(scheduleOverlayCleanup)
+    overlayObserver.observe(document.body, { childList: true, subtree: true })
 })
+
+onBeforeUnmount(() => {
+    window.clearTimeout(overlayCleanupTimer)
+    overlayObserver?.disconnect()
+    overlayObserver = null
+})
+
+watch(
+    () => route.fullPath,
+    async () => {
+        await nextTick()
+        scheduleOverlayCleanup()
+    }
+)
 </script>
 
 <style>

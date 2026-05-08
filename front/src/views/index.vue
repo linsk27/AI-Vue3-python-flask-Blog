@@ -78,6 +78,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import articleApi from '@/api/modules/article'
+import type { IArticle } from '@/api/modules/article/interface'
+import contextPackApi, { type ContextPack, type ContextPackStats } from '@/api/modules/contextPacks'
+
 const workflow = [
     {
         index: '01',
@@ -96,17 +101,26 @@ const workflow = [
     }
 ]
 
-const metrics = [
-    { value: 'Docs', label: '知识文档' },
-    { value: 'Packs', label: '可复用上下文' },
-    { value: 'AI', label: '洞察与草稿' }
-]
+const articles = ref<IArticle[]>([])
+const packs = ref<ContextPack[]>([])
+const stats = ref<ContextPackStats | null>(null)
 
-const contextPacks = [
-    { name: '毕业答辩上下文包', count: '12 份文档' },
-    { name: 'Vue 3 面试上下文包', count: '8 份文档' },
-    { name: 'Flask 重构上下文包', count: '6 份文档' }
-]
+const metrics = computed(() => [
+    { value: articles.value.length, label: '真实知识文档' },
+    { value: stats.value?.packs ?? packs.value.length, label: '可复用上下文包' },
+    { value: stats.value?.sources ?? packs.value.reduce((total, pack) => total + pack.sources.length, 0), label: '资料来源' }
+])
+
+const contextPacks = computed(() => {
+    if (!packs.value.length) {
+        return [{ name: '暂无真实上下文包', count: '0 份资料' }]
+    }
+
+    return packs.value.slice(0, 3).map(pack => ({
+        name: pack.name,
+        count: `${pack.sources.length} 份资料`
+    }))
+})
 
 const features = [
     {
@@ -130,6 +144,24 @@ const features = [
         description: '后续支持 URL、Markdown、Word 和 GitHub 仓库导入，让资料入口更完整。'
     }
 ]
+
+onMounted(async () => {
+    try {
+        const [articleList, packList, workspaceStats] = await Promise.all([
+            articleApi.getList(),
+            contextPackApi.getList(),
+            contextPackApi.getStats()
+        ])
+        articles.value = Array.isArray(articleList) ? articleList : []
+        packs.value = Array.isArray(packList) ? packList : []
+        stats.value = workspaceStats
+    } catch (error) {
+        console.error('Load real workspace metrics failed:', error)
+        articles.value = []
+        packs.value = []
+        stats.value = null
+    }
+})
 </script>
 
 <style scoped>

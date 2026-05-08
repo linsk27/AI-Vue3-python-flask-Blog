@@ -114,7 +114,7 @@
                         <span>{{ getDocumentStatusLabel(article) }}</span>
                     </div>
                     <h2>{{ article.title }}</h2>
-                    <p>{{ article.summary || '一份可被摘要、复用并加入上下文包的知识文档。' }}</p>
+                    <p v-if="article.summary">{{ article.summary }}</p>
                 </div>
                 <div class="card-footer">
                     <div class="card-tags">
@@ -122,7 +122,7 @@
                     </div>
                     <div class="card-meta">
                         <span v-if="article.author_name">{{ article.author_name }}</span>
-                        <span>{{ formatDate(article.updated_at || article.created_at) }}</span>
+                        <span v-if="article.updated_at || article.created_at">{{ formatDate(article.updated_at || article.created_at) }}</span>
                         <span>{{ article.views || 0 }} 次浏览</span>
                         <span>{{ article.likes || 0 }} 次收藏</span>
                     </div>
@@ -148,7 +148,6 @@ import { useRouter } from 'vue-router'
 import { EditPen, Grid, List, Search } from '@element-plus/icons-vue'
 import articleApi from '@/api/modules/article'
 import { IArticle } from '@/api/modules/article/interface'
-import { articles as localArticles } from './articles/index'
 import { useCacheStore } from '@/store/cache'
 
 const router = useRouter()
@@ -229,25 +228,11 @@ const allTags = computed(() => {
     return Array.from(tagsSet).slice(0, 18)
 })
 
-const processedLocalArticles = localArticles.map(article => ({
-    ...article,
-    id: article.id,
-    tags: [...(article.tags || []), 'example'],
-    resource_type: 'technical-doc',
-    document_status: 'organized',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    author_name: '语境工坊团队',
-    views: 0,
-    likes: 0,
-    content: ''
-}))
-
 const fetchArticles = async (forceRefresh = false) => {
     if (!forceRefresh && !search.value) {
         const cachedArticles = cacheStore.getCache<IArticle[]>('articles')
         if (cachedArticles) {
-            articles.value = [...processedLocalArticles, ...cachedArticles]
+            articles.value = cachedArticles
             return
         }
     }
@@ -260,17 +245,7 @@ const fetchArticles = async (forceRefresh = false) => {
         const res = await articleApi.getList(params)
         const backendArticles = Array.isArray(res) ? res : (res as any).data || []
 
-        let filteredLocal = processedLocalArticles
-        if (search.value) {
-            const lowerSearch = search.value.toLowerCase()
-            filteredLocal = processedLocalArticles.filter(a =>
-                a.title.toLowerCase().includes(lowerSearch) ||
-                a.summary.toLowerCase().includes(lowerSearch) ||
-                a.tags.some(t => t.toLowerCase().includes(lowerSearch))
-            )
-        }
-
-        articles.value = [...filteredLocal, ...backendArticles].map(a => ({
+        articles.value = backendArticles.map(a => ({
             ...a,
             views: a.views || 0,
             likes: a.likes || 0
@@ -281,7 +256,7 @@ const fetchArticles = async (forceRefresh = false) => {
         }
     } catch (error) {
         console.error('Failed to fetch documents:', error)
-        articles.value = processedLocalArticles
+        articles.value = []
     } finally {
         loading.value = false
     }

@@ -70,7 +70,7 @@
                         </div>
                         <div class="stat-item">
                             <strong>{{ userStats.comments || 0 }}</strong>
-                            <span>发表评论</span>
+                            <span>收到评论</span>
                         </div>
                     </div>
                 </article>
@@ -79,11 +79,11 @@
             <section class="profile-card ai-analysis-card">
                 <div class="card-heading">
                     <span class="card-index">03</span>
-                    <h2>AI 热点分析</h2>
+                    <h2>内容洞察</h2>
                 </div>
                 <div v-if="isLoading" class="loading-container">
                     <span class="loading-spinner"></span>
-                    <p>AI 正在分析内容数据...</p>
+                    <p>正在整理真实内容数据...</p>
                 </div>
                 <div v-else-if="aiAnalysis" class="analysis-grid">
                     <article class="analysis-item">
@@ -103,7 +103,7 @@
                         <p>{{ aiAnalysis.futureTrends || '暂无数据' }}</p>
                     </article>
                 </div>
-                <div v-else class="empty-state">AI 分析暂时不可用</div>
+                <div v-else class="empty-state">暂无可分析内容</div>
             </section>
 
             <section class="profile-grid bottom-grid">
@@ -152,18 +152,22 @@ import { useGlobalStore } from '@/store'
 import { useCacheStore } from '@/store/cache'
 import authApi from '@/api/modules/auth'
 import articleApi from '@/api/modules/article'
-import { aiChatService } from '@/api/modules/ai'
+import type { IArticle } from '@/api/modules/article/interface'
+import contextPackApi, { type ContextPack } from '@/api/modules/contextPacks'
 
 const globalStore = useGlobalStore()
 const cacheStore = useCacheStore()
 const userInfo = ref(globalStore.userInfo)
 const userStats = ref({ articles: 0, views: 0, likes: 0, comments: 0 })
-const userArticles = ref<any[]>([])
-const recentActivities = ref<any[]>([])
+const userArticles = ref<IArticle[]>([])
+const likedArticles = ref<IArticle[]>([])
+const userContextPacks = ref<ContextPack[]>([])
+const recentActivities = ref<{ text: string; time: string; timestamp: number }[]>([])
 const aiAnalysis = ref<any>(null)
 const isLoading = ref(false)
 
 const avatarInitial = computed(() => (userInfo.value?.username || 'U').slice(0, 1).toUpperCase())
+const currentUserId = computed(() => userInfo.value?.id ? String(userInfo.value.id) : 'guest')
 const permissionNameMap: Record<string, string> = {
     'ai:manage': 'AI 配置',
     'article:manage': '文章管理',
@@ -184,116 +188,193 @@ const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
+const cacheKey = (name: string) => `profile.${currentUserId.value}.${name}`
+
+const normalizeArray = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) return payload as T[]
+    const data = (payload as any)?.data
+    return Array.isArray(data) ? data as T[] : []
+}
+
+const toTimestamp = (value?: string) => {
+    if (!value) return 0
+    const timestamp = new Date(value).getTime()
+    return Number.isFinite(timestamp) ? timestamp : 0
+}
+
+const formatRelativeTime = (value?: string) => {
+    const timestamp = toTimestamp(value)
+    if (!timestamp) return '时间未知'
+
+    const diff = Date.now() - timestamp
+    const minute = 60 * 1000
+    const hour = 60 * minute
+    const day = 24 * hour
+
+    if (diff < minute) return '刚刚'
+    if (diff < hour) return `${Math.floor(diff / minute)} 分钟前`
+    if (diff < day) return `${Math.floor(diff / hour)} 小时前`
+    if (diff < day * 30) return `${Math.floor(diff / day)} 天前`
+    return formatDate(value || '')
+}
+
+const articleScore = (article: IArticle) => {
+    return (article.views || 0) + (article.likes || 0) * 3 + (article.comments_count || 0) * 2
+}
+
 const getUserStats = async (forceRefresh = false) => {
     try {
         if (!forceRefresh) {
-            const cachedArticles = cacheStore.getCache<any[]>('userArticles')
-            const cachedStats = cacheStore.getCache<typeof userStats.value>('userStats')
-            if (cachedArticles && cachedStats) {
+            const cachedArticles = cacheStore.getCache<IArticle[]>(cacheKey('articles'))
+            const cachedLikedArticles = cacheStore.getCache<IArticle[]>(cacheKey('likedArticles'))
+            const cachedContextPacks = cacheStore.getCache<ContextPack[]>(cacheKey('contextPacks'))
+            const cachedStats = cacheStore.getCache<typeof userStats.value>(cacheKey('stats'))
+            if (cachedArticles && cachedLikedArticles && cachedContextPacks && cachedStats) {
                 userArticles.value = cachedArticles.slice(0, 5)
+                likedArticles.value = cachedLikedArticles
+                userContextPacks.value = cachedContextPacks
                 userStats.value = cachedStats
+                buildRecentActivities(cachedArticles, cachedLikedArticles, cachedContextPacks)
+                buildContentInsights(cachedArticles)
                 return
             }
         }
 
-        const articles = await articleApi.getList({ author_id: userInfo.value?.id })
-        if (articles && Array.isArray(articles)) {
+        const [articlePayload, likedPayload, packPayload] = await Promise.all([
+            articleApi.getList({ author_id: userInfo.value?.id }),
+            articleApi.getMyLikes().catch(() => []),
+            contextPackApi.getList().catch(() => [])
+        ])
+
+        const articles = normalizeArray<IArticle>(articlePayload)
+            .sort((left, right) => toTimestamp(right.created_at) - toTimestamp(left.created_at))
+        const liked = normalizeArray<IArticle>(likedPayload)
+        const packs = normalizeArray<ContextPack>(packPayload)
+            .filter(pack => String(pack.user_id || '') === currentUserId.value)
+            .sort((left, right) => toTimestamp(right.updated_at || right.created_at) - toTimestamp(left.updated_at || left.created_at))
+
+        if (articles) {
             userArticles.value = articles.slice(0, 5)
-            const totals = articles.reduce((acc: any, article: any) => {
+            likedArticles.value = liked
+            userContextPacks.value = packs
+
+            const totals = articles.reduce((acc, article) => {
                 acc.views += article.views || 0
                 acc.likes += article.likes || 0
+                acc.comments += article.comments_count || 0
                 return acc
-            }, { views: 0, likes: 0 })
+            }, { views: 0, likes: 0, comments: 0 })
 
             userStats.value = {
                 articles: articles.length,
                 views: totals.views,
                 likes: totals.likes,
-                comments: 0
+                comments: totals.comments
             }
 
-            cacheStore.setCache('userArticles', articles)
-            cacheStore.setCache('userStats', userStats.value)
+            buildRecentActivities(articles, liked, packs)
+            buildContentInsights(articles)
+
+            cacheStore.setCache(cacheKey('articles'), articles)
+            cacheStore.setCache(cacheKey('likedArticles'), liked)
+            cacheStore.setCache(cacheKey('contextPacks'), packs)
+            cacheStore.setCache(cacheKey('stats'), userStats.value)
         }
     } catch (error) {
         console.error('获取用户统计数据失败:', error)
     }
 }
 
-const getRecentActivities = async () => {
-    recentActivities.value = [
-        { text: '发布了新文章', time: '2 天前' },
-        { text: '收到了新点赞', time: '3 天前' },
-        { text: '发表了评论', time: '1 周前' },
-        { text: '阅读了文章', time: '2 周前' }
-    ]
+const buildRecentActivities = (articles: IArticle[], liked: IArticle[], packs: ContextPack[]) => {
+    const events: { text: string; time: string; timestamp: number }[] = []
+
+    articles.forEach(article => {
+        if (article.created_at) {
+            events.push({
+                text: `发布了《${article.title}》`,
+                time: formatRelativeTime(article.created_at),
+                timestamp: toTimestamp(article.created_at)
+            })
+        }
+
+        const updatedAt = toTimestamp(article.updated_at)
+        const createdAt = toTimestamp(article.created_at)
+        if (updatedAt && updatedAt - createdAt > 60 * 1000) {
+            events.push({
+                text: `更新了《${article.title}》`,
+                time: formatRelativeTime(article.updated_at),
+                timestamp: updatedAt
+            })
+        }
+    })
+
+    liked.forEach(article => {
+        const likedAt = article.liked_at || article.updated_at || article.created_at
+        events.push({
+            text: `收藏了《${article.title}》`,
+            time: formatRelativeTime(likedAt),
+            timestamp: toTimestamp(likedAt)
+        })
+    })
+
+    packs.forEach(pack => {
+        const packTime = pack.updated_at || pack.created_at
+        events.push({
+            text: `维护了上下文包「${pack.name}」`,
+            time: formatRelativeTime(packTime),
+            timestamp: toTimestamp(packTime)
+        })
+    })
+
+    recentActivities.value = events
+        .filter(event => event.timestamp > 0)
+        .sort((left, right) => right.timestamp - left.timestamp)
+        .slice(0, 6)
 }
 
-const analyzeHotTopics = async (forceRefresh = false) => {
-    if (!forceRefresh) {
-        const cachedAnalysis = cacheStore.getCache<any>('aiAnalysis')
-        if (cachedAnalysis) {
-            aiAnalysis.value = cachedAnalysis
-            return
-        }
-    }
-
+const buildContentInsights = (articles: IArticle[]) => {
     isLoading.value = true
     try {
-        let articles = cacheStore.getCache<any[]>('articles')
-        if (!articles) {
-            const articlesRes = await articleApi.getList()
-            if (articlesRes && Array.isArray(articlesRes)) {
-                articles = articlesRes
-                cacheStore.setCache('articles', articles)
-            }
-        }
-
-        if (articles && Array.isArray(articles) && articles.length) {
-            const topArticles = [...articles].sort((a: any, b: any) => (b.likes || 0) - (a.likes || 0)).slice(0, 5)
-            const articleTitles = topArticles.map((article: any) => article.title).join('\n')
-            const aiPrompt = `请根据以下热门文章标题做简短分析，按四行输出：
-1. 最热门文章
-2. 近期关注主题
-3. 文章热门标签
-4. 未来可能趋势
-
-文章标题：
-${articleTitles}
-
-请保持简洁，每行不超过一句话。`
-            const aiResponse = await aiChatService.sendMessage({
-                message: aiPrompt,
-                max_tokens: 300,
-                temperature: 0.3,
-                user_id: String(userInfo.value?.id || 'guest'),
-                reset_context: true
-            })
-
-            const reply = aiResponse?.reply || aiResponse?.data?.reply || ''
-            const lines = reply.split('\n').filter((line: string) => line.trim())
-            aiAnalysis.value = {
-                topArticle: lines[0]?.replace(/^1\.\s*/, '') || topArticles[0]?.title || '暂无数据',
-                pastFocus: lines[1]?.replace(/^2\.\s*/, '') || '暂无数据',
-                hotTags: lines[2]?.replace(/^3\.\s*/, '') || '暂无数据',
-                futureTrends: lines[3]?.replace(/^4\.\s*/, '') || '暂无数据'
-            }
-            cacheStore.setCache('aiAnalysis', aiAnalysis.value, 10 * 60 * 1000)
-        } else {
+        if (!articles.length) {
             aiAnalysis.value = {
                 topArticle: '暂无数据',
                 pastFocus: '暂无数据',
                 hotTags: '暂无数据',
-                futureTrends: '暂无数据'
+                futureTrends: '先发布文章，再形成趋势'
             }
+            return
         }
-    } catch (error) {
-        console.error('AI 分析失败:', error)
+
+        const topArticle = [...articles].sort((left, right) => articleScore(right) - articleScore(left))[0]
+        const tagCounts = new Map<string, number>()
+        articles.forEach(article => {
+            ;(article.tags || []).forEach(tag => {
+                const normalized = String(tag).trim()
+                if (normalized) tagCounts.set(normalized, (tagCounts.get(normalized) || 0) + 1)
+            })
+        })
+
+        const hotTags = Array.from(tagCounts.entries())
+            .sort((left, right) => right[1] - left[1])
+            .slice(0, 5)
+            .map(([tag]) => tag)
+
+        const recentTypes = Array.from(new Set(
+            articles
+                .slice(0, 5)
+                .map(article => article.resource_type || article.category)
+                .filter(Boolean)
+        ))
+
         aiAnalysis.value = {
-            topArticle: '暂无数据',
-            pastFocus: '暂无数据',
-            hotTags: '暂无数据',
-            futureTrends: '暂无数据'
+            topArticle: topArticle
+                ? `《${topArticle.title}》互动最高，${topArticle.views || 0} 阅读、${topArticle.likes || 0} 点赞`
+                : '暂无数据',
+            pastFocus: recentTypes.length ? `近期主要沉淀：${recentTypes.join('、')}` : '暂无分类数据',
+            hotTags: hotTags.length ? hotTags.join('、') : '暂无标签数据',
+            futureTrends: userContextPacks.value.length
+                ? `已有 ${userContextPacks.value.length} 个上下文包，可继续补齐资料来源和 RAG 索引`
+                : '建议把高价值文章加入上下文包，形成可复用资料'
         }
     } finally {
         isLoading.value = false
@@ -308,8 +389,6 @@ onMounted(async () => {
             globalStore.setLoginInfo(globalStore.token, res)
         }
         await getUserStats()
-        await getRecentActivities()
-        await analyzeHotTopics()
     } catch (error) {
         console.error(error)
     }

@@ -23,9 +23,11 @@ export interface IArticle {
     author_id: number
     views: number
     likes: number
+    comments_count?: number
     status: string
     created_at: string
     updated_at: string
+    liked_at?: string
     author_name?: string
     author_avatar?: string
     is_liked?: boolean

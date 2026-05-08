@@ -1,10 +1,8 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from sqlalchemy import text
 from database import engine
-import jwt
 import json
-from functools import wraps
-from middleware import token_required
+from middleware import load_optional_user, token_required, user_has_permission
 
 article_bp = Blueprint('article', __name__)
 
@@ -25,6 +23,23 @@ def ensure_document_columns(conn):
     for column, definition in DOCUMENT_COLUMNS.items():
         if column not in existing_names:
             conn.execute(text(f"ALTER TABLE articles ADD COLUMN {column} {definition}"))
+
+
+def _is_article_manager(current_user):
+    return user_has_permission(current_user, "article:manage")
+
+
+def _can_read_article(article, current_user):
+    if (article.get("visibility") or "private") == "public":
+        return True
+
+    if not current_user:
+        return False
+
+    if article.get("author_id") == current_user.get("id"):
+        return True
+
+    return _is_article_manager(current_user)
 
 @article_bp.route('/api/articles', methods=['POST'])
 @token_required
@@ -248,7 +263,7 @@ def toggle_like(current_user_id, article_id):
                     {"uid": current_user_id, "aid": article_id}
                 )
                 conn.execute(
-                    text("UPDATE articles SET likes = likes - 1 WHERE id = :aid"),
+                    text("UPDATE articles SET likes = GREATEST(COALESCE(likes, 0) - 1, 0) WHERE id = :aid"),
                     {"aid": article_id}
                 )
                 msg = "已取消点赞"
@@ -260,7 +275,7 @@ def toggle_like(current_user_id, article_id):
                     {"uid": current_user_id, "aid": article_id}
                 )
                 conn.execute(
-                    text("UPDATE articles SET likes = likes + 1 WHERE id = :aid"),
+                    text("UPDATE articles SET likes = COALESCE(likes, 0) + 1 WHERE id = :aid"),
                     {"aid": article_id}
                 )
                 msg = "点赞成功"
@@ -305,7 +320,8 @@ def get_my_likes(current_user_id):
         with engine.connect() as conn:
             result = conn.execute(
                 text("""
-                    SELECT a.*, u.username as author_name, u.avatar as author_avatar
+                    SELECT a.*, u.username as author_name, u.avatar as author_avatar,
+                           al.created_at as liked_at
                     FROM articles a
                     JOIN article_likes al ON a.id = al.article_id
                     LEFT JOIN users u ON a.author_id = u.id
@@ -336,18 +352,8 @@ def get_my_likes(current_user_id):
 @article_bp.route('/api/articles/<int:article_id>', methods=['GET'])
 def get_article(article_id):
     try:
-        user_id = None
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            try:
-                token = auth_header
-                if auth_header.startswith('Bearer '):
-                    token = auth_header.split(" ")[1]
-                
-                data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
-                user_id = data['user_id']
-            except:
-                pass
+        current_user = load_optional_user()
+        user_id = current_user.get("id") if current_user else None
                 
         with engine.connect() as conn:
             ensure_document_columns(conn)
@@ -367,6 +373,9 @@ def get_article(article_id):
             
             # Convert result to dict and handle types
             article = dict(result)
+
+            if not _can_read_article(article, current_user):
+                return jsonify({'status': 1, 'msg': '无权查看该私有文档'}), 403
             
             # Check if current user liked this article
             article['is_liked'] = False
@@ -406,6 +415,10 @@ def get_article(article_id):
 @article_bp.route('/api/articles', methods=['GET'])
 def get_articles():
     try:
+        current_user = load_optional_user()
+        current_user_id = current_user.get("id") if current_user else None
+        is_manager = _is_article_manager(current_user)
+
         # Get query parameters
         search = request.args.get('search', '')
         title = request.args.get('title', '')
@@ -416,14 +429,22 @@ def get_articles():
         resource_type = request.args.get('resource_type', '')
         visibility = request.args.get('visibility', '')
         document_status = request.args.get('document_status', '')
+        requested_author_id = int(author_id) if str(author_id).isdigit() else None
+        is_own_author_filter = bool(current_user_id and requested_author_id == current_user_id)
         
         with engine.connect() as conn:
             ensure_document_columns(conn)
             # Build query
             query_str = """
-                SELECT a.*, u.username as author_name, u.avatar as author_avatar
+                SELECT a.*, u.username as author_name, u.avatar as author_avatar,
+                       COALESCE(cc.comments_count, 0) as comments_count
                 FROM articles a
                 LEFT JOIN users u ON a.author_id = u.id
+                LEFT JOIN (
+                    SELECT article_id, COUNT(*) as comments_count
+                    FROM comments
+                    GROUP BY article_id
+                ) cc ON cc.article_id = a.id
                 WHERE 1=1
             """
             params = {}
@@ -456,12 +477,32 @@ def get_articles():
                 params['resource_type'] = resource_type
 
             if visibility:
+                if visibility != 'public' and not (is_manager or is_own_author_filter):
+                    return jsonify({'status': 0, 'data': []})
                 query_str += " AND a.visibility = :visibility"
                 params['visibility'] = visibility
+            elif is_manager or is_own_author_filter:
+                pass
+            elif current_user_id:
+                query_str += " AND (a.visibility = 'public' OR a.author_id = :current_user_id)"
+                params['current_user_id'] = current_user_id
+            else:
+                query_str += " AND a.visibility = 'public'"
 
             if document_status:
+                if document_status != 'published' and not (is_manager or is_own_author_filter):
+                    if not current_user_id:
+                        return jsonify({'status': 0, 'data': []})
+                    query_str += " AND a.author_id = :current_user_id"
+                    params['current_user_id'] = current_user_id
                 query_str += " AND a.document_status = :document_status"
                 params['document_status'] = document_status
+            elif not (is_manager or is_own_author_filter):
+                if current_user_id:
+                    query_str += " AND (a.author_id = :current_user_id OR a.document_status = 'published')"
+                    params['current_user_id'] = current_user_id
+                else:
+                    query_str += " AND a.document_status = 'published'"
             
             if author_id:
                 query_str += " AND a.author_id = :author_id"

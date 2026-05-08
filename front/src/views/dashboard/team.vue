@@ -3,7 +3,7 @@
         <!-- 页面头部 -->
         <header class="dashboard-header">
             <div class="header-left">
-                <div class="header-icon">👥</div>
+                <UserFilled class="header-icon" />
                 <div class="header-info">
                     <h1 class="dashboard-title">团队数据看板</h1>
                     <p class="dashboard-subtitle">团队知识产出与协作数据分析</p>
@@ -25,13 +25,12 @@
                     <div class="overview-card">
                         <div class="card-header">
                             <h3 class="card-title">团队总文章数</h3>
-                            <div class="card-icon">📄</div>
+                            <Document class="card-icon" />
                         </div>
                         <div class="card-content">
                             <div class="card-value">{{ teamData.totalArticles }}</div>
-                            <div class="card-change" :class="teamData.articleChange >= 0 ? 'positive' : 'negative'">
-                                {{ teamData.articleChange >= 0 ? '+' : '' }}{{ teamData.articleChange }}%
-                                <span>较上月</span>
+                            <div class="card-change neutral">
+                                <span>来自真实文章</span>
                             </div>
                         </div>
                     </div>
@@ -39,13 +38,12 @@
                     <div class="overview-card">
                         <div class="card-header">
                             <h3 class="card-title">总阅读量</h3>
-                            <div class="card-icon">👁️</div>
+                            <View class="card-icon" />
                         </div>
                         <div class="card-content">
                             <div class="card-value">{{ formatNumber(teamData.totalReads) }}</div>
-                            <div class="card-change" :class="teamData.readChange >= 0 ? 'positive' : 'negative'">
-                                {{ teamData.readChange >= 0 ? '+' : '' }}{{ teamData.readChange }}%
-                                <span>较上月</span>
+                            <div class="card-change neutral">
+                                <span>按浏览量汇总</span>
                             </div>
                         </div>
                     </div>
@@ -53,27 +51,25 @@
                     <div class="overview-card">
                         <div class="card-header">
                             <h3 class="card-title">活跃成员</h3>
-                            <div class="card-icon">👤</div>
+                            <User class="card-icon" />
                         </div>
                         <div class="card-content">
                             <div class="card-value">{{ teamData.activeMembers }}</div>
-                            <div class="card-change" :class="teamData.memberChange >= 0 ? 'positive' : 'negative'">
-                                {{ teamData.memberChange >= 0 ? '+' : '' }}{{ teamData.memberChange }}%
-                                <span>较上月</span>
+                            <div class="card-change neutral">
+                                <span>有文章贡献的成员</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="overview-card">
                         <div class="card-header">
-                            <h3 class="card-title">团队AI使用次数</h3>
-                            <div class="card-icon">🤖</div>
+                            <h3 class="card-title">上下文包数</h3>
+                            <Collection class="card-icon" />
                         </div>
                         <div class="card-content">
-                            <div class="card-value">{{ teamData.aiUsage }}</div>
-                            <div class="card-change" :class="teamData.aiChange >= 0 ? 'positive' : 'negative'">
-                                {{ teamData.aiChange >= 0 ? '+' : '' }}{{ teamData.aiChange }}%
-                                <span>较上月</span>
+                            <div class="card-value">{{ teamData.contextPacks }}</div>
+                            <div class="card-change neutral">
+                                <span>可用于 AI 对话</span>
                             </div>
                         </div>
                     </div>
@@ -90,34 +86,18 @@
                         </div>
                         <div class="chart-content">
                             <div ref="contributionChartRef" class="chart-container">
-                                <div class="contribution-placeholder">
-                                    <div class="contribution-radar">
-                                        <div class="radar-grid"></div>
-                                        <div class="radar-shape"></div>
-                                    </div>
-                                    <div class="type-legend">
-                                        <div class="type-legend-item">
-                                            <div class="type-legend-color"></div>
-                                            <span>文章数量</span>
+                                <div v-if="memberContributionData.length" class="contribution-list">
+                                    <div v-for="member in memberContributionData" :key="member.id" class="contribution-row">
+                                        <div class="contribution-row-header">
+                                            <span>{{ member.name }}</span>
+                                            <strong>{{ member.articles }} 篇</strong>
                                         </div>
-                                        <div class="type-legend-item">
-                                            <div class="type-legend-color"></div>
-                                            <span>阅读量</span>
-                                        </div>
-                                        <div class="type-legend-item">
-                                            <div class="type-legend-color"></div>
-                                            <span>点赞数</span>
-                                        </div>
-                                        <div class="type-legend-item">
-                                            <div class="type-legend-color"></div>
-                                            <span>评论数</span>
-                                        </div>
-                                        <div class="type-legend-item">
-                                            <div class="type-legend-color"></div>
-                                            <span>AI使用</span>
+                                        <div class="contribution-track">
+                                            <div class="contribution-fill" :style="{ width: `${member.percent}%` }"></div>
                                         </div>
                                     </div>
                                 </div>
+                                <div v-else class="empty-chart">暂无成员贡献数据</div>
                             </div>
                         </div>
                     </div>
@@ -129,13 +109,18 @@
                         </div>
                         <div class="chart-content">
                             <div ref="categoryChartRef" class="chart-container">
-                                <div class="category-distribution-placeholder">
-                                    <div class="category-bar"></div>
-                                    <div class="category-bar"></div>
-                                    <div class="category-bar"></div>
-                                    <div class="category-bar"></div>
-                                    <div class="category-bar"></div>
+                                <div v-if="categoryDistribution.length" class="category-list">
+                                    <div v-for="item in categoryDistribution" :key="item.name" class="category-row">
+                                        <div class="category-row-header">
+                                            <span>{{ item.name }}</span>
+                                            <strong>{{ item.count }} 篇</strong>
+                                        </div>
+                                        <div class="category-track">
+                                            <div class="category-fill" :style="{ width: `${item.percent}%` }"></div>
+                                        </div>
+                                    </div>
                                 </div>
+                                <div v-else class="empty-chart">暂无分类数据</div>
                             </div>
                         </div>
                     </div>
@@ -173,16 +158,9 @@
                                 <span>{{ scope.row.likes }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="aiUsage" label="AI使用次数" width="120" align="right">
+                        <el-table-column prop="contribution" label="贡献占比" width="120" align="right">
                             <template #default="scope">
-                                <span>{{ scope.row.aiUsage }}</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="操作" width="120" align="center">
-                            <template #default="scope">
-                                <el-button type="text" @click="viewMemberDetail(scope.row.id)">
-                                    查看详情
-                                </el-button>
+                                <span>{{ scope.row.contribution }}%</span>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -195,7 +173,8 @@
                     <h2 class="section-title">团队热门文章</h2>
                 </div>
                 <div class="hot-articles">
-                    <div class="hot-article-item" v-for="article in hotArticles" :key="article.id">
+                    <div class="hot-article-item" v-for="article in hotArticles" :key="article.id"
+                        @click="viewArticle(article.id)">
                         <div class="article-rank">{{ article.rank }}</div>
                         <div class="article-info">
                             <div class="article-title">{{ article.title }}</div>
@@ -204,7 +183,10 @@
                                 <span class="article-reads">{{ formatNumber(article.reads) }}次阅读</span>
                             </div>
                         </div>
-                        <div class="article-likes">{{ article.likes }}👍</div>
+                        <div class="article-likes">
+                            <Star class="inline-icon" />
+                            <span>{{ article.likes }}</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -215,44 +197,60 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Collection, Document, Star, User, UserFilled, View } from '@element-plus/icons-vue'
+import articleApi from '@/api/modules/article'
+import { IArticle } from '@/api/modules/article/interface'
+import contextPackApi from '@/api/modules/contextPacks'
 import { useElMessage } from '@/hooks/useMessage'
 
 const { message } = useElMessage()
 
 const router = useRouter()
 
+interface TeamMemberRow {
+    id: number
+    name: string
+    avatar: string
+    articles: number
+    reads: number
+    likes: number
+    contribution: number
+    percent: number
+}
+
+interface HotArticleRow {
+    id: number
+    title: string
+    author: string
+    reads: number
+    likes: number
+    rank: number
+}
+
+interface DistributionItem {
+    name: string
+    count: number
+    percent: number
+}
+
 // 时间范围
-const dateRange = ref(['2026-01-01', '2026-01-31'])
+const dateRange = ref(getCurrentMonthRange())
 
 // 团队数据
 const teamData = ref({
-    totalArticles: 156,
-    articleChange: 12.8,
-    totalReads: 89563,
-    readChange: 9.2,
-    activeMembers: 32,
-    memberChange: 5.3,
-    aiUsage: 1256,
-    aiChange: 28.5
+    totalArticles: 0,
+    totalReads: 0,
+    activeMembers: 0,
+    contextPacks: 0
 })
 
 // 团队成员数据
-const teamMembers = ref([
-    { id: 1, name: '张三', avatar: '', articles: 28, reads: 12345, likes: 456, aiUsage: 123 },
-    { id: 2, name: '李四', avatar: '', articles: 22, reads: 9876, likes: 345, aiUsage: 98 },
-    { id: 3, name: '王五', avatar: '', articles: 18, reads: 15678, likes: 567, aiUsage: 145 },
-    { id: 4, name: '赵六', avatar: '', articles: 15, reads: 7654, likes: 234, aiUsage: 89 },
-    { id: 5, name: '孙七', avatar: '', articles: 12, reads: 8923, likes: 198, aiUsage: 67 }
-])
+const teamMembers = ref<TeamMemberRow[]>([])
+const memberContributionData = ref<TeamMemberRow[]>([])
+const categoryDistribution = ref<DistributionItem[]>([])
 
 // 热门文章数据
-const hotArticles = ref([
-    { id: 1, title: 'Vue 3 组合式 API 最佳实践', author: '张三', reads: 5678, likes: 234, rank: 1 },
-    { id: 2, title: '前端性能优化实战指南', author: '王五', reads: 4567, likes: 198, rank: 2 },
-    { id: 3, title: 'TypeScript 类型系统深度解析', author: '李四', reads: 3456, likes: 156, rank: 3 },
-    { id: 4, title: '响应式设计的艺术', author: '赵六', reads: 2345, likes: 123, rank: 4 },
-    { id: 5, title: 'Vuex 4 与 Pinia 对比分析', author: '张三', reads: 1890, likes: 98, rank: 5 }
-])
+const hotArticles = ref<HotArticleRow[]>([])
 
 // 图表引用
 const contributionChartRef = ref<HTMLElement | null>(null)
@@ -266,21 +264,120 @@ function formatNumber(num: number): string {
     return num.toString()
 }
 
-// 查看成员详情
-function viewMemberDetail(id: number) {
-    message.info(`查看成员${id}详情`)
-    // router.push(`/dashboard/member/${id}`)
+function getCurrentMonthRange(): [string, string] {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+    return [formatDateInput(start), formatDateInput(now)]
 }
 
-// 初始化图表（模拟）
-function initCharts() {
-    // 在实际项目中，这里会使用ECharts或D3.js初始化图表
-    console.log('初始化团队数据图表')
+function formatDateInput(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
+function normalizeCategory(article: IArticle): string {
+    return article.category || article.resource_type || '未分类'
+}
+
+function buildTeamMembers(articles: IArticle[]): TeamMemberRow[] {
+    const memberMap = new Map<number, TeamMemberRow>()
+
+    articles.forEach(article => {
+        const memberId = article.author_id || 0
+        const current = memberMap.get(memberId) || {
+            id: memberId,
+            name: article.author_name || `用户 ${memberId || '未知'}`,
+            avatar: article.author_avatar || '',
+            articles: 0,
+            reads: 0,
+            likes: 0,
+            contribution: 0,
+            percent: 0
+        }
+
+        current.articles += 1
+        current.reads += article.views || 0
+        current.likes += article.likes || 0
+        memberMap.set(memberId, current)
+    })
+
+    const totalArticles = Math.max(articles.length, 1)
+    const maxArticles = Math.max(...Array.from(memberMap.values()).map(member => member.articles), 1)
+
+    return Array.from(memberMap.values())
+        .map(member => ({
+            ...member,
+            contribution: Math.round((member.articles / totalArticles) * 100),
+            percent: Math.max(8, Math.round((member.articles / maxArticles) * 100))
+        }))
+        .sort((a, b) => b.articles - a.articles || b.reads - a.reads)
+}
+
+function buildCategoryDistribution(articles: IArticle[]): DistributionItem[] {
+    const counts = new Map<string, number>()
+    articles.forEach(article => {
+        const category = normalizeCategory(article)
+        counts.set(category, (counts.get(category) || 0) + 1)
+    })
+
+    const max = Math.max(...Array.from(counts.values()), 1)
+    return Array.from(counts.entries())
+        .map(([name, count]) => ({
+            name,
+            count,
+            percent: Math.max(8, Math.round((count / max) * 100))
+        }))
+        .sort((a, b) => b.count - a.count)
+}
+
+function buildHotArticles(articles: IArticle[]): HotArticleRow[] {
+    return [...articles]
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
+        .slice(0, 5)
+        .map((article, index) => ({
+            id: article.id,
+            title: article.title,
+            author: article.author_name || `用户 ${article.author_id || '未知'}`,
+            reads: article.views || 0,
+            likes: article.likes || 0,
+            rank: index + 1
+        }))
+}
+
+async function fetchTeamData() {
+    try {
+        const [articles, contextStats] = await Promise.all([
+            articleApi.getList(),
+            contextPackApi.getStats().catch(() => null)
+        ])
+        const members = buildTeamMembers(articles)
+
+        teamMembers.value = members
+        memberContributionData.value = members.slice(0, 6)
+        categoryDistribution.value = buildCategoryDistribution(articles)
+        hotArticles.value = buildHotArticles(articles)
+
+        teamData.value = {
+            totalArticles: articles.length,
+            totalReads: articles.reduce((sum, article) => sum + (article.views || 0), 0),
+            activeMembers: members.length,
+            contextPacks: contextStats?.packs || 0
+        }
+    } catch (error) {
+        console.error('获取团队看板数据失败', error)
+        message.error('获取团队看板数据失败')
+    }
+}
+
+function viewArticle(id: number) {
+    router.push(`/essays/${id}`)
 }
 
 // 生命周期钩子
 onMounted(() => {
-    initCharts()
+    fetchTeamData()
 })
 </script>
 
@@ -308,7 +405,10 @@ onMounted(() => {
 }
 
 .header-icon {
-    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: #FF7F50;
+    flex-shrink: 0;
 }
 
 .header-info {
@@ -381,7 +481,10 @@ onMounted(() => {
 }
 
 .card-icon {
-    font-size: 1.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #FF7F50;
+    flex-shrink: 0;
 }
 
 .card-content {
@@ -410,6 +513,10 @@ onMounted(() => {
 
 .card-change.negative {
     color: #F44336;
+}
+
+.card-change.neutral {
+    color: #777;
 }
 
 .card-change span {
@@ -467,163 +574,58 @@ onMounted(() => {
     overflow: hidden;
 }
 
-/* 成员贡献分布图表模拟 */
-.contribution-placeholder {
+.contribution-list,
+.category-list {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+.contribution-row,
+.category-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.contribution-row-header,
+.category-row-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.contribution-track,
+.category-track {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 127, 80, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.contribution-fill,
+.category-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF7F50 0%, #FFB347 100%);
+    border-radius: inherit;
+}
+
+.empty-chart {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.contribution-radar {
-    width: 200px;
-    height: 200px;
-    position: relative;
-    transform: rotate(-90deg);
-}
-
-.radar-grid {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    border: 2px solid rgba(255, 127, 80, 0.1);
-    border-radius: 50%;
-}
-
-.radar-grid::before,
-.radar-grid::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background: rgba(255, 127, 80, 0.1);
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-}
-
-.radar-grid::after {
-    width: 2px;
-    height: 100%;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.radar-shape {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    transform: translate(-50%, -50%);
-    clip-path: polygon(50% 0%,
-            80% 20%,
-            100% 50%,
-            80% 80%,
-            50% 100%,
-            20% 80%,
-            0% 50%,
-            20% 20%);
-    background: rgba(255, 127, 80, 0.2);
-}
-
-.type-legend {
-    position: absolute;
-    right: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.type-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: #333;
-}
-
-.type-legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-
-.type-legend-color:nth-child(1) {
-    background: #FF7F50;
-}
-
-.type-legend-color:nth-child(2) {
-    background: #FFD700;
-}
-
-.type-legend-color:nth-child(3) {
-    background: #98FB98;
-}
-
-.type-legend-color:nth-child(4) {
-    background: #87CEEB;
-}
-
-.type-legend-color:nth-child(5) {
-    background: #FF6347;
-}
-
-/* 文章分类分布图表模拟 */
-.category-distribution-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-around;
-    padding: 0 2rem;
-    box-sizing: border-box;
-}
-
-.category-bar {
-    width: 15%;
-    background: linear-gradient(to top, #FF7F50, rgba(255, 127, 80, 0.6));
-    border-radius: 4px 4px 0 0;
-    animation: pulse 2s ease-in-out infinite alternate;
-}
-
-.category-bar:nth-child(1) {
-    height: 75%;
-    animation-delay: 0s;
-}
-
-.category-bar:nth-child(2) {
-    height: 60%;
-    animation-delay: 0.2s;
-}
-
-.category-bar:nth-child(3) {
-    height: 85%;
-    animation-delay: 0.4s;
-}
-
-.category-bar:nth-child(4) {
-    height: 55%;
-    animation-delay: 0.6s;
-}
-
-.category-bar:nth-child(5) {
-    height: 70%;
-    animation-delay: 0.8s;
-}
-
-@keyframes pulse {
-    from {
-        opacity: 0.6;
-    }
-
-    to {
-        opacity: 1;
-    }
+    color: #999;
+    font-size: 0.95rem;
 }
 
 /* 成员表格 */
@@ -684,6 +686,7 @@ onMounted(() => {
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .hot-article-item:hover {
@@ -727,9 +730,17 @@ onMounted(() => {
 }
 
 .article-likes {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font-weight: 600;
     color: #FF7F50;
     font-size: 1.1rem;
+}
+
+.inline-icon {
+    width: 1rem;
+    height: 1rem;
 }
 
 /* 响应式设计 */

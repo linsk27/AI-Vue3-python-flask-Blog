@@ -7,8 +7,24 @@
                 <p class="chat-subtitle">围绕文章创作、技术问答和知识梳理进行连续对话。</p>
             </div>
             <div class="header-actions">
-                <button class="control-btn" type="button" @click="resetContext">重置上下文</button>
-                <button class="control-btn" type="button" @click="clearChat">清空对话</button>
+                <el-select
+                    v-model="selectedContextPackId"
+                    class="context-select"
+                    clearable
+                    filterable
+                    :loading="loadingContextPacks"
+                    :disabled="isLoading || !isLoggedIn"
+                    placeholder="选择上下文包"
+                >
+                    <el-option
+                        v-for="pack in contextPacks"
+                        :key="pack.id"
+                        :label="`${pack.name} · ${pack.sources.length} 份资料`"
+                        :value="pack.id"
+                    />
+                </el-select>
+                <button class="control-btn" type="button" @click="resetContext" :disabled="isLoading || !isLoggedIn">重置上下文</button>
+                <button class="control-btn" type="button" @click="clearChat" :disabled="isLoading">清空对话</button>
             </div>
         </header>
 
@@ -17,16 +33,16 @@
                 <div v-if="messages.length === 0" class="welcome-message">
                     <span class="welcome-mark">AI</span>
                     <h2>开始一次清晰的 AI 协作</h2>
-                    <p>你可以请它解释概念、起草段落、梳理文章结构，或者将阅读材料转成可发布内容。</p>
+                    <p>选择一个上下文包后，AI 会优先基于包里的真实资料回答问题。</p>
                     <div class="welcome-badges">
                         <span>连续问答</span>
                         <span>创作辅助</span>
                         <span>知识梳理</span>
                     </div>
                     <div class="welcome-suggestions">
-                        <button type="button" @click="sendSuggestion('帮我生成一段博客文章的开头')">帮我生成一段博客文章的开头</button>
-                        <button type="button" @click="sendSuggestion('AI 智能摘要适合哪些场景？')">AI 智能摘要适合哪些场景？</button>
-                        <button type="button" @click="sendSuggestion('如何设计多维标签与分类体系？')">如何设计多维标签与分类体系？</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('帮我生成一段博客文章的开头')">帮我生成一段博客文章的开头</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('AI 智能摘要适合哪些场景？')">AI 智能摘要适合哪些场景？</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('如何设计多维标签与分类体系？')">如何设计多维标签与分类体系？</button>
                     </div>
                 </div>
 
@@ -44,6 +60,20 @@
                                 <span></span><span></span><span></span>
                             </div>
                             <div v-else class="message-text markdown-content" v-html="renderMarkdown(item.content)"></div>
+                            <div v-if="item.role === 'ai' && item.retrieval" class="retrieval-card">
+                                <div class="retrieval-header">
+                                    <span>引用上下文</span>
+                                    <small>
+                                        {{ item.retrieval.mode === 'semantic' ? '语义检索' : '关键词检索' }} · 命中 {{ item.retrieval.snippets.length }} 段 · 约 {{ item.retrieval.used_tokens_estimate }} tokens
+                                    </small>
+                                </div>
+                                <div v-if="item.retrieval.snippets.length" class="retrieval-list">
+                                    <span v-for="snippet in item.retrieval.snippets" :key="snippet.id" :title="snippet.content_preview">
+                                        {{ snippet.id }} {{ snippet.title }}
+                                    </span>
+                                </div>
+                                <div v-else class="retrieval-empty">没有命中足够相关的上下文片段</div>
+                            </div>
                             <button v-if="item.content" class="copy-btn" type="button" @click="copyMessage(item.content)">复制</button>
                         </div>
                     </div>
@@ -51,12 +81,31 @@
             </section>
 
             <footer class="chat-input-area">
-                <textarea v-model="inputMessage" placeholder="输入你的问题或创作需求..." rows="2"
+                <div class="context-strip" v-if="selectedContextPack">
+                    <span>已选择上下文包</span>
+                    <strong>{{ selectedContextPack.name }}</strong>
+                    <small>{{ selectedContextPack.sources.length }} 份资料，会按问题检索相关片段</small>
+                </div>
+                <div class="rag-budget-strip" v-if="selectedContextPack">
+                    <span>RAG 预算</span>
+                    <button
+                        v-for="option in ragBudgetOptions"
+                        :key="option.value"
+                        type="button"
+                        :class="{ active: selectedRagBudget === option.value }"
+                        :disabled="isLoading"
+                        @click="selectedRagBudget = option.value"
+                    >
+                        <strong>{{ option.label }}</strong>
+                        <small>{{ option.detail }}</small>
+                    </button>
+                </div>
+                <textarea v-model="inputMessage" :placeholder="isLoggedIn ? '输入你的问题或创作需求...' : '登录后可以使用 AI 对话与上下文包'" rows="2"
                     @keydown.enter.prevent="sendMessage" @keydown.enter.shift.exact="inputMessage += '\n'"
-                    :disabled="isLoading" class="message-input"></textarea>
+                    :disabled="isLoading || !isLoggedIn" class="message-input"></textarea>
                 <div class="input-actions">
-                    <button class="control-btn" type="button" @click="inputMessage = ''" v-if="inputMessage.trim()">清空输入</button>
-                    <button class="send-btn" type="button" @click="sendMessage" :disabled="!inputMessage.trim() || isLoading">
+                    <button class="control-btn" type="button" @click="inputMessage = ''" v-if="inputMessage.trim()" :disabled="isLoading">清空输入</button>
+                    <button class="send-btn" type="button" @click="sendMessage" :disabled="!inputMessage.trim() || isLoading || !isLoggedIn">
                         {{ isLoading ? '...' : '发送' }}
                     </button>
                 </div>
@@ -66,12 +115,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { computed, ref, nextTick, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useElMessage } from '@/hooks/useMessage'
+import { useGlobalStore } from '@/store'
 import { aiChatService } from '@/api/modules/ai'
+import { type AIRetrievalMeta } from '@/api/modules/ai/interface'
+import contextPackApi, { type ContextPack } from '@/api/modules/contextPacks'
 import { marked } from 'marked'
 
 const { message } = useElMessage()
+const route = useRoute()
+const globalStore = useGlobalStore()
 
 function renderMarkdown(content: string): string {
     marked.setOptions({ breaks: true, gfm: true })
@@ -82,6 +137,7 @@ interface Message {
     role: 'user' | 'ai'
     content: string
     timestamp: Date
+    retrieval?: AIRetrievalMeta | null
 }
 
 const STORAGE_KEY = 'aiChatMessages'
@@ -109,8 +165,36 @@ const messages = ref<Message[]>(loadMessagesFromStorage())
 const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesRef = ref<HTMLElement | null>(null)
+const contextPacks = ref<ContextPack[]>([])
+const selectedContextPackId = ref<number | null>(null)
+const loadingContextPacks = ref(false)
+const selectedRagBudget = ref(2600)
+
+const ragBudgetOptions = [
+    { label: '精简', value: 1200, detail: '低消耗' },
+    { label: '标准', value: 2600, detail: '日常问答' },
+    { label: '深度', value: 4800, detail: '复杂梳理' }
+]
+
+const selectedContextPack = computed(() => {
+    return contextPacks.value.find(pack => pack.id === selectedContextPackId.value) || null
+})
+
+const isLoggedIn = computed(() => Boolean(globalStore.token && globalStore.userInfo?.id))
+
+const currentUserId = computed(() => {
+    return globalStore.userInfo?.id ? String(globalStore.userInfo.id) : 'guest'
+})
+
+function ensureCanUseAI() {
+    if (isLoggedIn.value) return true
+    message.warning('请先登录后再使用 AI 对话')
+    return false
+}
 
 async function sendMessage() {
+    if (!ensureCanUseAI()) return
+
     const content = inputMessage.value.trim()
     if (!content || isLoading.value) return
 
@@ -123,11 +207,24 @@ async function sendMessage() {
     messages.value.push({ role: 'ai', content: '', timestamp: new Date() })
 
     try {
-        await aiChatService.sendMessageStream({ message: content, user_id: '123' }, {
+        await aiChatService.sendMessageStream({
+            message: content,
+            user_id: currentUserId.value,
+            context_pack_id: selectedContextPackId.value || undefined,
+            context_token_budget: selectedRagBudget.value
+        }, {
+            onStart: (payload) => {
+                messages.value[aiMessageIndex].retrieval = payload.retrieval || null
+                saveMessagesToStorage(messages.value)
+            },
             onDelta: async (delta) => {
                 messages.value[aiMessageIndex].content += delta
                 saveMessagesToStorage(messages.value)
                 await nextTick(scrollToBottom)
+            },
+            onDone: (payload) => {
+                messages.value[aiMessageIndex].retrieval = payload.retrieval || messages.value[aiMessageIndex].retrieval || null
+                saveMessagesToStorage(messages.value)
             },
             onError: (errorMessage) => {
                 if (!messages.value[aiMessageIndex].content) {
@@ -138,8 +235,9 @@ async function sendMessage() {
         })
     } catch (error: any) {
         console.error('AI chat API failed:', error)
-        messages.value[aiMessageIndex].content = await generateResponse(content)
-        message.warning('AI 服务暂时不可用，已显示本地示例回复')
+        const errorMessage = error?.message || 'AI 服务暂时不可用，请稍后重试'
+        messages.value[aiMessageIndex].content = errorMessage
+        message.error(errorMessage)
     } finally {
         if (!messages.value[aiMessageIndex].content) {
             messages.value[aiMessageIndex].content = 'AI 回复失败'
@@ -150,8 +248,15 @@ async function sendMessage() {
     }
 }
 async function resetContext() {
+    if (!ensureCanUseAI()) return
+
     try {
-        await aiChatService.sendMessage({ user_id: '123', reset_context: true })
+        await aiChatService.sendMessage({
+            user_id: currentUserId.value,
+            reset_context: true,
+            context_pack_id: selectedContextPackId.value || undefined,
+            context_token_budget: selectedRagBudget.value
+        })
         messages.value = []
         saveMessagesToStorage(messages.value)
         message.success('上下文已重置')
@@ -161,16 +266,6 @@ async function resetContext() {
     }
 }
 
-function generateResponse(content: string): Promise<string> {
-    const responses: Record<string, string> = {
-        '帮我生成一段博客文章的开头': `可以从一个具体问题切入：
-
-当我们讨论技术方案时，真正值得关注的往往不是某个工具本身，而是它如何改变我们组织信息、理解问题和交付结果的方式。`,
-        'AI 智能摘要适合哪些场景？': 'AI 智能摘要适合长文阅读、会议纪要、技术文档、知识库检索和文章发布前的内容提炼。',
-        '如何设计多维标签与分类体系？': '可以从三层来设计：一是固定分类，用于确定内容归属；二是主题标签，用于连接知识点；三是状态标签，用于表达精选、原创、系列等运营信息。'
-    }
-    return Promise.resolve(responses[content] || `我理解你想处理“${content}”。可以先把目标、读者和希望输出的格式告诉我，我会帮你整理成更清晰的 AI 回复。`)
-}
 function sendSuggestion(suggestion: string) {
     inputMessage.value = suggestion
     sendMessage()
@@ -181,6 +276,27 @@ function clearChat() {
     messages.value = []
     localStorage.removeItem(STORAGE_KEY)
     message.success('对话已清空')
+}
+
+async function clearChatForContextSwitch() {
+    if (messages.value.length) {
+        messages.value = []
+        localStorage.removeItem(STORAGE_KEY)
+        message.info('上下文包已切换，对话已清空')
+    }
+
+    if (!isLoggedIn.value) return
+
+    try {
+        await aiChatService.sendMessage({
+            user_id: currentUserId.value,
+            reset_context: true,
+            context_pack_id: selectedContextPackId.value || undefined,
+            context_token_budget: selectedRagBudget.value
+        })
+    } catch (error) {
+        console.error('Reset context after pack switch failed:', error)
+    }
 }
 
 function scrollToBottom() {
@@ -200,8 +316,36 @@ function copyMessage(content: string) {
     })
 }
 
-onMounted(() => {
+async function loadContextPacks() {
+    if (!isLoggedIn.value) {
+        contextPacks.value = []
+        selectedContextPackId.value = null
+        return
+    }
+
+    loadingContextPacks.value = true
+    try {
+        contextPacks.value = await contextPackApi.getList()
+        const queryPackId = Number(route.query.pack)
+        if (Number.isFinite(queryPackId) && contextPacks.value.some(pack => pack.id === queryPackId)) {
+            selectedContextPackId.value = queryPackId
+        }
+    } catch (error) {
+        console.error('Load context packs failed:', error)
+        contextPacks.value = []
+    } finally {
+        loadingContextPacks.value = false
+    }
+}
+
+onMounted(async () => {
     messages.value = loadMessagesFromStorage()
+    await loadContextPacks()
+})
+
+watch(selectedContextPackId, (newValue, oldValue) => {
+    if (newValue === oldValue) return
+    clearChatForContextSwitch()
 })
 </script>
 
@@ -268,6 +412,10 @@ onMounted(() => {
     justify-content: flex-end;
 }
 
+.context-select {
+    width: min(320px, 100%);
+}
+
 .control-btn,
 .send-btn,
 .copy-btn,
@@ -293,6 +441,14 @@ onMounted(() => {
 .copy-btn:hover,
 .welcome-suggestions button:hover {
     background: var(--surface-hover);
+}
+
+.control-btn:disabled,
+.send-btn:disabled,
+.copy-btn:disabled,
+.welcome-suggestions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
 }
 
 .chat-panel {
@@ -455,6 +611,50 @@ onMounted(() => {
     background: rgba(255, 255, 255, 0.14);
 }
 
+.retrieval-card {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--ring);
+}
+
+.retrieval-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.retrieval-header small,
+.retrieval-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.retrieval-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.retrieval-list span {
+    max-width: 100%;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .markdown-content :deep(p) {
     margin: 0 0 10px;
 }
@@ -497,6 +697,75 @@ onMounted(() => {
     padding: 16px;
     background: var(--surface);
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+
+.context-strip {
+    grid-column: 1 / -1;
+    min-height: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.context-strip strong {
+    color: var(--text-primary);
+}
+
+.context-strip small {
+    color: var(--text-muted);
+}
+
+.rag-budget-strip {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.rag-budget-strip > span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.rag-budget-strip button {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    border-radius: 10px;
+    padding: 0 10px;
+    color: var(--text-secondary);
+    background: var(--surface-subtle);
+    box-shadow: var(--ring);
+    cursor: pointer;
+}
+
+.rag-budget-strip button.active {
+    color: var(--button-fg);
+    background: var(--button-bg);
+}
+
+.rag-budget-strip button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.rag-budget-strip strong,
+.rag-budget-strip small {
+    line-height: 1;
+}
+
+.rag-budget-strip small {
+    color: inherit;
+    opacity: 0.72;
 }
 
 .message-input {

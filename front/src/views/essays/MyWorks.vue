@@ -25,8 +25,8 @@
 
                 <el-table-column prop="status" label="状态" width="100">
                     <template #default="{ row }">
-                        <el-tag :type="getStatusType(row.status)" size="small">
-                            {{ getStatusLabel(row.status) }}
+                        <el-tag :type="getStatusType(getArticleStatus(row))" size="small">
+                            {{ getStatusLabel(getArticleStatus(row)) }}
                         </el-tag>
                     </template>
                 </el-table-column>
@@ -40,9 +40,9 @@
                 <el-table-column label="操作" width="250" fixed="right">
                     <template #default="{ row }">
                         <el-button size="small" @click="handleEdit(row)">编辑</el-button>
-                        <el-button size="small" :type="getActionBtnType(row.status)" @click="handleToggleStatus(row)"
-                            :disabled="row.status === 'pending'">
-                            {{ getActionBtnText(row.status) }}
+                        <el-button size="small" :type="getActionBtnType(getArticleStatus(row))" @click="handleToggleStatus(row)"
+                            :disabled="getArticleStatus(row) === 'pending'">
+                            {{ getActionBtnText(getArticleStatus(row)) }}
                         </el-button>
                         <el-popconfirm title="确定要删除这篇文章吗？" @confirm="handleDelete(row)" confirm-button-text="删除"
                             cancel-button-text="取消" confirm-button-type="danger">
@@ -74,7 +74,11 @@ const articles = ref<IArticle[]>([])
 const loading = ref(false)
 
 const fetchArticles = async () => {
-    if (!globalStore.userInfo?.id) return
+    if (!globalStore.userInfo?.id) {
+        articles.value = []
+        message.warning('请先登录后查看我的作品')
+        return
+    }
 
     loading.value = true
     try {
@@ -85,7 +89,7 @@ const fetchArticles = async () => {
         // Based on previous code, http.get<T> returns Promise<T>. But let's check response structure.
         // Usually our axios interceptor returns response.data directly?
         // Let's assume standard response structure.
-        articles.value = res as any
+        articles.value = Array.isArray(res) ? res as any : []
     } catch (error) {
         console.error('获取文章列表失败', error)
         message.error('获取文章列表失败')
@@ -104,6 +108,10 @@ const goToArticle = (id: number) => {
 
 const handleEdit = (row: IArticle) => {
     router.push(`/essays/edit/${row.id}`)
+}
+
+const getArticleStatus = (row: IArticle) => {
+    return row.document_status || row.status || 'draft'
 }
 
 const getStatusType = (status: string) => {
@@ -137,15 +145,18 @@ const getActionBtnText = (status: string) => {
 }
 
 const handleToggleStatus = async (row: IArticle) => {
-    if (row.status === 'pending') return
-    const newStatus = row.status === 'published' ? 'draft' : 'published'
+    const currentStatus = getArticleStatus(row)
+    if (currentStatus === 'pending') return
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published'
     try {
         await articleApi.update(row.id, {
             ...row,
-            status: newStatus
+            status: newStatus,
+            document_status: newStatus
         } as any)
 
         row.status = newStatus
+        row.document_status = newStatus
         message.success(newStatus === 'published' ? '已发布' : '已下架')
     } catch (error) {
         console.error('更新状态失败', error)
