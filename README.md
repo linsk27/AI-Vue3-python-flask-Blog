@@ -6,6 +6,12 @@
 
 体验地址：[https://ai-vue3-python-flask-blog.vercel.app/](https://ai-vue3-python-flask-blog.vercel.app/)
 
+## 适合人群
+
+`main` 分支适合大学生、前后端初学者和正在准备课程设计/毕业设计的同学二次开发。它已经包含前台、后台、后端 API、数据库、登录鉴权、文章管理和基础 AI 能力，可以作为一个完整的全栈项目基础继续扩展。
+
+如果这个项目对你的学习、毕设选题或二开有帮助，欢迎 Star、Fork 和使用。
+
 ## 分支说明
 
 | 分支 | 状态 | 说明 |
