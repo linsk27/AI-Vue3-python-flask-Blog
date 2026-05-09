@@ -12,6 +12,22 @@
 
 如果这个项目对你的学习、毕设选题或二开有帮助，欢迎 Star、Fork 和使用。
 
+## 页面截图
+
+以下截图来自 `main` 稳定分支，展示当前博客系统的主要页面效果。
+
+### 前台首页
+
+![前台首页](docs/screenshots/main-home.png)
+
+### 文章库
+
+![文章库](docs/screenshots/main-articles.png)
+
+### 管理后台登录
+
+![管理后台登录](docs/screenshots/main-admin-login.png)
+
 ## 分支说明
 
 | 分支 | 状态 | 说明 |
