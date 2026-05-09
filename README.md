@@ -1,20 +1,24 @@
 # AI-Vue3-python-flask-Blog
 
-一个基于 **Vue 3 + Python Flask + MySQL** 的 AI 增强型博客与知识分享系统。
+一个适合大学生二次开发、课程设计和毕业设计的 **Vue 3 + Python Flask + MySQL** 全栈 AI 博客系统。
 
-当前 `main` 分支是线上稳定版本，已经用于 Vercel 和 Railway 部署。为了避免影响线上环境，`main` 主要保留博客、文章、用户、后台管理和基础 AI 能力。
+本项目已经包含前台博客、后台管理、后端 API、数据库、登录鉴权、文章管理、评论收藏和基础 AI 能力。它不是一个空壳模板，而是可以直接运行、部署、演示和继续扩展的完整项目。
 
-体验地址：[https://ai-vue3-python-flask-blog.vercel.app/](https://ai-vue3-python-flask-blog.vercel.app/)
-
-## 适合人群
-
-`main` 分支适合大学生、前后端初学者和正在准备课程设计/毕业设计的同学二次开发。它已经包含前台、后台、后端 API、数据库、登录鉴权、文章管理和基础 AI 能力，可以作为一个完整的全栈项目基础继续扩展。
+线上体验：[https://ai-vue3-python-flask-blog.vercel.app/](https://ai-vue3-python-flask-blog.vercel.app/)
 
 如果这个项目对你的学习、毕设选题或二开有帮助，欢迎 Star、Fork 和使用。
 
-## 页面截图
+## 为什么适合做毕设
 
-以下截图来自 `main` 稳定分支，展示当前博客系统的主要页面效果。
+`main` 分支是当前稳定版本，已经适配 Vercel 前端部署和 Railway 后端部署。对于大学生毕业设计或课程设计，它有几个比较实用的优点：
+
+- 技术栈常见：Vue 3、Flask、MySQL、JWT、Element Plus，适合写论文和答辩说明。
+- 模块完整：前台、后台、后端、数据库都有，不只是单页面 Demo。
+- 功能够用：文章发布、用户登录、权限管理、评论收藏、AI 写作、图片上传等基础功能齐全。
+- 易于扩展：可以继续做 AI 写作、知识库、推荐系统、数据统计、后台审核、角色权限等方向。
+- 可部署演示：项目已经做过线上部署适配，适合答辩时展示真实网站。
+
+## 页面截图
 
 ### 前台首页
 
@@ -28,41 +32,35 @@
 
 ![管理后台登录](docs/screenshots/main-admin-login.png)
 
-## 分支说明
+## 核心功能
 
-| 分支 | 状态 | 说明 |
-| --- | --- | --- |
-| `main` | 稳定部署分支 | 当前线上博客系统，适合查看已部署版本、基础架构和生产配置 |
-| `feat/contextforge-workspace` | 开发中 | 正在升级为 **知境 ContextForge AI 知识工作台**，包含上下文包、RAG、Embedding、独立管理台等新能力 |
+### 用户端
 
-想了解正在开发的 **知境 ContextForge**，请切换到开发分支：
+- 首页展示与文章列表
+- 文章详情、阅读、评论、点赞和收藏
+- 用户注册、登录和个人中心
+- 文章创建、编辑、发布和删除
+- AI 辅助写作与 AI 对话入口
 
-```bash
-git fetch origin
-git checkout feat/contextforge-workspace
-```
+### 管理后台
 
-开发分支上的项目说明文档：
+- 用户管理
+- 文章管理
+- 角色和权限管理
+- AI 模型配置
+- 后台运营管理页面
 
-- [知境 ContextForge 架构、群体与使用说明](https://github.com/linsk27/AI-Vue3-python-flask-Blog/blob/feat/contextforge-workspace/docs/contextforge-architecture-usage.md)
-- [开发分支代码](https://github.com/linsk27/AI-Vue3-python-flask-Blog/tree/feat/contextforge-workspace)
+### 后端 API
 
-## main 分支项目定位
-
-`main` 分支当前是一个前后端分离的 AI 博客系统，核心能力包括：
-
-- 用户注册、登录、JWT 鉴权
-- 文章创建、编辑、发布、删除
-- 文章列表、详情、评论、点赞和收藏
-- AI 辅助写作、AI 对话和模型配置
-- Avue 管理后台，用于用户、文章和 AI 配置管理
-- Vercel 前端部署和 Railway 后端部署适配
-
-它适合作为一个完整的 Vue3 + Flask 全栈项目基础版本，也适合继续扩展为内容管理系统、个人知识库或 AI 写作平台。
+- JWT 登录鉴权
+- 用户、文章、评论、收藏接口
+- 图片上传接口
+- AI 生成与对话接口
+- MySQL 数据持久化
 
 ## 技术栈
 
-### 用户端 `front/`
+### 前台 `front/`
 
 - Vue 3
 - Vite
@@ -70,7 +68,6 @@ git checkout feat/contextforge-workspace
 - Pinia
 - Vue Router
 - Element Plus
-- Markdown / 富文本编辑能力
 
 ### 管理后台 `avue-cli/`
 
@@ -133,23 +130,22 @@ npm install
 npm run dev
 ```
 
-## 开发中的知境 ContextForge
+## 二开方向
 
-`feat/contextforge-workspace` 分支正在把项目从“AI 博客”升级为“AI 知识工作台”。
+你可以基于 `main` 分支继续扩展：
 
-开发分支的重点包括：
+- AI 文章生成、摘要生成、标题推荐
+- 后台文章审核和内容运营
+- 用户等级、积分、消息通知
+- 文章推荐、热门排行、搜索优化
+- 数据看板和访问统计
+- 文件上传、Markdown 导入、富文本增强
+- 部署上线、HTTPS、数据库备份和安全加固
 
-- 将文章、笔记、链接、AI 对话组织成上下文包
-- 使用 RAG 检索，避免把整包资料直接塞进提示词
-- 支持关键词检索和可配置 Embedding 语义检索
-- 将普通用户前台和 Avue 管理台边界拆清楚
-- 让页面展示真实数据，减少演示数据和无效按钮
-- 支持 AI 起草时携带上下文包命中片段
+## 分支提示
 
-这个方向的产品名是：
+`main` 是当前稳定的毕设/二开基础版本。
 
-```text
-知境 ContextForge
-```
+另有开发中的下一代分支 `feat/contextforge-workspace`，正在探索 **知境 ContextForge AI 知识工作台**，包含上下文包、RAG、Embedding 和更清晰的前后台边界。
 
-如果你是开发者，建议先看 `main` 了解当前线上版本，再切换到 `feat/contextforge-workspace` 理解下一阶段的产品演进。
+开发分支说明：[知境 ContextForge 架构、群体与使用说明](https://github.com/linsk27/AI-Vue3-python-flask-Blog/blob/feat/contextforge-workspace/docs/contextforge-architecture-usage.md)
