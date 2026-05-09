@@ -2,11 +2,11 @@
     <div class="workspace-page">
         <section class="workspace-hero">
             <div class="hero-copy">
-                <span class="eyebrow">AI 上下文工作台</span>
-                <h1>把零散知识锻造成可复用的 AI 上下文。</h1>
+                <span class="eyebrow">知境 ContextForge</span>
+                <h1>把零散知识变成可检索、可复用的 AI 上下文。</h1>
                 <p>
-                    ContextForge / 语境工坊可以把文档、笔记、网页、代码仓库和 AI 对话整理成上下文包，
-                    用于摘要、问答、复盘、写作和项目交接。
+                    面向写作者、学习者和项目协作者，前台专注文档沉淀、上下文包和 RAG 对话；
+                    权限、模型、系统自检等治理能力统一放到独立管理台。
                 </p>
                 <div class="hero-actions">
                     <router-link to="/context-packs" class="primary-action">查看上下文包</router-link>
@@ -14,7 +14,7 @@
                 </div>
             </div>
 
-            <div class="command-panel" aria-label="ContextForge workflow preview">
+            <div class="command-panel" aria-label="知境 workflow preview">
                 <div class="panel-topbar">
                     <span></span>
                     <span></span>
@@ -42,8 +42,8 @@
 
         <section class="workspace-grid">
             <article class="feature-panel feature-panel-large">
-                <span class="eyebrow">核心特色</span>
-                <h2>上下文包是可复用的 AI 记忆容器。</h2>
+                <span class="eyebrow">核心路径</span>
+                <h2>上下文包是低 token 的 AI 记忆容器。</h2>
                 <p>
                     把文档、链接、笔记、仓库分析和 AI 对话组织到一个上下文包里，用于问答、项目交接、
                     复习备考、研究整理或内容创作。
@@ -65,8 +65,8 @@
 
         <section class="quick-actions">
             <div>
-                <span class="eyebrow">下一步</span>
-                <h2>先沉淀一份文档，再围绕它锻造上下文。</h2>
+                <span class="eyebrow">开始使用</span>
+                <h2>先沉淀文档，再用上下文包发起 AI 对话。</h2>
             </div>
             <div class="action-list">
                 <router-link to="/essays" class="action-card">浏览知识库</router-link>
@@ -141,7 +141,7 @@ const features = [
     {
         kicker: '导入管线',
         title: '接入网页和代码仓库。',
-        description: '后续支持 URL、Markdown、Word 和 GitHub 仓库导入，让资料入口更完整。'
+        description: '把外部资料先整理为来源，再进入分块索引和 RAG 检索流程。'
     }
 ]
 

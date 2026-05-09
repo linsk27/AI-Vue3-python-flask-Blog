@@ -1,8 +1,8 @@
-# ContextForge 架构、群体与使用说明
+# 知境 ContextForge 架构、群体与使用说明
 
 ## 1. 项目定位
 
-本项目已经从传统的 Vue3 + Flask 博客，升级为一个面向个人和小团队的 AI 知识工作台。它的核心不是“发文章”，而是把真实文档、项目资料、上下文包、AI 对话和 RAG 检索组织成可复用的知识资产。
+本项目已经命名为“知境 ContextForge”，从传统的 Vue3 + Flask 博客升级为一个面向个人和小团队的 AI 知识工作台。它的核心不是“发文章”，而是把真实文档、项目资料、上下文包、AI 对话和 RAG 检索组织成可复用的知识资产。
 
 当前产品主线是：
 
@@ -42,7 +42,7 @@
 
 - 管理用户、角色和权限。
 - 配置 AI 模型与 Embedding。
-- 查看后台看板和系统自检。
+- 在独立 Avue 管理台查看真实数据概览和系统自检。
 - 维护全局上下文资产。
 
 群体边界的原则是：普通用户维护自己的资料，知识维护者维护上下文资产，管理员维护系统。这样可以避免“谁都能往包里乱加文件”的混乱。
@@ -57,6 +57,13 @@ front/
   Element Plus UI
   Quill 编辑器
   Marked / Highlight / Mammoth 文档处理
+  面向普通用户的知识工作台
+
+avue-cli/
+  Avue + Vue 3 + Vite
+  Element Plus 管理组件
+  账号、角色、内容、AI、Embedding、RAG、系统自检
+  面向管理员和运营者的后台
 
 backend/
   Flask 蓝图路由
@@ -112,7 +119,7 @@ AI 对话 / AI 起草
 | `backend/routes/system.py` | 系统自检和健康检查 |
 | `backend/routes/upload.py` | 登录后图片上传 |
 
-## 5. 前端页面
+## 5. 前台页面
 
 | 页面 | 作用 |
 | --- | --- |
@@ -125,12 +132,26 @@ AI 对话 / AI 起草
 | `/context-packs` | 上下文包、RAG 索引、检索预览、导出 |
 | `/ai-center` | 用户侧 AI 工作台入口 |
 | `/ai-center/chat` | 携带上下文包的 AI 对话 |
-| `/admin/settings` | AI、Embedding、系统自检等后台设置 |
-| `/admin/access` | 用户、角色、权限管理 |
-| `/dashboard` | 后台数据看板 |
 | `/profile` | 个人中心 |
 
-## 6. 数据模型
+前台已经移除后台设置、后台看板和权限管理路由。管理员登录后只看到一个“管理后台”外链，跳转到独立 Avue 管理台，避免普通用户界面混入系统治理信息。
+
+## 6. 管理台页面
+
+| 页面 | 作用 |
+| --- | --- |
+| `/wel/index` | 真实数据运营概览 |
+| `/manager/access/user` | 账号管理 |
+| `/manager/access/role` | 角色权限 |
+| `/manager/access/system` | 手动系统自检 |
+| `/manager/content/article` | 全站文章管理 |
+| `/manager/content/context` | 上下文包、RAG 分块、Embedding 生成 |
+| `/manager/ai-center/model` | AI 聊天模型配置 |
+| `/manager/ai-center/embedding` | Embedding 配置 |
+
+管理台只面向管理员和具备治理权限的运营者。普通创作者不应该在这里维护系统配置。
+
+## 7. 数据模型
 
 关键表：
 
@@ -149,7 +170,7 @@ AI 对话 / AI 起草
 | `context_pack_sources` | 上下文包资料来源 |
 | `context_pack_source_chunks` | RAG 检索分块和向量 |
 
-## 7. 权限模型
+## 8. 权限模型
 
 当前核心权限：
 
@@ -161,11 +182,11 @@ AI 对话 / AI 起草
 | `context_pack:manage` | 上下文包管理 |
 | `ai:access` | 使用 AI 工作台、AI 对话、AI 起草 |
 | `ai:manage` | 管理 AI 和 Embedding 配置 |
-| `system:observe` | 查看后台看板和系统自检 |
+| `system:observe` | 查看管理台系统自检 |
 
 前端路由守卫会在进入受限页面前刷新用户信息，再判断权限。后端接口也会做权限校验，前后端双层防护。
 
-## 8. 上下文包的意义
+## 9. 上下文包的意义
 
 上下文包不是普通文件夹，而是“给 AI 使用的资料容器”。它适合沉淀一组围绕同一目标的材料。
 
@@ -180,7 +201,7 @@ AI 对话 / AI 起草
 
 上下文包的价值是把零散内容变成可检索、可复用、可导出的上下文资产。
 
-## 9. RAG 原理
+## 10. RAG 原理
 
 RAG 是 Retrieval-Augmented Generation，意思是“先检索，再生成”。
 
@@ -203,7 +224,7 @@ RAG 是 Retrieval-Augmented Generation，意思是“先检索，再生成”。
 - AI 更聚焦，回答更容易追溯。
 - 用户可以先预览命中片段，再决定是否生成。
 
-## 10. 关键词检索和语义检索
+## 11. 关键词检索和语义检索
 
 | 类型 | 是否需要 Embedding | 是否会产生 Embedding 成本 | 适合场景 |
 | --- | --- | --- | --- |
@@ -218,7 +239,7 @@ RAG 是 Retrieval-Augmented Generation，意思是“先检索，再生成”。
 
 不满足时会回退到关键词检索。
 
-## 11. AI 起草如何使用 RAG
+## 12. AI 起草如何使用 RAG
 
 写文档页面已经形成完整闭环：
 
@@ -236,7 +257,7 @@ RAG 是 Retrieval-Augmented Generation，意思是“先检索，再生成”。
 
 默认使用关键词检索，不产生 Embedding 费用。勾选语义检索后，也只有在 Embedding 配置和索引完整时才会真正使用。
 
-## 12. Markdown 导出和复制提示词
+## 13. Markdown 导出和复制提示词
 
 ### Markdown 导出
 
@@ -256,7 +277,7 @@ RAG 是 Retrieval-Augmented Generation，意思是“先检索，再生成”。
 
 系统内部更推荐 RAG：只检索相关片段，不复制整包。
 
-## 13. 核心使用流程
+## 14. 核心使用流程
 
 ### 初始化
 
@@ -273,6 +294,12 @@ python app.py
 ```powershell
 cd front
 copy .env.example .env.local
+npm install
+npm run dev
+```
+
+```powershell
+cd avue-cli
 npm install
 npm run dev
 ```
@@ -298,7 +325,7 @@ admin / admin123
 1. 进入 `/context-packs`。
 2. 新建上下文包。
 3. 从知识库选择真实文章加入资料来源。
-4. 刷新知识索引。
+4. 重建 RAG 分块索引。
 5. 用 RAG 检索预览检查命中片段。
 
 ### 用上下文包对话
@@ -317,7 +344,7 @@ admin / admin123
 5. 点击预览引用。
 6. 确认命中后生成草稿。
 
-## 14. 当前完成度
+## 15. 当前完成度
 
 已完成核心 MVP 闭环：
 
@@ -329,7 +356,8 @@ admin / admin123
 - AI 起草携带上下文包。
 - 关键词检索默认可用。
 - Embedding 配置、校验、语义索引能力已具备基础。
-- 后台设置、权限管理、系统自检已经拆出。
+- 前台已经移除后台设置、权限管理和后台看板。
+- Avue 管理台已经承接账号、角色、内容、上下文包、AI、Embedding 和系统自检。
 - 自动自我进化调度已收敛为手动系统自检。
 
 仍建议继续增强：
@@ -340,7 +368,7 @@ admin / admin123
 - 优化大依赖包体积。
 - 做生产环境安全加固，包括强密钥、默认密码修改、HTTPS、数据库备份。
 
-## 15. 项目意义
+## 16. 项目意义
 
 这个项目的价值不在于“多了一个 AI 按钮”，而在于它把个人或团队的知识工作流程串起来：
 

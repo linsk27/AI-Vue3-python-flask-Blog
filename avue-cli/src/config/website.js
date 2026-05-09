@@ -2,10 +2,10 @@
  * 全局配置文件
  */
 export default {
-    title: '智汇管理台',
-    logo: 'AI',
-    key: 'ai-admin', //配置主键,目前用于存储
-    indexTitle: '智汇 Ops Console',
+    title: '知境管理台',
+    logo: '知',
+    key: 'contextforge-admin', //配置主键,目前用于存储
+    indexTitle: '知境 ContextForge Ops',
     tokenTime: 6000, //token过期时间
     Authorization: 'Authorization',
     //http的status默认放行不才用统一处理的,

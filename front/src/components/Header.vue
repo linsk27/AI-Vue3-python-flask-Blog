@@ -6,8 +6,8 @@
                     <span class="brand-mark-inner"></span>
                 </span>
                 <span class="brand-copy">
-                    <span class="brand-name">ContextForge</span>
-                    <span class="brand-subtitle">AI 上下文工作台</span>
+                    <span class="brand-name">知境</span>
+                    <span class="brand-subtitle">ContextForge AI 知识工作台</span>
                 </span>
             </button>
 
@@ -24,7 +24,10 @@
                     <EditPen class="action-icon" />
                     <span>新建文档</span>
                 </router-link>
-                <SelfCheckWidget v-if="canObserveSystem" />
+                <a v-if="canOpenAdminConsole" :href="adminAppUrl" class="admin-console-link" target="_blank" rel="noreferrer">
+                    <Setting class="action-icon" />
+                    <span>管理后台</span>
+                </a>
                 <router-link v-if="!isLoggedIn" to="/login" class="login-link">
                     <User class="action-icon" />
                     <span>登录</span>
@@ -64,25 +67,35 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowDown, Document, EditPen, Star, SwitchButton, User } from '@element-plus/icons-vue'
+import { ArrowDown, Document, EditPen, Setting, Star, SwitchButton, User } from '@element-plus/icons-vue'
 import { useElMessage } from '@/hooks/useMessage'
 import { useGlobalStore } from '@/store'
 import { usePermission } from '@/hooks/usePermission'
-import SelfCheckWidget from './SelfCheckWidget.vue'
 
 const { message } = useElMessage()
 const router = useRouter()
 const globalStore = useGlobalStore()
-const { hasPermission, hasAllPermissions } = usePermission()
+const { hasPermission, hasAnyPermission } = usePermission()
 
 const isLoggedIn = computed(() => Boolean(globalStore.token && globalStore.userInfo?.id))
 const userName = computed(() => globalStore.userInfo?.username || '访客')
 const userAvatar = ref('https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png')
 const canUseAi = computed(() => hasPermission('ai:access') || hasPermission('ai:manage'))
-const canManageAi = computed(() => hasPermission('ai:manage'))
-const canObserveSystem = computed(() => hasPermission('system:observe'))
-const canManageAccess = computed(() => hasAllPermissions(['user:manage', 'role:manage']))
-const canOpenAdminSettings = computed(() => canManageAi.value || canObserveSystem.value)
+const adminAppUrl = import.meta.env.VITE_ADMIN_APP_URL || 'http://127.0.0.1:5001'
+const canOpenAdminConsole = computed(() => {
+    if (!isLoggedIn.value) {
+        return false
+    }
+
+    return hasAnyPermission([
+        'user:manage',
+        'role:manage',
+        'article:manage',
+        'context_pack:manage',
+        'ai:manage',
+        'system:observe'
+    ])
+})
 
 const navItems = computed(() => {
     const items = [
@@ -96,18 +109,6 @@ const navItems = computed(() => {
 
     if (canUseAi.value) {
         items.push({ path: '/ai-center', label: 'AI 工作台' })
-    }
-
-    if (canObserveSystem.value) {
-        items.push({ path: '/dashboard', label: '后台看板' })
-    }
-
-    if (canOpenAdminSettings.value) {
-        items.push({ path: '/admin/settings', label: '后台设置' })
-    }
-
-    if (canManageAccess.value) {
-        items.push({ path: '/admin/access', label: '权限管理' })
     }
 
     return items
@@ -255,6 +256,7 @@ const handleCommand = (command: string) => {
 }
 
 .write-link,
+.admin-console-link,
 .login-link,
 .user-profile {
     min-height: 36px;
@@ -276,6 +278,17 @@ const handleCommand = (command: string) => {
 
     &:hover {
         background: var(--button-hover);
+    }
+}
+
+.admin-console-link {
+    padding: 0 12px;
+    color: var(--text-primary);
+    background: var(--surface);
+    box-shadow: var(--ring);
+
+    &:hover {
+        background: var(--surface-hover);
     }
 }
 
@@ -351,11 +364,13 @@ const handleCommand = (command: string) => {
 
     .brand-subtitle,
     .write-link span,
+    .admin-console-link span,
     .username {
         display: none;
     }
 
     .write-link,
+    .admin-console-link,
     .user-profile {
         width: 36px;
         justify-content: center;

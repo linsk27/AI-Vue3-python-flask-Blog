@@ -7,37 +7,37 @@
              class="wel__info-img">
         <div class="wel__info-content">
           <div class="wel__info-title">
-            {{$t('wel.info')}}
+            知境管理台
           </div>
           <div class="wel__info-subtitle">
-            {{$t('wel.dept')}}
+            当前登录：{{ userInfo.username || '管理员' }}。这里承接权限、内容、AI 与 RAG 运营治理。
           </div>
         </div>
       </div>
       <div class="wel__extra">
         <div class="wel__extra-item">
           <p class="wel__extra-title">
-            {{ $t('wel.count')}}
+            前台
           </p>
           <p class="wel__extra-subtitle">
-            56
+            知识工作台
           </p>
         </div>
         <div class="wel__extra-item">
           <p class="wel__extra-title">
-            {{ $t('wel.team')}}
+            后台
           </p>
           <p class="wel__extra-subtitle">
-            8 <span>/ 24</span>
+            运营治理
           </p>
         </div>
         <div class="wel__extra-item">
           <p class="wel__extra-title">
 
-            {{ $t('wel.project')}}
+            数据
           </p>
           <p class="wel__extra-subtitle">
-            2,223
+            真实接口
           </p>
         </div>
       </div>
@@ -138,8 +138,8 @@ export default {
     }
     &-subtitle {
       color: var(--admin-ink);
-      font-size: 26px;
-      line-height: 38px;
+      font-size: 18px;
+      line-height: 28px;
       margin: 0;
       span {
         color: var(--admin-muted);
