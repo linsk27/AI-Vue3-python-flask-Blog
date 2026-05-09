@@ -28,7 +28,7 @@
           </router-view>
         </div>
         <div class="avue-footer">
-          <p class="copyright">智汇管理台 · Operations Console</p>
+          <p class="copyright">知境 ContextForge · Operations Console</p>
         </div>
       </div>
     </div>

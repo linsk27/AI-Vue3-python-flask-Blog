@@ -1,5 +1,15 @@
 <template>
     <basic-container>
+        <div class="admin-page-head">
+            <div>
+                <span class="admin-eyebrow">Content Ops</span>
+                <h1 class="admin-page-title">文章管理</h1>
+                <p class="admin-page-desc">统一维护全站真实文档、发布状态、分类、封面和摘要，避免前台出现演示或脏数据。</p>
+            </div>
+            <div class="admin-status-note">
+                前台知识库只展示公开且已发布的真实文章；草稿和私有内容不会暴露给访客。
+            </div>
+        </div>
         <avue-crud :option="option" :table-loading="loading" :data="data" @on-load="onLoad"
             @search-change="searchChange" @search-reset="searchReset" @row-save="rowSave" @row-update="rowUpdate"
             @row-del="rowDel" @refresh-change="refreshChange">

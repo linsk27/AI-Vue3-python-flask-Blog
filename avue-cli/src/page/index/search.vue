@@ -1,7 +1,7 @@
 <template>
   <div class="avue-searchs"
        @click.self="handleEsc">
-    <div class="avue-searchs__title">Avue菜单搜索</div>
+    <div class="avue-searchs__title">菜单搜索</div>
     <div class="avue-searchs__content">
       <div class="avue-searchs__form">
         <el-input :placeholder="$t('search')"

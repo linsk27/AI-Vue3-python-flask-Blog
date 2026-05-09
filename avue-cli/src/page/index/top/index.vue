@@ -22,8 +22,8 @@
 
     <div class="top-bar__title">
       <div class="top-console-title">
-        <span class="top-console-title__main">管理控制台</span>
-        <span class="top-console-title__sub">内容、权限与 AI 服务配置</span>
+        <span class="top-console-title__main">知境管理台</span>
+        <span class="top-console-title__sub">账号、内容、AI 与 RAG 运营治理</span>
       </div>
       <top-search class="top-bar__item" v-if="setting.search"></top-search>
     </div>

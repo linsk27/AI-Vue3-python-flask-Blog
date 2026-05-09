@@ -1,5 +1,15 @@
 <template>
   <basic-container>
+    <div class="admin-page-head">
+      <div>
+        <span class="admin-eyebrow">Permission Matrix</span>
+        <h1 class="admin-page-title">角色权限</h1>
+        <p class="admin-page-desc">用角色控制用户能否管理账号、文章、上下文包、AI 配置和系统自检。</p>
+      </div>
+      <div class="admin-status-note">
+        推荐按职责配置角色：创作者、知识维护者、运营管理员、系统管理员，避免所有人都拥有全量权限。
+      </div>
+    </div>
     <avue-crud :option="option"
                :table-loading="loading"
                :data="data"

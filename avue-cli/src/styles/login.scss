@@ -7,7 +7,7 @@
   justify-content: center;
   overflow: hidden;
   background:
-    linear-gradient(120deg, rgba(49, 36, 30, .9), rgba(103, 64, 49, .76)),
+    linear-gradient(120deg, rgba(17, 24, 39, .96), rgba(21, 99, 255, .58)),
     url("/img/bg.jpg") center / cover no-repeat;
 
   &::before {
@@ -15,8 +15,8 @@
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(90deg, rgba(34, 27, 24, .92), rgba(67, 45, 38, .5) 54%, rgba(248, 244, 238, .95)),
-      linear-gradient(180deg, rgba(255, 251, 246, .08), rgba(255, 251, 246, .02));
+      linear-gradient(90deg, rgba(15, 23, 42, .94), rgba(31, 41, 55, .58) 54%, rgba(248, 250, 252, .96)),
+      linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02));
   }
 
   &::after {
@@ -74,8 +74,8 @@
   display: grid;
   place-items: center;
   border-radius: 14px;
-  color: #3d2b24;
-  background: #f6e1cd;
+  color: #0f172a;
+  background: #f8fafc;
   font-size: 18px;
   font-weight: 800;
   box-shadow: none;
@@ -95,7 +95,7 @@
 .login-subtitle {
   max-width: 520px;
   margin: 18px 0 0;
-  color: rgba(255, 247, 239, .78);
+  color: rgba(226, 232, 240, .82);
   font-size: 15px;
   line-height: 1.8;
   text-align: left;
@@ -111,7 +111,7 @@
 
 .login-feature-item {
   padding: 0 0 0 14px;
-  border-left: 2px solid rgba(246, 225, 205, .5);
+  border-left: 2px solid rgba(147, 197, 253, .7);
   border-radius: 0;
   background: transparent;
   border-top: 0;
@@ -161,7 +161,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #3d2b24;
+  color: #111827;
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
@@ -181,18 +181,18 @@
       padding: 0 12px;
       border-radius: 6px !important;
       background: #ffffff !important;
-      box-shadow: 0 0 0 1px #d9cbc0 inset !important;
+      box-shadow: 0 0 0 1px #dce2ea inset !important;
       transition: box-shadow .16s ease;
     }
 
     .el-input__wrapper.is-focus {
       background: #ffffff !important;
-      box-shadow: 0 0 0 1px #9b5f46 inset, 0 0 0 3px rgba(155, 95, 70, .14) !important;
+      box-shadow: 0 0 0 1px var(--admin-primary, #1563ff) inset, 0 0 0 3px rgba(21, 99, 255, .14) !important;
     }
 
     input {
       height: 44px !important;
-      color: #3d2b24;
+      color: #111827;
       background: transparent !important;
       font-size: 14px;
       line-height: 44px !important;
@@ -203,14 +203,14 @@
     .el-input__suffix {
       display: flex;
       align-items: center;
-      color: #a17b68;
+      color: #64748b;
     }
 
     .el-input-group__append {
       padding: 0;
       border-radius: 0 6px 6px 0;
       background: #ffffff;
-      box-shadow: 0 0 0 1px #d9cbc0 inset;
+      box-shadow: 0 0 0 1px #dce2ea inset;
       overflow: hidden;
     }
   }
@@ -226,8 +226,8 @@
   height: 44px;
   display: grid;
   place-items: center;
-  color: #7d4937;
-  background: #fff7ef;
+  color: var(--admin-primary, #1563ff);
+  background: #edf3ff;
   font-size: 17px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -242,8 +242,8 @@
   height: 44px;
   margin-top: 2px;
   border-radius: 6px;
-  border-color: #8f5741;
-  background: #8f5741;
+  border-color: var(--admin-primary, #1563ff);
+  background: var(--admin-primary, #1563ff);
   box-shadow: none;
   font-size: 15px;
   font-weight: 700;
@@ -261,13 +261,13 @@
   gap: 10px;
 
   a {
-    color: #8e7468;
+    color: #64748b;
     font-size: 12px;
     font-weight: 600;
   }
 
   a:hover {
-    color: #7d4937;
+    color: var(--admin-primary, #1563ff);
   }
 }
 

@@ -6,21 +6,21 @@
     </div>
     <div class="login-weaper">
       <div class="login-left animate__animated animate__fadeInLeft">
-        <div class="login-product-mark">AI</div>
-        <p class="title">智汇内容与 AI 配置控制台</p>
-        <p class="login-subtitle">集中管理用户、文章、权限与模型密钥。所有关键配置都会即时影响前台服务。</p>
+        <div class="login-product-mark">知</div>
+        <p class="title">知境 ContextForge 管理台</p>
+        <p class="login-subtitle">面向管理员的运营治理入口，集中处理账号权限、内容资产、AI 模型、Embedding 与 RAG 索引。</p>
         <div class="login-feature-list">
           <div class="login-feature-item">
-            <strong>内容运营</strong>
-            <span>文章、分类与发布状态统一维护</span>
+            <strong>账号权限</strong>
+            <span>用户、角色与后台访问边界统一维护</span>
           </div>
           <div class="login-feature-item">
-            <strong>权限管理</strong>
-            <span>后台访问与用户身份集中校验</span>
+            <strong>内容资产</strong>
+            <span>文章、上下文包和资料来源清晰管理</span>
           </div>
           <div class="login-feature-item">
-            <strong>AI 服务</strong>
-            <span>模型密钥、启用状态与调用配置</span>
+            <strong>AI 与 RAG</strong>
+            <span>模型配置、向量索引和系统自检集中处理</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,15 @@
 <template>
     <basic-container>
+        <div class="admin-page-head">
+            <div>
+                <span class="admin-eyebrow">Access Control</span>
+                <h1 class="admin-page-title">账号管理</h1>
+                <p class="admin-page-desc">维护后台账号、头像、邮箱和角色归属。普通创作者只在前台工作，治理账号在这里处理。</p>
+            </div>
+            <div class="admin-status-note">
+                新账号默认按角色继承权限；修改角色后，下次鉴权刷新会同步到前台和管理台。
+            </div>
+        </div>
         <avue-crud :option="option" :table-loading="loading" :data="data" @on-load="onLoad"
             @search-change="searchChange" @search-reset="searchReset" @row-save="rowSave" @row-update="rowUpdate"
             @row-del="rowDel" @refresh-change="refreshChange" :upload-before="uploadBefore" :upload-after="uploadAfter">
