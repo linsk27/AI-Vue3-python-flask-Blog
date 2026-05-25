@@ -64,6 +64,14 @@
 
 ## 快速启动
 
+已完成依赖和数据库初始化后，可以用项目脚本启动前台和后端。脚本会默认把后端放在 `5100` 起始的空闲端口，避免和其他 Flask 项目的 `5000` 或管理台端口冲突，并自动把 Vite 代理指向正确后端。
+
+```powershell
+.\scripts\start-local-dev.ps1
+```
+
+前台访问 `http://127.0.0.1:8080`。
+
 ### 1. 准备数据库
 
 ```sql
@@ -79,6 +87,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python init_db.py
+$env:PORT=5000
 python app.py
 ```
 
