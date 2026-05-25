@@ -7,6 +7,7 @@ const frontendUrl = (process.env.FRONTEND_URL || process.env.BASE_URL || 'http:/
 const username = process.env.E2E_USERNAME || 'admin'
 const password = process.env.E2E_PASSWORD || 'admin123'
 const callAi = process.env.E2E_CALL_AI === '1'
+const callEmbedding = process.env.E2E_CALL_EMBEDDING !== '0'
 const skipBrowser = process.env.E2E_SKIP_BROWSER === '1'
 const outDir = path.resolve(__dirname, '..', '..', '.codex-logs')
 
@@ -260,7 +261,42 @@ async function main() {
             throw new Error(`RAG index has no chunks: ${stringify(index)}`)
         }
 
-        const retrieval = expectOk(
+        const embeddingConfig = expectOk(
+            await request('/api/ai/embedding-config', {
+                token,
+                label: 'get embedding config'
+            }),
+            'get embedding config'
+        )
+        let embeddingBuild = {
+            skipped: true,
+            reason: embeddingConfig.configured ? 'E2E_CALL_EMBEDDING=0' : 'embedding config is not enabled'
+        }
+
+        if (callEmbedding && embeddingConfig.configured) {
+            embeddingBuild = expectOk(
+                await request(`/api/context-packs/${created.packId}/rag-index/embeddings`, {
+                    method: 'POST',
+                    token,
+                    label: 'build semantic rag index',
+                    body: {
+                        force: true
+                    }
+                }),
+                'build semantic rag index'
+            )
+            const generated = Number(embeddingBuild.index?.generated_embeddings || 0)
+            const failed = Number(embeddingBuild.index?.failed_embeddings || 0)
+            const current = Number(embeddingBuild.index?.current_model_embedded_chunks || 0)
+            if (generated < 1 && current < 1) {
+                throw new Error(`Embedding build did not generate vectors: ${stringify(embeddingBuild)}`)
+            }
+            if (failed > 0) {
+                throw new Error(`Embedding build had failed chunks: ${stringify(embeddingBuild)}`)
+            }
+        }
+
+        const keywordRetrieval = expectOk(
             await request(`/api/ai/context-packs/${created.packId}/retrieve`, {
                 method: 'POST',
                 token,
@@ -273,8 +309,35 @@ async function main() {
             }),
             'preview rag retrieval'
         )
-        if (!retrieval.retrieval || !Array.isArray(retrieval.retrieval.snippets) || retrieval.retrieval.snippets.length < 1) {
-            throw new Error(`RAG retrieval returned no snippets: ${stringify(retrieval)}`)
+        if (!keywordRetrieval.retrieval || !Array.isArray(keywordRetrieval.retrieval.snippets) || keywordRetrieval.retrieval.snippets.length < 1) {
+            throw new Error(`RAG retrieval returned no snippets: ${stringify(keywordRetrieval)}`)
+        }
+
+        let semanticRetrieval = {
+            skipped: true,
+            reason: embeddingBuild.skipped ? embeddingBuild.reason : ''
+        }
+        if (!embeddingBuild.skipped) {
+            semanticRetrieval = expectOk(
+                await request(`/api/ai/context-packs/${created.packId}/retrieve`, {
+                    method: 'POST',
+                    token,
+                    label: 'preview semantic rag retrieval',
+                    body: {
+                        query: 'source traceability and evidence snippets for AI drafting',
+                        context_token_budget: 1200,
+                        allow_embedding: true
+                    }
+                }),
+                'preview semantic rag retrieval'
+            )
+            const semanticMeta = semanticRetrieval.retrieval || {}
+            if (!semanticMeta.embedding_used || !semanticMeta.semantic_available) {
+                throw new Error(`Semantic retrieval did not use embeddings: ${stringify(semanticRetrieval)}`)
+            }
+            if (!Array.isArray(semanticMeta.snippets) || semanticMeta.snippets.length < 1) {
+                throw new Error(`Semantic retrieval returned no snippets: ${stringify(semanticRetrieval)}`)
+            }
         }
 
         const configs = expectOk(
@@ -298,7 +361,7 @@ async function main() {
                         topic: 'Draft a short note about RAG source traceability.',
                         context_pack_id: created.packId,
                         context_token_budget: 1200,
-                        allow_embedding: false
+                        allow_embedding: !embeddingBuild.skipped
                     }
                 }),
                 'generate article'
@@ -314,10 +377,10 @@ async function main() {
                 allowHttpError: true,
                 label: 'generate article without config',
                 body: {
-                    topic: 'Draft a short note about RAG source traceability.',
-                    context_pack_id: created.packId,
-                    context_token_budget: 1200,
-                    allow_embedding: false
+                        topic: 'Draft a short note about RAG source traceability.',
+                        context_pack_id: created.packId,
+                        context_token_budget: 1200,
+                        allow_embedding: false
                 }
             })
             if (generated.payload.status !== 1) {
@@ -334,7 +397,15 @@ async function main() {
             frontendUrl,
             created,
             index,
-            retrieval: retrieval.retrieval,
+            embeddingConfig: {
+                configured: embeddingConfig.configured,
+                enabled: embeddingConfig.enabled,
+                provider: embeddingConfig.provider,
+                model: embeddingConfig.model
+            },
+            embeddingBuild,
+            keywordRetrieval: keywordRetrieval.retrieval,
+            semanticRetrieval: semanticRetrieval.retrieval || semanticRetrieval,
             aiDraft,
             browser
         }, null, 2))
