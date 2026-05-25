@@ -3,39 +3,40 @@
         <section class="auth-intro" aria-label="产品介绍">
             <button class="brand" type="button" @click="goHome" aria-label="返回首页">
                 <span class="brand-mark" aria-hidden="true"></span>
-                <span>智汇博客</span>
+                <span>知镜</span>
             </button>
 
             <div class="intro-copy">
-                <span class="eyebrow">AI Knowledge Lab</span>
+                <span class="eyebrow">知识写作空间</span>
                 <h1>{{ isLoginMode ? '欢迎回来' : '创建账号' }}</h1>
                 <p>
-                    登录后继续管理你的文章、AI 摘要和知识工作流。也可以先以访客身份浏览精选内容。
+                    登录后继续整理资料、调用 AI 起草、保存可追溯的文档。
+                    也可以先以访客身份浏览公开内容。
                 </p>
             </div>
 
             <div class="workflow-card" aria-hidden="true">
                 <div class="workflow-row">
-                    <span class="dot develop"></span>
-                    <span>Develop</span>
-                    <strong>整理想法</strong>
+                    <span class="dot collect"></span>
+                    <span>资料</span>
+                    <strong>收集来源</strong>
                 </div>
                 <div class="workflow-row">
-                    <span class="dot preview"></span>
-                    <span>Preview</span>
-                    <strong>AI 辅助</strong>
+                    <span class="dot retrieve"></span>
+                    <span>检索</span>
+                    <strong>定位依据</strong>
                 </div>
                 <div class="workflow-row">
-                    <span class="dot ship"></span>
-                    <span>Ship</span>
-                    <strong>发布沉淀</strong>
+                    <span class="dot draft"></span>
+                    <span>起草</span>
+                    <strong>进入编辑</strong>
                 </div>
             </div>
         </section>
 
         <section class="auth-card" aria-label="账号表单">
             <div class="auth-header">
-                <span class="card-kicker">{{ isLoginMode ? 'Sign in' : 'Sign up' }}</span>
+                <span class="card-kicker">{{ isLoginMode ? '登录' : '注册' }}</span>
                 <h2>{{ isLoginMode ? '登录账号' : '注册账号' }}</h2>
                 <p>{{ isLoginMode ? '使用用户名和密码进入工作台。' : '创建一个新账号，开始写作与收藏。' }}</p>
             </div>
@@ -244,7 +245,7 @@ const guestLogin = () => {
 .brand-mark {
     width: 28px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: var(--radius-sm);
     background: var(--button-bg);
     box-shadow: var(--ring);
     position: relative;
@@ -267,7 +268,7 @@ const guestLogin = () => {
     align-items: center;
     height: 24px;
     padding: 0 10px;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: var(--badge-bg);
     color: var(--badge-fg);
     font-family: var(--font-mono);
@@ -300,7 +301,7 @@ const guestLogin = () => {
 .workflow-card,
 .auth-card {
     background: var(--surface);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--card-shadow);
 }
 
@@ -318,7 +319,7 @@ const guestLogin = () => {
     align-items: center;
     gap: 12px;
     padding: 0 14px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--surface-subtle);
     box-shadow: var(--ring);
 }
@@ -343,16 +344,16 @@ const guestLogin = () => {
     border-radius: 50%;
 }
 
-.develop {
-    background: #0a72ef;
+.collect {
+    background: var(--text-primary);
 }
 
-.preview {
-    background: #de1d8d;
+.retrieve {
+    background: var(--color-accent);
 }
 
-.ship {
-    background: #ff5b4f;
+.draft {
+    background: var(--color-faint);
 }
 
 .auth-card {
@@ -401,14 +402,14 @@ const guestLogin = () => {
     align-items: center;
     gap: 10px;
     padding: 0 12px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: var(--surface);
     box-shadow: var(--ring);
-    transition: box-shadow 180ms ease;
+    transition: box-shadow var(--dur-med) var(--ease-out);
 }
 
 .input-shell:focus-within {
-    box-shadow: var(--ring), 0 0 0 3px rgba(0, 114, 245, 0.14);
+    box-shadow: var(--ring), 0 0 0 3px color-mix(in oklch, var(--color-accent) 18%, transparent);
 }
 
 .field-icon {
@@ -447,7 +448,7 @@ const guestLogin = () => {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 14px;
     font-weight: 500;
 }
@@ -457,7 +458,7 @@ const guestLogin = () => {
     color: var(--button-fg);
     background: var(--button-bg);
     box-shadow: var(--ring);
-    transition: background 180ms ease;
+    transition: background var(--dur-med) var(--ease-out);
 }
 
 .submit-btn:hover {
@@ -482,7 +483,7 @@ const guestLogin = () => {
     background: transparent;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
 }
 
 .text-button:hover {

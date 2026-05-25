@@ -6,13 +6,14 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "verify:ui": "node scripts/verify-ui.cjs",
+        "verify:e2e": "node scripts/verify-e2e-rag.cjs"
     },
     "dependencies": {
         "@element-plus/icons-vue": "^2.3.2",
         "@icon-park/vue-next": "^1.4.2",
-        "@vueuse/motion": "^3.0.3",
-        "axios": "^1.9.0",
+        "axios": "^1.16.1",
         "element-plus": "^2.13.1",
         "highlight.js": "^11.10.0",
         "mammoth": "^1.11.0",
@@ -28,9 +29,10 @@
         "@types/node": "^24.1.0",
         "@types/quill": "^2.0.14",
         "@vitejs/plugin-vue": "^5.2.3",
+        "playwright": "^1.60.0",
         "sass-embedded": "^1.89.2",
         "typescript": "^5.8.3",
-        "vite": "^6.2.4",
+        "vite": "^6.4.2",
         "vite-plugin-vue-devtools": "^7.7.2"
     }
 }

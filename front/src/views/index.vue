@@ -1,147 +1,153 @@
 <template>
-    <div class="workspace-page">
-        <section class="workspace-hero">
+    <main class="home-page">
+        <section class="hero-section" aria-labelledby="home-title">
             <div class="hero-copy">
-                <span class="eyebrow">知境 ContextForge</span>
-                <h1>把零散知识变成可检索、可复用的 AI 上下文。</h1>
+                <span class="eyebrow">知镜 AI 知识写作</span>
+                <h1 id="home-title">资料变成可引用的初稿。</h1>
                 <p>
-                    面向写作者、学习者和项目协作者，前台专注文档沉淀、上下文包和 RAG 对话；
-                    权限、模型、系统自检等治理能力统一放到独立管理台。
+                    收集网页、笔记、论文和项目材料，让 AI 只基于命中的资料起草内容。
+                    来源保留，结构可改，写作过程更稳。
                 </p>
+
                 <div class="hero-actions">
-                    <router-link to="/context-packs" class="primary-action">查看上下文包</router-link>
-                    <router-link to="/essays/write" class="secondary-action">新建文档</router-link>
+                    <router-link to="/context-packs" class="primary-action">
+                        <CollectionTag class="button-icon" />
+                        <span>进入上下文包</span>
+                    </router-link>
+                    <router-link to="/ai-center" class="secondary-action">
+                        <DataAnalysis class="button-icon" />
+                        <span>打开 AI 工作台</span>
+                    </router-link>
                 </div>
             </div>
 
-            <div class="command-panel" aria-label="知境 workflow preview">
-                <div class="panel-topbar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <strong>context.run</strong>
+            <aside class="hero-panel" aria-label="工作流概览">
+                <div class="panel-header">
+                    <span>工作流</span>
+                    <strong>先找依据</strong>
                 </div>
-                <div class="panel-body">
-                    <div v-for="step in workflow" :key="step.title" class="workflow-step">
-                        <span class="step-index">{{ step.index }}</span>
-                        <div>
-                            <strong>{{ step.title }}</strong>
-                            <p>{{ step.description }}</p>
-                        </div>
-                    </div>
+                <div class="panel-flow">
+                    <span>资料</span>
+                    <i></i>
+                    <span>依据</span>
+                    <i></i>
+                    <span>初稿</span>
                 </div>
-            </div>
+                <p>每一次生成都先回到资料来源，而不是直接让模型自由发挥。</p>
+            </aside>
         </section>
 
-        <section class="metrics-row" aria-label="Workspace metrics">
-            <article v-for="metric in metrics" :key="metric.label" class="metric-card">
+        <section v-if="hasWorkspaceData" class="metric-section" aria-label="工作区数据">
+            <article v-for="metric in metrics" :key="metric.label" class="metric-item">
                 <strong>{{ metric.value }}</strong>
                 <span>{{ metric.label }}</span>
             </article>
         </section>
 
-        <section class="workspace-grid">
-            <article class="feature-panel feature-panel-large">
-                <span class="eyebrow">核心路径</span>
-                <h2>上下文包是低 token 的 AI 记忆容器。</h2>
-                <p>
-                    把文档、链接、笔记、仓库分析和 AI 对话组织到一个上下文包里，用于问答、项目交接、
-                    复习备考、研究整理或内容创作。
-                </p>
-                <div class="pack-preview">
-                    <div v-for="pack in contextPacks" :key="pack.name" class="pack-row">
-                        <span>{{ pack.name }}</span>
-                        <strong>{{ pack.count }}</strong>
-                    </div>
-                </div>
-            </article>
+        <section class="section-block" aria-labelledby="flow-title">
+            <div class="section-heading">
+                <h2 id="flow-title">三个步骤，不打扰写作。</h2>
+            </div>
 
-            <article v-for="feature in features" :key="feature.title" class="feature-panel">
-                <span class="feature-kicker">{{ feature.kicker }}</span>
-                <h3>{{ feature.title }}</h3>
-                <p>{{ feature.description }}</p>
-            </article>
+            <div class="flow-grid">
+                <article v-for="(step, index) in productSteps" :key="step.title" class="flow-item">
+                    <span class="step-index">0{{ index + 1 }}</span>
+                    <component :is="step.icon" class="item-icon" />
+                    <h3>{{ step.title }}</h3>
+                    <p>{{ step.description }}</p>
+                </article>
+            </div>
         </section>
 
-        <section class="quick-actions">
+        <section class="section-block two-column" aria-labelledby="value-title">
+            <div class="section-heading">
+                <h2 id="value-title">让 AI 有依据，也有边界。</h2>
+            </div>
+
+            <div class="value-list">
+                <article v-for="item in values" :key="item.title" class="value-item">
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.description }}</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section-block handoff-section" aria-labelledby="handoff-title">
             <div>
-                <span class="eyebrow">开始使用</span>
-                <h2>先沉淀文档，再用上下文包发起 AI 对话。</h2>
+                <h2 id="handoff-title">生成后继续编辑，而不是结束。</h2>
+                <p>
+                    AI 起草只是第一步。你可以继续调整标题、补充证据、重排结构，
+                    把初稿整理成文章、报告、学习笔记或发布内容。
+                </p>
             </div>
-            <div class="action-list">
-                <router-link to="/essays" class="action-card">浏览知识库</router-link>
-                <router-link to="/ai-center/chat" class="action-card">打开上下文对话</router-link>
-                <router-link to="/context-packs" class="action-card">构建上下文包</router-link>
-            </div>
+            <router-link to="/essays/write" class="text-action">
+                <EditPen class="button-icon" />
+                <span>进入写作编辑器</span>
+            </router-link>
         </section>
-    </div>
+    </main>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import {
+    CollectionTag,
+    DataAnalysis,
+    EditPen,
+    Files,
+    Notebook,
+    Search
+} from '@element-plus/icons-vue'
 import articleApi from '@/api/modules/article'
 import type { IArticle } from '@/api/modules/article/interface'
 import contextPackApi, { type ContextPack, type ContextPackStats } from '@/api/modules/contextPacks'
-
-const workflow = [
-    {
-        index: '01',
-        title: '收集',
-        description: '把文档、笔记、链接、项目记录和 AI 对话放进同一个工作台。'
-    },
-    {
-        index: '02',
-        title: '锻造',
-        description: '把相关材料组合成上下文包，保留目标、来源、决策和关键线索。'
-    },
-    {
-        index: '03',
-        title: '复用',
-        description: '随时用它问答、摘要、生成提示词、产出复盘，或导出给其他工具。'
-    }
-]
 
 const articles = ref<IArticle[]>([])
 const packs = ref<ContextPack[]>([])
 const stats = ref<ContextPackStats | null>(null)
 
+const sourceCount = computed(() => packs.value.reduce((total, pack) => total + (pack.sources?.length ?? 0), 0))
 const metrics = computed(() => [
-    { value: articles.value.length, label: '真实知识文档' },
-    { value: stats.value?.packs ?? packs.value.length, label: '可复用上下文包' },
-    { value: stats.value?.sources ?? packs.value.reduce((total, pack) => total + pack.sources.length, 0), label: '资料来源' }
+    { value: articles.value.length, label: '知识文档' },
+    { value: stats.value?.packs ?? packs.value.length, label: '上下文包' },
+    { value: stats.value?.sources ?? sourceCount.value, label: '资料来源' }
 ])
+const hasWorkspaceData = computed(() => metrics.value.some(metric => Number(metric.value) > 0))
 
-const contextPacks = computed(() => {
-    if (!packs.value.length) {
-        return [{ name: '暂无真实上下文包', count: '0 份资料' }]
+const productSteps = [
+    {
+        title: '整理资料',
+        description: '把网页、笔记、论文摘录和项目记录放进同一个资料包。',
+        icon: Files
+    },
+    {
+        title: '查找依据',
+        description: '提问前先从资料里找相关片段，减少凭空回答。',
+        icon: Search
+    },
+    {
+        title: '生成初稿',
+        description: '把依据交给 AI 起草，再进入编辑器继续修改。',
+        icon: Notebook
     }
+]
 
-    return packs.value.slice(0, 3).map(pack => ({
-        name: pack.name,
-        count: `${pack.sources.length} 份资料`
-    }))
-})
-
-const features = [
+const values = [
     {
-        kicker: 'AI 阅读',
-        title: '围绕当前文档提问。',
-        description: '把选中的内容转成解释、例子、复习问题和可复用的上下文片段。'
+        title: '资料先行',
+        description: '写作不从空白开始，先把可引用的材料沉淀下来。'
     },
     {
-        kicker: '提示词工坊',
-        title: '把知识转成提示词。',
-        description: '从文档或上下文包生成摘要、教学、问答、代码审查和项目复盘提示词。'
+        title: '来源可追溯',
+        description: '重要结论能够回到原始资料，便于复核和补充。'
     },
     {
-        kicker: '项目复盘',
-        title: '生成项目表达材料。',
-        description: '辅助生成架构总结、功能模块、简历描述和软著说明草稿。'
+        title: '前台专注创作',
+        description: '页面只保留资料、检索、起草和编辑，少跳转，少解释。'
     },
     {
-        kicker: '导入管线',
-        title: '接入网页和代码仓库。',
-        description: '把外部资料先整理为来源，再进入分块索引和 RAG 检索流程。'
+        title: '持续沉淀',
+        description: '每次写作都会留下资料和草稿，下次还能继续复用。'
     }
 ]
 
@@ -155,8 +161,7 @@ onMounted(async () => {
         articles.value = Array.isArray(articleList) ? articleList : []
         packs.value = Array.isArray(packList) ? packList : []
         stats.value = workspaceStats
-    } catch (error) {
-        console.error('Load real workspace metrics failed:', error)
+    } catch {
         articles.value = []
         packs.value = []
         stats.value = null
@@ -165,59 +170,89 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.workspace-page {
-    width: 100%;
-    color: var(--text-primary);
+/* Hallmark · macrostructure: product workspace · tone: warm white minimal · anchor hue: champagne */
+.home-page {
+    --home-bg: var(--page-bg);
+    --home-surface: var(--surface);
+    --home-surface-soft: var(--surface-subtle);
+    --home-line: var(--line);
+    --home-line-strong: color-mix(in oklch, var(--color-rule-strong) 74%, transparent);
+    --home-text: var(--text-primary);
+    --home-muted: color-mix(in oklch, var(--text-secondary) 82%, transparent);
+    --home-faint: color-mix(in oklch, var(--text-secondary) 48%, transparent);
+    --home-accent: var(--color-accent);
+    --home-ink: var(--text-inverse);
+
+    min-height: 100vh;
+    color: var(--home-text);
+    background: transparent;
+    overflow-x: clip;
 }
 
-.workspace-hero {
+.hero-section,
+.metric-section,
+.section-block {
     width: var(--page-width);
-    min-height: calc(100vh - 112px);
     margin: 0 auto;
-    padding: 72px 0 48px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(360px, 520px);
-    align-items: center;
-    gap: 48px;
 }
 
-.eyebrow,
-.feature-kicker,
-.step-index {
-    font-family: var(--font-mono);
+.hero-section {
+    min-height: calc(100svh - 80px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.72fr);
+    align-items: center;
+    gap: clamp(42px, 7vw, 92px);
+    padding: 86px 0 96px;
+}
+
+.hero-copy {
+    max-width: 820px;
 }
 
 .eyebrow {
+    width: fit-content;
+    min-height: 28px;
     display: inline-flex;
     align-items: center;
-    min-height: 24px;
-    padding: 0 10px;
-    border-radius: 9999px;
-    background: var(--badge-bg);
-    color: var(--badge-fg);
-    font-size: 12px;
-    font-weight: 600;
+    border: 1px solid var(--home-line);
+    border-radius: 999px;
+    padding: 0 11px;
+    color: var(--home-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
 }
 
 .hero-copy h1 {
-    margin: 18px 0 20px;
-    color: var(--text-primary);
-    font-size: clamp(44px, 7vw, 84px);
-    font-weight: 650;
-    line-height: 0.98;
+    max-width: 800px;
+    margin-top: 22px;
+    font-family: var(--font-serif);
+    font-size: clamp(54px, 7.2vw, 96px);
+    font-weight: 600;
+    line-height: 1.02;
     letter-spacing: 0;
+    text-wrap: balance;
 }
 
 .hero-copy p {
-    max-width: 660px;
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 19px;
-    line-height: 1.75;
+    max-width: 600px;
+    margin-top: 28px;
+    color: var(--home-muted);
+    font-size: 18px;
+    line-height: 1.86;
 }
 
 .hero-actions {
-    margin-top: 32px;
+    margin-top: 38px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -225,279 +260,293 @@ onMounted(async () => {
 
 .primary-action,
 .secondary-action,
-.action-card {
+.text-action {
+    min-height: 48px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 40px;
-    padding: 0 16px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+    gap: 8px;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: 800;
 }
 
 .primary-action {
-    color: var(--button-fg);
-    background: var(--button-bg);
-    box-shadow: var(--ring);
-}
-
-.primary-action:hover {
-    background: var(--button-hover);
+    color: var(--home-ink);
+    background: var(--home-text);
+    box-shadow: color-mix(in oklch, var(--home-text) 16%, transparent) 0 18px 38px -28px;
 }
 
 .secondary-action,
-.action-card {
-    color: var(--text-primary);
-    background: var(--surface);
-    box-shadow: var(--ring);
+.text-action {
+    color: var(--home-text);
+    border: 1px solid var(--home-line-strong);
+    background: color-mix(in oklch, var(--home-surface) 72%, transparent);
 }
 
-.secondary-action:hover,
-.action-card:hover {
-    background: var(--surface-hover);
+.button-icon,
+.item-icon {
+    width: 18px;
+    height: 18px;
 }
 
-.command-panel,
-.metric-card,
-.feature-panel,
-.quick-actions {
-    background: var(--surface);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
+.hero-panel {
+    min-height: 420px;
+    display: grid;
+    align-content: space-between;
+    border: 1px solid var(--home-line);
+    border-radius: 28px;
+    padding: 26px;
+    background: var(--home-surface);
+    box-shadow: color-mix(in oklch, var(--home-text) 9%, transparent) 0 24px 70px -42px;
 }
 
-.command-panel {
-    overflow: hidden;
-}
-
-.panel-topbar {
-    min-height: 42px;
+.panel-header {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 14px;
-    box-shadow: var(--ring);
-}
-
-.panel-topbar span {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--line);
-}
-
-.panel-topbar strong {
-    margin-left: auto;
-    color: var(--text-muted);
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--home-faint);
     font-family: var(--font-mono);
     font-size: 12px;
-    font-weight: 500;
-}
-
-.panel-body {
-    padding: 24px;
-    display: grid;
-    gap: 12px;
-}
-
-.workflow-step {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr);
-    gap: 14px;
-    padding: 16px;
-    border-radius: 12px;
-    background: var(--surface-subtle);
-    box-shadow: var(--ring);
-}
-
-.step-index {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.workflow-step strong {
-    display: block;
-    font-size: 17px;
-    font-weight: 700;
-}
-
-.workflow-step p {
-    margin: 6px 0 0;
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.metrics-row,
-.workspace-grid,
-.quick-actions {
-    width: var(--page-width);
-    margin: 0 auto;
-}
-
-.metrics-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding-bottom: 56px;
-}
-
-.metric-card {
-    min-height: 124px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.metric-card strong {
-    font-size: 38px;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.metric-card span {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.workspace-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding-bottom: 56px;
-}
-
-.feature-panel {
-    min-height: 260px;
-    padding: 24px;
-}
-
-.feature-panel-large {
-    grid-column: span 2;
-    grid-row: span 2;
-}
-
-.feature-panel h2,
-.quick-actions h2 {
-    margin: 14px 0 14px;
-    font-size: clamp(32px, 5vw, 50px);
-    font-weight: 650;
-    line-height: 1.05;
-}
-
-.feature-panel h3 {
-    margin: 16px 0 10px;
-    font-size: 24px;
-    font-weight: 650;
-    line-height: 1.2;
-}
-
-.feature-panel p,
-.quick-actions p {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 15px;
-    line-height: 1.7;
-}
-
-.feature-kicker {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 700;
     text-transform: uppercase;
 }
 
-.pack-preview {
-    margin-top: 26px;
-    display: grid;
-    gap: 10px;
+.panel-header strong {
+    color: var(--home-accent);
 }
 
-.pack-row {
-    min-height: 44px;
+.panel-flow {
+    display: grid;
+    gap: 14px;
+    padding: 42px 0;
+}
+
+.panel-flow span {
+    min-height: 58px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 0 14px;
-    border-radius: 10px;
-    background: var(--surface-subtle);
-    box-shadow: var(--ring);
+    border: 1px solid var(--home-line);
+    border-radius: 18px;
+    padding: 0 18px;
+    color: var(--home-text);
+    background: var(--home-surface-soft);
+    font-size: 22px;
+    font-weight: 700;
 }
 
-.pack-row span {
-    min-width: 0;
+.panel-flow i {
+    width: 1px;
+    height: 28px;
+    margin-left: 28px;
+    background: var(--home-line-strong);
+}
+
+.hero-panel p {
+    color: var(--home-muted);
+    line-height: 1.76;
+}
+
+.metric-section {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--home-line);
+    border-bottom: 1px solid var(--home-line);
+    background: color-mix(in oklch, var(--home-surface) 62%, transparent);
+}
+
+.metric-item {
+    min-height: 140px;
+    display: grid;
+    align-content: center;
+    gap: 10px;
+    padding: 24px;
+}
+
+.metric-item + .metric-item {
+    border-left: 1px solid var(--home-line);
+}
+
+.metric-item strong {
+    font-size: 42px;
+    line-height: 1;
+}
+
+.metric-item span {
+    color: var(--home-muted);
+}
+
+.section-block {
+    padding: 110px 0;
+    border-bottom: 1px solid var(--home-line);
+}
+
+.section-heading {
+    display: grid;
+    gap: 18px;
+}
+
+.section-heading h2,
+.handoff-section h2 {
+    max-width: 760px;
+    font-family: var(--font-serif);
+    font-size: clamp(42px, 5.6vw, 76px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0;
+    text-wrap: balance;
+}
+
+.flow-grid {
+    margin-top: 44px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--home-line);
+    border: 1px solid var(--home-line);
+    border-radius: 24px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    box-shadow: color-mix(in oklch, var(--home-text) 8%, transparent) 0 20px 56px -38px;
 }
 
-.pack-row strong {
-    color: var(--text-muted);
+.flow-item {
+    min-height: 300px;
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    padding: 28px;
+    background: var(--home-surface);
+}
+
+.step-index {
+    color: var(--home-faint);
     font-family: var(--font-mono);
     font-size: 12px;
+    font-weight: 800;
 }
 
-.quick-actions {
-    margin-bottom: 80px;
-    padding: 32px;
+.item-icon {
+    width: 36px;
+    height: 36px;
+    color: var(--home-accent);
+}
+
+.flow-item h3,
+.value-item h3 {
+    font-size: 28px;
+    line-height: 1.12;
+}
+
+.flow-item p,
+.value-item p,
+.handoff-section p {
+    color: var(--home-muted);
+    line-height: 1.78;
+}
+
+.two-column {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 32px;
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+    gap: clamp(42px, 7vw, 92px);
 }
 
-.quick-actions h2 {
-    max-width: 720px;
-    margin-bottom: 0;
+.value-list {
+    display: grid;
+    gap: 1px;
+    background: var(--home-line);
+    border: 1px solid var(--home-line);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: color-mix(in oklch, var(--home-text) 8%, transparent) 0 20px 56px -38px;
 }
 
-.action-list {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex-wrap: wrap;
+.value-item {
+    display: grid;
     gap: 10px;
+    padding: 26px;
+    background: var(--home-surface);
 }
 
-@media (max-width: 1100px) {
-    .workspace-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.handoff-section {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    padding-bottom: 130px;
 }
 
-@media (max-width: 900px) {
-    .workspace-hero,
-    .quick-actions {
+.handoff-section p {
+    max-width: 620px;
+    margin-top: 22px;
+    font-size: 17px;
+}
+
+.text-action {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 980px) {
+    .hero-section,
+    .two-column,
+    .handoff-section {
         grid-template-columns: 1fr;
     }
 
-    .workspace-hero {
+    .handoff-section {
+        display: grid;
+        align-items: start;
+    }
+}
+
+@media (max-width: 720px) {
+    .hero-section {
         min-height: auto;
-        padding-top: 56px;
-    }
-
-    .action-list {
-        justify-content: flex-start;
-    }
-}
-
-@media (max-width: 640px) {
-    .metrics-row,
-    .workspace-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .feature-panel-large {
-        grid-column: span 1;
+        padding: 68px 0 76px;
     }
 
     .hero-copy h1 {
-        font-size: clamp(38px, 14vw, 58px);
+        font-size: clamp(46px, 13vw, 62px);
+    }
+
+    .hero-copy p {
+        font-size: 16px;
+        line-height: 1.74;
+    }
+
+    .hero-actions {
+        display: grid;
+    }
+
+    .primary-action,
+    .secondary-action,
+    .text-action {
+        width: 100%;
+    }
+
+    .hero-panel {
+        min-height: 360px;
+    }
+
+    .metric-section,
+    .flow-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .metric-item + .metric-item {
+        border-left: 0;
+        border-top: 1px solid var(--home-line);
+    }
+
+    .section-block {
+        padding: 74px 0;
+    }
+
+    .section-heading h2,
+    .handoff-section h2 {
+        font-size: clamp(36px, 11vw, 52px);
+    }
+
+    .flow-item {
+        min-height: 220px;
     }
 }
 </style>

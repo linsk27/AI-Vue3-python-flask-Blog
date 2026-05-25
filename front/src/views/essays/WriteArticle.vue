@@ -4,7 +4,7 @@
             <div>
                 <span class="eyebrow">文档工作室</span>
                 <h1>{{ pageTitle }}</h1>
-                <p>沉淀来源材料，补齐结构与元数据，让它可以被加入上下文包并被 AI 复用。</p>
+                <p>把标题、来源、标签和正文整理完整，之后可以加入资料包，继续用于问答和起草。</p>
             </div>
             <el-button class="ai-help-btn" native-type="button" :disabled="aiGenerating" @click.stop="openAiDialog">
                 <Grid />
@@ -16,18 +16,18 @@
             <div class="ai-draft-header">
                 <span class="ai-dialog-mark">AI</span>
                 <div>
-                    <span class="ai-dialog-eyebrow">草稿助手</span>
-                    <h2>生成一份可复用的知识文档</h2>
+                    <span class="ai-dialog-eyebrow">从资料起草</span>
+                    <h2>先检索依据，再写入编辑器</h2>
                 </div>
                 <el-button class="dialog-cancel" native-type="button" @click="aiDialogVisible = false">收起</el-button>
             </div>
 
-            <p class="ai-tip">写下主题、资料来源、目标读者或想要的结构，AI 会把草稿填入下面的编辑器。</p>
+            <p class="ai-tip">写下主题、读者和结构要求。选择资料包后，会先预览可引用片段，再把草稿填入下方正文。</p>
             <div class="ai-dialog-tags">
                 <span>结构</span>
-                <span>摘要</span>
+                <span>来源</span>
                 <span>标签</span>
-                <span>RAG</span>
+                <span>引用</span>
             </div>
             <div class="ai-context-controls">
                 <div>
@@ -50,7 +50,7 @@
                 </div>
                 <label class="ai-rag-toggle" :class="{ disabled: !selectedAiDraftPack }">
                     <input v-model="aiDraftAllowEmbedding" type="checkbox" :disabled="!selectedAiDraftPack" />
-                    <span>允许语义检索</span>
+                    <span>优先语义匹配</span>
                     <small>{{ aiDraftRagHint }}</small>
                 </label>
             </div>
@@ -59,14 +59,14 @@
                 v-model="aiTopic"
                 type="textarea"
                 :rows="6"
-                placeholder="例如：生成一份 Vue 3 Composition API 笔记，包含核心概念、示例和面试问题。"
+                placeholder="例如：面向初学者写一篇 Vue 3 组合式 API 笔记，包含概念、示例和常见问题。"
                 class="ai-input"
             />
             <div v-if="aiDraftRetrieval" class="ai-rag-result">
                 <strong>{{ getDraftRetrievalLabel(aiDraftRetrieval) }}</strong>
                 <span>命中 {{ aiDraftRetrieval.snippets.length }} 段 · 约 {{ aiDraftRetrieval.used_tokens_estimate }} tokens</span>
                 <small v-if="aiDraftRetrieval.semantic_requested && aiDraftRetrieval.mode !== 'semantic'">
-                    语义检索已回退：{{ aiDraftRetrieval.semantic_unavailable_reason || '条件不足' }}
+                    语义匹配已回退：{{ aiDraftRetrieval.semantic_unavailable_reason || '条件不足' }}
                 </small>
             </div>
             <div class="ai-draft-actions">
@@ -338,9 +338,9 @@ const loadAiDraftPacks = async () => {
 
 const getDraftRetrievalLabel = (retrieval: AIRetrievalMeta | null) => {
     if (!retrieval) return '未检索上下文'
-    if (retrieval.mode === 'semantic') return '已使用语义 RAG'
-    if (retrieval.semantic_requested && retrieval.mode !== 'semantic') return '已回退关键词 RAG'
-    return '已使用关键词 RAG'
+    if (retrieval.mode === 'semantic') return '已按语义匹配资料'
+    if (retrieval.semantic_requested && retrieval.mode !== 'semantic') return '语义匹配不可用，已按关键词匹配'
+    return '已按关键词匹配资料'
 }
 
 const resolveAiErrorMessage = (error: any) => {
@@ -891,6 +891,7 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: document workbench · theme: white minimal · enrichment: none */
 .document-editor-page {
     width: 100%;
     min-height: calc(100vh - 140px);
@@ -1176,7 +1177,7 @@ const handleCancel = () => {
     gap: 12px;
     margin-top: 32px;
     padding-top: 24px;
-    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text-primary) 8%, transparent);
 }
 
 .cancel-button,
@@ -1203,7 +1204,7 @@ const handleCancel = () => {
 
 :global(.ai-dialog .el-dialog__footer) {
     padding: 18px 28px 28px;
-    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text-primary) 8%, transparent);
 }
 
 .ai-dialog-header {
@@ -1213,7 +1214,7 @@ const handleCancel = () => {
     align-items: center;
     gap: 16px;
     background: var(--surface);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--text-primary) 8%, transparent);
 }
 
 .ai-dialog-mark {

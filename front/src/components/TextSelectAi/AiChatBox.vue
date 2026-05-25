@@ -3,7 +3,7 @@
         <div class="chat-header" ref="headerRef" @mousedown="startDrag">
             <div class="header-left">
                 <div class="ai-avatar">
-                    <span>AI</span>
+                    <span>问</span>
                 </div>
                 <div class="header-info">
                     <span id="chat-title" class="chat-title">知识创作助手</span>
@@ -35,10 +35,10 @@
             <div class="chat-messages" ref="messagesRef">
                 <div v-if="messages.length === 0" class="empty-state">
                     <div class="empty-icon">
-                        <span>AI</span>
+                        <span>问</span>
                     </div>
-                    <h3 class="empty-title">欢迎使用知识创作助手</h3>
-                    <p class="empty-text">选中文本后右键选择"使用 AI 询问"，或直接输入问题</p>
+                    <h3 class="empty-title">询问选中的内容</h3>
+                    <p class="empty-text">选中文本后提问，或直接输入需要解释、改写、整理的内容。</p>
                 </div>
                 <div v-for="(msg, i) in messages" :key="i" class="chat-message" :class="msg.role"
                     :aria-label="`${msg.role === 'user' ? '用户' : 'AI'}消息`">
@@ -55,7 +55,7 @@
 
             <div class="chat-input">
                 <div class="input-wrapper">
-                    <textarea v-model="input" placeholder="输入您的问题..." rows="2" @keydown.enter.prevent="send"
+                    <textarea v-model="input" placeholder="输入问题..." rows="2" @keydown.enter.prevent="send"
                         @keydown.enter.shift.exact="input += '\n'" ref="inputRef" aria-label="输入消息"
                         :aria-describedby="isLoading ? 'loading-status' : undefined" />
                     <div v-if="isLoading" id="loading-status" class="sr-only">AI正在回复中...</div>
@@ -115,14 +115,7 @@ function renderMarkdown(content: string): string {
         gfm: true
     });
 
-    // 自定义代码块渲染
-    const renderer = new marked.Renderer();
-    renderer.code = function ({ text, lang, escaped }: { text: string; lang?: string; escaped?: boolean }) {
-        return `<pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0;"><code style="font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; color: #333;">${text}</code></pre>`;
-    };
-
-    // 使用自定义渲染器解析Markdown
-    return marked.parse(content, { renderer }) as string
+    return marked.parse(content) as string
 }
 
 // 拖拽相关
@@ -292,7 +285,7 @@ onBeforeUnmount(() => {
     color: var(--text-primary);
     background: color-mix(in srgb, var(--surface) 94%, transparent);
     border: 1px solid var(--line);
-    box-shadow: var(--card-shadow), rgba(20, 20, 19, 0.12) 0 24px 70px -38px;
+    box-shadow: var(--card-shadow), var(--color-overlay) 0 24px 70px -38px;
     user-select: none;
     backdrop-filter: blur(20px);
 }
@@ -323,7 +316,7 @@ onBeforeUnmount(() => {
     justify-content: center;
     flex: 0 0 auto;
     color: var(--button-fg);
-    background: var(--terracotta);
+    background: var(--button-bg);
     box-shadow: var(--ring);
     font-family: var(--font-mono);
     font-weight: 700;
@@ -373,8 +366,8 @@ onBeforeUnmount(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--terracotta);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--terracotta) 14%, transparent);
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-accent) 14%, transparent);
 }
 
 .header-actions {
@@ -405,7 +398,7 @@ onBeforeUnmount(() => {
 
 .close-btn:hover {
     color: var(--button-fg);
-    background: var(--terracotta);
+    background: var(--button-bg);
 }
 
 .chat-content {
@@ -490,7 +483,7 @@ onBeforeUnmount(() => {
 
 .chat-message.user .message-content {
     color: var(--button-fg);
-    background: var(--terracotta);
+    background: var(--button-bg);
     border-bottom-right-radius: 6px;
 }
 
@@ -526,7 +519,7 @@ onBeforeUnmount(() => {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--terracotta);
+    background: var(--color-accent);
     animation: typing 1.2s infinite ease-in-out;
 }
 

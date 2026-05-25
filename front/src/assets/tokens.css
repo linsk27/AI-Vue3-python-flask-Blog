@@ -1,0 +1,76 @@
+/* Hallmark · macrostructure: editorial workspace · tone: white minimal · anchor hue: warm brass */
+:root {
+    --font-serif: "Noto Serif SC", Georgia, "Songti SC", "SimSun", serif;
+    --font-sans: "Noto Sans SC", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-mono: "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+
+    --color-paper: oklch(98.6% 0.008 88);
+    --color-paper-soft: oklch(96% 0.018 86);
+    --color-paper-strong: oklch(100% 0 0);
+    --color-ink: oklch(19% 0.018 72);
+    --color-ink-soft: oklch(36% 0.025 75);
+    --color-muted: oklch(58% 0.026 76);
+    --color-faint: oklch(77% 0.024 78);
+    --color-inverse: oklch(100% 0 0);
+    --color-accent: oklch(55% 0.07 78);
+    --color-accent-strong: oklch(43% 0.065 77);
+    --color-accent-soft: oklch(93% 0.035 84);
+    --color-rule: oklch(84% 0.018 78);
+    --color-rule-strong: oklch(74% 0.024 78);
+    --color-focus: oklch(55% 0.08 78);
+    --color-overlay: oklch(20% 0.02 74 / 12%);
+    --color-overlay-soft: oklch(20% 0.02 74 / 8%);
+    --color-glow: oklch(70% 0.075 82 / 18%);
+
+    --page-bg: var(--color-paper);
+    --surface: var(--color-paper-strong);
+    --surface-subtle: var(--color-paper-soft);
+    --surface-hover: oklch(94% 0.02 84);
+    --text-primary: var(--color-ink);
+    --text-secondary: var(--color-ink-soft);
+    --text-muted: var(--color-muted);
+    --text-inverse: var(--color-inverse);
+    --line: color-mix(in oklch, var(--color-rule) 70%, transparent);
+    --button-bg: var(--color-ink);
+    --button-fg: var(--color-inverse);
+    --button-hover: oklch(27% 0.02 72);
+    --badge-bg: var(--color-accent-soft);
+    --badge-fg: var(--color-accent-strong);
+    --header-bg: oklch(98.6% 0.008 88 / 90%);
+    --focus-blue: var(--color-focus);
+
+    --space-2xs: 4px;
+    --space-xs: 8px;
+    --space-sm: 12px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 72px;
+    --space-4xl: 96px;
+
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-md: 16px;
+    --text-lg: 18px;
+    --text-xl: 24px;
+    --text-2xl: 32px;
+    --text-display-s: clamp(40px, 7vw, 72px);
+    --text-display: clamp(52px, 9vw, 108px);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 28px;
+    --radius-pill: 999px;
+    --rule-thin: 1px;
+
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-fast: 140ms;
+    --dur-med: 220ms;
+
+    --ring: color-mix(in oklch, var(--color-rule) 72%, transparent) 0 0 0 1px;
+    --card-shadow: var(--ring), var(--color-overlay-soft) 0 22px 54px -34px;
+}

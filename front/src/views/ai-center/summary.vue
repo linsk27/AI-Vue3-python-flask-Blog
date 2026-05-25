@@ -2,9 +2,9 @@
     <div class="ai-summary-container">
         <header class="summary-header">
             <div class="header-info">
-                <span class="eyebrow">AI Summary</span>
-                <h1 class="summary-title">AI 智能摘要</h1>
-                <p class="summary-subtitle">将长文、文档或草稿压缩为可阅读、可复用的核心要点。</p>
+                <span class="eyebrow">资料摘要</span>
+                <h1 class="summary-title">把长文压成可用摘要。</h1>
+                <p class="summary-subtitle">粘贴文章、会议记录或文档内容，提炼成可以放进笔记、资料包和文章摘要的短文本。</p>
             </div>
             <button class="control-btn" type="button" @click="clearContent">清空</button>
         </header>
@@ -20,7 +20,7 @@
                     </div>
                 </div>
 
-                <textarea v-model="originalContent" class="content-input" :placeholder="'在这里粘贴需要生成摘要的文章、文档或会议记录...'" rows="16"
+                <textarea v-model="originalContent" class="content-input" :placeholder="'粘贴需要提炼的文章、文档或会议记录...'" rows="16"
                     :disabled="isGenerating"></textarea>
 
                 <div class="input-stats">
@@ -38,27 +38,27 @@
                     </div>
                     <button class="generate-btn" type="button" @click="generateSummary"
                         :disabled="!originalContent.trim() || isGenerating">
-                        {{ isGenerating ? '生成中...' : '生成摘要' }}
+                        {{ isGenerating ? '提炼中...' : '提炼摘要' }}
                     </button>
                 </section>
 
                 <section class="panel-card tips-section">
-                    <h3 class="tips-title">使用建议</h3>
+                    <h3 class="tips-title">适合内容</h3>
                     <ul class="tips-list">
                         <li>建议输入 500 字以上的文章，结果会更稳定。</li>
                         <li>摘要长度可以按阅读场景调整。</li>
                         <li>支持 TXT、MD 和 DOCX 文件。</li>
-                        <li>生成后可复制到文章摘要或知识卡片中继续使用。</li>
+                        <li>完成后可复制到文章摘要或知识卡片中继续使用。</li>
                     </ul>
                 </section>
             </aside>
 
             <section class="result-section panel-card">
                 <div class="section-header">
-                    <h2 class="section-title">生成结果</h2>
+                    <h2 class="section-title">摘要结果</h2>
                     <div v-if="generatedSummary" class="section-actions">
                         <button class="control-btn" type="button" @click="copySummary">复制摘要</button>
-                        <button class="control-btn" type="button" @click="regenerateSummary">重新生成</button>
+                        <button class="control-btn" type="button" @click="regenerateSummary">重新提炼</button>
                     </div>
                 </div>
 
@@ -66,8 +66,8 @@
                     <p>{{ generatedSummary }}</p>
                 </div>
                 <div v-else class="empty-result">
-                    <strong>等待生成摘要</strong>
-                    <span>输入内容并点击生成后，结果会显示在这里。</span>
+                    <strong>等待提炼摘要</strong>
+                    <span>输入内容并点击提炼后，结果会显示在这里。</span>
                 </div>
 
                 <div v-if="generatedSummary" class="result-stats">
@@ -198,6 +198,7 @@ function handleFileUpload(event: Event) {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: summary workbench · theme: white minimal · enrichment: none */
 .ai-summary-container {
     width: var(--page-width);
     min-height: calc(100vh - 140px);
@@ -333,7 +334,7 @@ function handleFileUpload(event: Event) {
 }
 
 .content-input:focus {
-    box-shadow: var(--ring), 0 0 0 3px rgba(10, 114, 239, 0.16);
+    box-shadow: var(--ring), 0 0 0 3px color-mix(in oklch, var(--focus-blue) 18%, transparent);
 }
 
 .input-stats,

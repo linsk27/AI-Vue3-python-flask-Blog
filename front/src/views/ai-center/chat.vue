@@ -2,9 +2,9 @@
     <div class="ai-chat-container">
         <header class="chat-header">
             <div class="header-info">
-                <span class="eyebrow">AI Chat</span>
-                <h1 class="chat-title">AI 对话中心</h1>
-                <p class="chat-subtitle">围绕文章创作、技术问答和知识梳理进行连续对话。</p>
+                <span class="eyebrow">资料问答</span>
+                <h1 class="chat-title">先找依据，再回答。</h1>
+                <p class="chat-subtitle">选择资料包后提问，系统会先检索相关片段，再把来源和回答放在同一个对话里。</p>
             </div>
             <div class="header-actions">
                 <el-select
@@ -31,26 +31,26 @@
         <main class="chat-panel">
             <section class="chat-messages" ref="messagesRef">
                 <div v-if="messages.length === 0" class="welcome-message">
-                    <span class="welcome-mark">AI</span>
-                    <h2>开始一次清晰的 AI 协作</h2>
-                    <p>选择一个上下文包后，AI 会优先基于包里的真实资料回答问题。</p>
+                    <span class="welcome-mark">问</span>
+                    <h2>从资料里问出答案</h2>
+                    <p>先选一个上下文包，再提出写作或梳理问题。命中的片段会随回答保留下来，方便复核。</p>
                     <div class="welcome-badges">
-                        <span>连续问答</span>
-                        <span>创作辅助</span>
-                        <span>知识梳理</span>
+                        <span>引用来源</span>
+                        <span>控制预算</span>
+                        <span>连续追问</span>
                     </div>
                     <div class="welcome-suggestions">
-                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('帮我生成一段博客文章的开头')">帮我生成一段博客文章的开头</button>
-                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('AI 智能摘要适合哪些场景？')">AI 智能摘要适合哪些场景？</button>
-                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('如何设计多维标签与分类体系？')">如何设计多维标签与分类体系？</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('根据当前资料包，帮我梳理核心结论')">梳理核心结论</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('这份资料还缺哪些证据？')">检查缺失证据</button>
+                        <button type="button" :disabled="!isLoggedIn || isLoading" @click="sendSuggestion('把命中片段整理成一段文章开头')">生成文章开头</button>
                     </div>
                 </div>
 
                 <article v-for="(item, index) in messages" :key="index" class="chat-message" :class="item.role">
-                    <div class="message-avatar">{{ item.role === 'user' ? 'U' : 'AI' }}</div>
+                    <div class="message-avatar">{{ item.role === 'user' ? '我' : '答' }}</div>
                     <div class="message-content">
                         <div class="message-meta">
-                            <span>{{ item.role === 'user' ? '作者' : 'AI 助手' }}</span>
+                            <span>{{ item.role === 'user' ? '我' : '资料回答' }}</span>
                             <time>{{ formatTime(item.timestamp) }}</time>
                         </div>
                         <div class="message-bubble">
@@ -62,7 +62,7 @@
                             <div v-else class="message-text markdown-content" v-html="renderMarkdown(item.content)"></div>
                             <div v-if="item.role === 'ai' && item.retrieval" class="retrieval-card">
                                 <div class="retrieval-header">
-                                    <span>引用上下文</span>
+                                    <span>本次引用</span>
                                     <small>
                                         {{ item.retrieval.mode === 'semantic' ? '语义检索' : '关键词检索' }} · 命中 {{ item.retrieval.snippets.length }} 段 · 约 {{ item.retrieval.used_tokens_estimate }} tokens
                                     </small>
@@ -82,12 +82,12 @@
 
             <footer class="chat-input-area">
                 <div class="context-strip" v-if="selectedContextPack">
-                    <span>已选择上下文包</span>
+                    <span>当前资料包</span>
                     <strong>{{ selectedContextPack.name }}</strong>
-                    <small>{{ selectedContextPack.sources.length }} 份资料，会按问题检索相关片段</small>
+                    <small>{{ selectedContextPack.sources.length }} 份资料，会按问题检索可引用片段</small>
                 </div>
                 <div class="rag-budget-strip" v-if="selectedContextPack">
-                    <span>RAG 预算</span>
+                    <span>引用范围</span>
                     <button
                         v-for="option in ragBudgetOptions"
                         :key="option.value"
@@ -100,7 +100,7 @@
                         <small>{{ option.detail }}</small>
                     </button>
                 </div>
-                <textarea v-model="inputMessage" :placeholder="isLoggedIn ? '输入你的问题或创作需求...' : '登录后可以使用 AI 对话与上下文包'" rows="2"
+                <textarea v-model="inputMessage" :placeholder="isLoggedIn ? '输入问题，例如：这份资料能支持什么观点？' : '登录后可以使用资料问答'" rows="2"
                     @keydown.enter.prevent="sendMessage" @keydown.enter.shift.exact="inputMessage += '\n'"
                     :disabled="isLoading || !isLoggedIn" class="message-input"></textarea>
                 <div class="input-actions">
@@ -350,6 +350,7 @@ watch(selectedContextPackId, (newValue, oldValue) => {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: conversation workbench · theme: white minimal · enrichment: none */
 .ai-chat-container {
     width: var(--page-width);
     min-height: calc(100vh - 140px);
@@ -608,7 +609,7 @@ watch(selectedContextPackId, (newValue, oldValue) => {
 
 .chat-message.user .copy-btn {
     color: var(--button-fg);
-    background: rgba(255, 255, 255, 0.14);
+    background: color-mix(in oklch, var(--button-fg) 16%, transparent);
 }
 
 .retrieval-card {
@@ -696,7 +697,7 @@ watch(selectedContextPackId, (newValue, oldValue) => {
     gap: 12px;
     padding: 16px;
     background: var(--surface);
-    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--text-primary) 8%, transparent);
 }
 
 .context-strip {
@@ -785,7 +786,7 @@ watch(selectedContextPackId, (newValue, oldValue) => {
 }
 
 .message-input:focus {
-    box-shadow: var(--ring), 0 0 0 3px rgba(10, 114, 239, 0.16);
+    box-shadow: var(--ring), 0 0 0 3px color-mix(in oklch, var(--focus-blue) 18%, transparent);
 }
 
 .send-btn {

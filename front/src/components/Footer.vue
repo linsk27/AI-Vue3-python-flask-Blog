@@ -1,11 +1,11 @@
 <template>
-    <footer class="site-footer">
+    <footer class="site-footer" :class="{ 'site-footer--home': isHomeRoute }">
         <div class="footer-shell">
             <div class="footer-brand">
                 <span class="footer-mark" aria-hidden="true"></span>
                 <div>
-                    <h2>ContextForge</h2>
-                    <p>开源 AI 上下文工作台，用文档、上下文包、提示词和知识复用组织你的思考材料。</p>
+                    <h2>知镜</h2>
+                    <p>把资料整理成可追问、可引用、可写作的个人知识库。</p>
                 </div>
             </div>
 
@@ -17,19 +17,53 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Copyright 2026 ContextForge / 语境工坊</span>
-            <span class="mono">VUE3 / FLASK / AI</span>
+            <span>Copyright 2026 知镜</span>
+            <span class="mono">资料可追溯 · 写作有依据</span>
         </div>
     </footer>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const isHomeRoute = computed(() => route.path === '/')
 </script>
 
 <style scoped>
 .site-footer {
     background: var(--surface);
-    box-shadow: rgba(0, 0, 0, 0.08) 0 -1px 0 0;
+    box-shadow: color-mix(in oklch, var(--text-primary) 10%, transparent) 0 -1px 0 0;
+}
+
+.site-footer--home {
+    background: var(--page-bg);
+    box-shadow: color-mix(in oklch, var(--text-primary) 10%, transparent) 0 -1px 0 0;
+}
+
+.site-footer--home .footer-brand h2 {
+    color: var(--text-primary);
+}
+
+.site-footer--home .footer-brand p,
+.site-footer--home .footer-bottom {
+    color: var(--text-muted);
+}
+
+.site-footer--home .footer-mark {
+    background: var(--button-bg);
+}
+
+.site-footer--home .footer-links a {
+    color: var(--text-secondary);
+    background: var(--surface);
+    box-shadow: var(--ring);
+}
+
+.site-footer--home .footer-links a:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
 }
 
 .footer-shell {
@@ -96,7 +130,6 @@
     font: inherit;
     font-size: 14px;
     font-weight: 500;
-    transition: color 180ms ease, background 180ms ease;
 }
 
 .footer-links a:hover {

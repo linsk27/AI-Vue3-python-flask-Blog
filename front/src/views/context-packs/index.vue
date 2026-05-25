@@ -2,11 +2,11 @@
     <div class="packs-page">
         <section class="packs-hero">
             <div>
-                <span class="eyebrow">ContextForge Workspace</span>
-                <h1>把项目知识变成可复用的 AI 上下文资产。</h1>
+                <span class="eyebrow">资料包工作台</span>
+                <h1>把资料整理成 AI 能引用的依据。</h1>
                 <p>
-                    上下文包把文档、部署记录、代码决策、AI 对话和交付材料放在同一个语义容器里，
-                    让问答、摘要、复盘、答辩和写作都能沿着同一条知识线索推进。
+                    一个上下文包对应一组资料。你可以把文章、笔记、论文摘录和网页材料放在一起，
+                    之后提问、摘要和起草都会优先回到这些来源。
                 </p>
                 <div class="hero-actions">
                     <button class="primary-button" type="button" @click="openCreateDialog">
@@ -17,12 +17,9 @@
                 </div>
             </div>
 
-            <aside class="forge-console" aria-label="上下文锻造状态">
+            <aside class="forge-console" aria-label="资料包状态">
                 <div class="console-topbar">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <strong>contextforge.run</strong>
+                    <strong>当前资料状态</strong>
                 </div>
                 <div class="console-body">
                     <div v-for="signal in forgeSignals" :key="signal.label" class="signal-row">
@@ -36,7 +33,7 @@
             </aside>
         </section>
 
-        <section class="metrics-grid" aria-label="上下文资产指标">
+        <section class="metrics-grid" aria-label="资料包指标">
             <article v-for="metric in workspaceMetrics" :key="metric.label" class="metric-card">
                 <strong>{{ metric.value }}</strong>
                 <span>{{ metric.label }}</span>
@@ -45,12 +42,12 @@
 
         <section v-if="isLoading" class="empty-panel">
             <strong>正在读取数据库中的上下文包...</strong>
-            <span>这里只会展示后端返回的真实数据。</span>
+            <span>加载完成后会显示你已经创建的资料包。</span>
         </section>
 
         <section v-else-if="!packs.length" class="empty-panel">
             <strong>还没有真实上下文包</strong>
-            <span>新建上下文包后，可以从真实知识库文章中加入资料来源，AI 对话会按需检索相关片段。</span>
+                    <span>新建后可以加入知识库文章或自定义资料，AI 对话会按问题检索相关片段。</span>
             <button class="primary-button" type="button" @click="openCreateDialog">
                 <Plus class="button-icon" />
                 <span>新建上下文包</span>
@@ -92,7 +89,7 @@
                         <h2>{{ pack.name }}</h2>
                         <p v-if="pack.description">{{ pack.description }}</p>
                         <div class="pack-score">
-                            <span>Context Quality</span>
+                            <span>资料完整度</span>
                             <strong>{{ pack.quality }}%</strong>
                         </div>
                         <div class="progress-line" aria-hidden="true">
@@ -297,8 +294,8 @@
 
         <section class="pipeline-panel" v-if="selectedPack?.sources.length">
             <div>
-                <span class="eyebrow">Autonomous Pipeline</span>
-                <h2>从收集到复用，系统按 AI 工作流组织材料。</h2>
+                <span class="eyebrow">资料流程</span>
+                <h2>资料如何进入 AI 回答。</h2>
             </div>
             <div class="pipeline-grid">
                 <article v-for="step in pipeline" :key="step.title" class="pipeline-step">
@@ -318,7 +315,7 @@
             </template>
             <div class="dialog-body">
                 <label class="field-label">名称</label>
-                <el-input v-model="draftPack.name" placeholder="例如：答辩材料上下文包" />
+                <el-input v-model="draftPack.name" placeholder="例如：论文资料包" />
 
                 <label class="field-label">类型</label>
                 <el-select v-model="draftPack.type" class="full-input">
@@ -332,7 +329,7 @@
                 <el-input v-model="draftPack.description" type="textarea" :rows="3" placeholder="简单描述这个包里会放哪些材料" />
 
                 <label class="field-label">标签</label>
-                <el-input v-model="draftPack.tags" placeholder="用逗号分隔，例如：部署,答辩,AI" />
+                <el-input v-model="draftPack.tags" placeholder="用逗号分隔，例如：论文,资料,写作" />
 
                 <label class="field-label" v-if="articleOptions.length">接入知识库文章</label>
                 <el-select v-if="articleOptions.length" v-model="selectedArticleIds" class="full-input" multiple filterable collapse-tags placeholder="选择文章加入这个上下文包">
@@ -543,27 +540,27 @@ const workspaceMetrics = computed(() => {
 
 const forgeSignals = computed(() => [
     {
-        label: 'Database',
-        detail: isLoading.value ? '正在读取真实数据' : `已加载 ${workspaceStats.value?.packs ?? packs.value.length} 个真实上下文包`,
+        label: '资料包',
+        detail: isLoading.value ? '正在读取资料包' : `已加载 ${workspaceStats.value?.packs ?? packs.value.length} 个资料包`,
         status: isLoading.value ? 'warm' : 'ok'
     },
     {
-        label: 'Knowledge base',
-        detail: isArticleLoading.value ? '正在读取知识库文章' : `${workspaceStats.value?.articles ?? articleOptions.value.length} 篇真实文章可作为来源`,
+        label: '知识库',
+        detail: isArticleLoading.value ? '正在读取知识库文章' : `${workspaceStats.value?.articles ?? articleOptions.value.length} 篇文章可作为来源`,
         status: articleOptions.value.length ? 'ok' : 'warm'
     },
     {
-        label: 'Sources',
-        detail: `${workspaceStats.value?.sources ?? workspaceMetrics.value[1].value} 条真实资料来源已接入`,
+        label: '来源',
+        detail: `${workspaceStats.value?.sources ?? workspaceMetrics.value[1].value} 条资料来源已接入`,
         status: (workspaceStats.value?.sources ?? 0) > 0 ? 'ok' : 'warm'
     }
 ])
 
 const pipeline = [
-    { index: '01', title: '收集材料', description: '把文档、错误日志、截图、代码文件和 AI 对话归到同一条上下文线索。' },
-    { index: '02', title: '锻造结构', description: '为每份材料标记来源、权重、状态、用途和与目标之间的关系。' },
-    { index: '03', title: '压缩语义', description: '生成摘要、关键线索、风险点和下一步动作，降低 AI 问答时的噪音。' },
-    { index: '04', title: '复用交付', description: '导出 Markdown、复制提示词，或进入 AI 工作台继续生成内容。' }
+    { index: '01', title: '收集资料', description: '把文章、网页、笔记和论文摘录放进同一个主题资料包。' },
+    { index: '02', title: '生成分块', description: '系统把长资料拆成可检索片段，并保留来源标题。' },
+    { index: '03', title: '检索依据', description: '提问时只取相关片段进入提示词，减少 token 消耗。' },
+    { index: '04', title: '继续写作', description: '命中的资料可以进入对话、摘要、起草或 Markdown 导出。' }
 ]
 
 async function loadPacks() {
@@ -1019,6 +1016,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: data workbench · tone: white minimal · anchor hue: warm brass */
 .packs-page {
     width: var(--page-width);
     min-height: calc(100vh - 160px);
@@ -1051,7 +1049,7 @@ onMounted(() => {
     align-items: center;
     min-height: 24px;
     padding: 0 10px;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: var(--badge-bg);
     color: var(--badge-fg);
     font-size: 12px;
@@ -1069,9 +1067,12 @@ onMounted(() => {
 .packs-hero h1 {
     max-width: 900px;
     margin: 18px 0 18px;
+    font-family: var(--font-serif);
     font-size: clamp(42px, 6.4vw, 74px);
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.02;
+    letter-spacing: 0;
+    text-wrap: balance;
 }
 
 .packs-hero p {
@@ -1102,12 +1103,16 @@ onMounted(() => {
     justify-content: center;
     gap: 8px;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 0 14px;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
-    transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    transition:
+        background var(--dur-med) var(--ease-out),
+        color var(--dur-med) var(--ease-out),
+        box-shadow var(--dur-med) var(--ease-out),
+        transform var(--dur-med) var(--ease-out);
 }
 
 .primary-button {
@@ -1147,7 +1152,8 @@ onMounted(() => {
 .pack-card,
 .detail-panel,
 .pipeline-panel {
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--card-shadow);
 }
@@ -1165,15 +1171,7 @@ onMounted(() => {
     border-bottom: 1px solid var(--line);
 }
 
-.console-topbar span {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--line);
-}
-
 .console-topbar strong {
-    margin-left: auto;
     color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: 12px;
@@ -1196,11 +1194,11 @@ onMounted(() => {
     height: 8px;
     margin-top: 7px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--color-accent);
 }
 
 .signal-row > span.ok {
-    background: #0c7a43;
+    background: var(--text-primary);
 }
 
 .signal-row strong,
@@ -1245,7 +1243,7 @@ onMounted(() => {
     align-content: center;
     gap: 12px;
     padding: 28px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     text-align: center;
     background: var(--surface);
     box-shadow: var(--card-shadow);
@@ -1308,13 +1306,15 @@ onMounted(() => {
     min-height: 280px;
     padding: 22px;
     cursor: pointer;
-    transition: transform 180ms ease, box-shadow 180ms ease;
+    transition:
+        transform var(--dur-med) var(--ease-out),
+        box-shadow var(--dur-med) var(--ease-out);
 }
 
 .pack-card:hover,
 .pack-card.active {
     transform: translateY(-2px);
-    box-shadow: var(--card-shadow), 0 12px 28px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--card-shadow), var(--color-overlay-soft) 0 12px 28px;
 }
 
 .pack-card-top,
@@ -1337,7 +1337,7 @@ onMounted(() => {
 }
 
 .pack-card-top strong {
-    color: var(--accent-blue);
+    color: var(--color-accent-strong);
 }
 
 .ownership-badge,
@@ -1345,7 +1345,7 @@ onMounted(() => {
     min-height: 24px;
     display: inline-flex;
     align-items: center;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     padding: 0 8px;
     background: var(--surface-subtle);
     color: var(--text-secondary);
@@ -1356,13 +1356,13 @@ onMounted(() => {
 }
 
 .ownership-badge.mine {
-    color: #0c7a43;
-    background: rgba(12, 122, 67, 0.1);
+    color: var(--text-primary);
+    background: var(--badge-bg);
 }
 
 .ownership-badge.system {
-    color: var(--accent-blue);
-    background: rgba(37, 99, 235, 0.1);
+    color: var(--color-accent-strong);
+    background: var(--badge-bg);
 }
 
 .ownership-badge.readonly {
@@ -1398,7 +1398,7 @@ onMounted(() => {
     height: 7px;
     margin-top: 10px;
     overflow: hidden;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: var(--surface-subtle);
 }
 
@@ -1406,7 +1406,7 @@ onMounted(() => {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent-blue), var(--accent-green), var(--accent-coral));
+    background: linear-gradient(90deg, var(--text-primary), var(--color-accent));
 }
 
 .pack-tags {
@@ -1421,7 +1421,7 @@ onMounted(() => {
     display: inline-flex;
     align-items: center;
     padding: 0 9px;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     color: var(--text-secondary);
     background: var(--surface-subtle);
     box-shadow: var(--ring);
@@ -1735,7 +1735,7 @@ onMounted(() => {
 }
 
 .text-action.danger:hover {
-    color: #b42318;
+    color: var(--color-accent-strong);
 }
 
 .pipeline-panel {
@@ -1748,7 +1748,7 @@ onMounted(() => {
 }
 
 .pipeline-step > span {
-    color: var(--accent-blue);
+    color: var(--color-accent-strong);
     font-size: 12px;
     font-weight: 700;
 }

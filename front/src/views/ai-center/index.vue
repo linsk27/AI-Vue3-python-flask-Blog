@@ -3,23 +3,31 @@
         <router-view v-if="$route.path !== '/ai-center'" />
         <main v-else>
             <section class="ai-hero">
-                <span class="eyebrow">AI Workspace</span>
-                <h1>AI 工作台</h1>
-                <p>
-                    面向写作者和知识整理者的 AI 入口：聊天、摘要、上下文包和起草都从这里开始。
-                    管理配置由管理员统一维护，普通使用路径保持清爽。
-                </p>
-                <div class="hero-actions">
-                    <button class="primary-action" type="button" @click="goToChat">
-                        开始对话
-                    </button>
-                    <button class="secondary-action" type="button" @click="goToWrite">
-                        AI 起草
-                    </button>
+                <div class="hero-copy">
+                    <span class="eyebrow">知镜 AI</span>
+                    <h1>先找资料，再问 AI。</h1>
+                    <p>
+                        选择资料包、追问依据、生成摘要或起草文档。AI 会尽量回到你沉淀的来源，
+                        而不是从空白里自由发挥。
+                    </p>
+                    <div class="hero-actions">
+                        <button class="primary-action" type="button" @click="goToChat">
+                            开始对话
+                        </button>
+                        <button class="secondary-action" type="button" @click="goToPacks">
+                            整理资料
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hero-flow" aria-label="AI 工作流">
+                    <div v-for="step in flowSteps" :key="step" class="flow-step">
+                        {{ step }}
+                    </div>
                 </div>
             </section>
 
-            <section class="agent-grid">
+            <section class="agent-grid" aria-label="AI 能力入口">
                 <article
                     v-for="agent in agents"
                     :key="agent.title"
@@ -28,6 +36,7 @@
                     role="button"
                     @click="agent.action"
                     @keydown.enter="agent.action"
+                    @keydown.space.prevent="agent.action"
                 >
                     <div class="agent-top">
                         <component :is="agent.icon" class="agent-icon" />
@@ -52,35 +61,37 @@ const router = useRouter()
 const { message } = useElMessage()
 const { hasPermission } = usePermission()
 
+const flowSteps = ['资料包', '命中片段', 'AI 回答', '继续编辑']
+
 const agents = [
     {
-        mode: 'Context',
+        mode: '问资料',
         title: '上下文对话',
-        description: '围绕上下文包、项目资料和正在写的内容持续追问。',
+        description: '选择资料包后提问，回答会带着本轮命中的来源片段。',
         cta: '进入聊天',
         icon: ChatDotRound,
         action: goToChat
     },
     {
-        mode: 'Digest',
+        mode: '压缩',
         title: '长文摘要',
-        description: '把文章、会议记录和说明文档压缩成摘要与要点。',
+        description: '把文章、会议记录和资料说明压缩成摘要与要点。',
         cta: '生成摘要',
         icon: DocumentChecked,
         action: goToSummary
     },
     {
-        mode: 'Forge',
+        mode: '沉淀',
         title: '上下文包',
-        description: '把真实资料组织成可检索、可导出、可提问的知识资产。',
-        cta: '构建资产',
+        description: '把网页、笔记、论文和文章整理成可复用资料包。',
+        cta: '整理资料',
         icon: Share,
         action: goToPacks
     },
     {
-        mode: 'Draft',
+        mode: '写作',
         title: 'AI 起草',
-        description: '根据主题生成标题、摘要、标签和正文分离的文档草稿。',
+        description: '输入主题或选中资料包，生成可继续修改的文档草稿。',
         cta: '新建文档',
         icon: MagicStick,
         action: goToWrite
@@ -113,6 +124,7 @@ function goToWrite() {
 </script>
 
 <style scoped>
+/* Hallmark · macrostructure: split workspace launcher · tone: white minimal · anchor hue: warm brass */
 .ai-center-page {
     width: var(--page-width);
     min-height: calc(100vh - 160px);
@@ -122,8 +134,13 @@ function goToWrite() {
 }
 
 .ai-hero {
-    padding: 28px;
-    border-radius: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.62fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: end;
+    padding: clamp(28px, 5vw, 56px);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
     background: var(--surface);
     box-shadow: var(--card-shadow);
 }
@@ -138,7 +155,7 @@ function goToWrite() {
     align-items: center;
     min-height: 24px;
     padding: 0 10px;
-    border-radius: 9999px;
+    border-radius: var(--radius-pill);
     background: var(--badge-bg);
     color: var(--badge-fg);
     font-size: 12px;
@@ -146,15 +163,18 @@ function goToWrite() {
 }
 
 .ai-hero h1 {
-    max-width: 900px;
-    margin: 18px 0 14px;
-    font-size: clamp(42px, 5vw, 64px);
-    font-weight: 700;
+    max-width: 760px;
+    margin: 18px 0 16px;
+    font-family: var(--font-serif);
+    font-size: var(--text-display-s);
+    font-weight: 600;
     line-height: 1.02;
+    letter-spacing: 0;
+    text-wrap: balance;
 }
 
 .ai-hero p {
-    max-width: 760px;
+    max-width: 640px;
     margin: 0;
     color: var(--text-secondary);
     font-size: 17px;
@@ -170,17 +190,20 @@ function goToWrite() {
 
 .primary-action,
 .secondary-action {
-    min-height: 40px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 0;
-    border-radius: 8px;
-    padding: 0 16px;
+    border-radius: var(--radius-md);
+    padding: 0 18px;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
-    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+    transition:
+        background var(--dur-med) var(--ease-out),
+        color var(--dur-med) var(--ease-out),
+        transform var(--dur-med) var(--ease-out);
 }
 
 .primary-action {
@@ -200,8 +223,26 @@ function goToWrite() {
     transform: translateY(-1px);
 }
 
+.hero-flow {
+    display: grid;
+    gap: var(--space-sm);
+}
+
+.flow-step {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 0 var(--space-lg);
+    color: var(--text-primary);
+    background: var(--surface-subtle);
+    font-size: var(--text-xl);
+    font-weight: 700;
+}
+
 .agent-grid {
-    margin-top: 18px;
+    margin-top: var(--space-md);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
@@ -209,20 +250,25 @@ function goToWrite() {
 
 .agent-card {
     min-height: 210px;
-    padding: 18px;
+    padding: var(--space-lg);
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--card-shadow);
     cursor: pointer;
-    transition: transform 180ms ease, box-shadow 180ms ease;
+    transition:
+        transform var(--dur-med) var(--ease-out),
+        box-shadow var(--dur-med) var(--ease-out),
+        background var(--dur-med) var(--ease-out);
 }
 
 .agent-card:hover,
 .agent-card:focus-visible {
     transform: translateY(-2px);
-    box-shadow: var(--card-shadow), 0 14px 30px rgba(0, 0, 0, 0.08);
+    background: color-mix(in oklch, var(--surface) 86%, var(--surface-subtle));
+    box-shadow: var(--card-shadow), var(--color-overlay-soft) 0 14px 30px;
 }
 
 .agent-top {
@@ -235,19 +281,20 @@ function goToWrite() {
 .agent-icon {
     width: 24px;
     height: 24px;
-    color: var(--accent-blue);
+    color: var(--color-accent);
 }
 
 .agent-top span {
-    color: var(--text-muted);
+    color: var(--text-secondary);
     font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
 }
 
 .agent-card h2 {
     margin: 22px 0 10px;
+    font-family: var(--font-serif);
     font-size: 21px;
+    font-weight: 600;
     line-height: 1.2;
 }
 
@@ -259,9 +306,14 @@ function goToWrite() {
 .agent-card strong {
     margin-top: auto;
     font-size: 14px;
+    color: var(--color-accent-strong);
 }
 
 @media (max-width: 1180px) {
+    .ai-hero {
+        grid-template-columns: 1fr;
+    }
+
     .agent-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -270,6 +322,29 @@ function goToWrite() {
 @media (max-width: 640px) {
     .ai-center-page {
         padding-top: 32px;
+    }
+
+    .ai-hero {
+        padding: var(--space-lg);
+        border-radius: var(--radius-lg);
+    }
+
+    .ai-hero h1 {
+        font-size: clamp(38px, 12vw, 54px);
+    }
+
+    .hero-actions {
+        display: grid;
+    }
+
+    .primary-action,
+    .secondary-action {
+        width: 100%;
+    }
+
+    .flow-step {
+        min-height: 52px;
+        font-size: var(--text-lg);
     }
 
     .agent-grid {

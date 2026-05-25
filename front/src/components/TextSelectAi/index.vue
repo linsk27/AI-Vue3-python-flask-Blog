@@ -19,7 +19,7 @@
                 @keydown.enter="askAi"
                 @keydown.space.prevent="askAi"
             >
-                💬 使用 AI 询问
+                问选中文本
             </div>
         </div>
 
