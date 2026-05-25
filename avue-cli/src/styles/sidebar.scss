@@ -4,10 +4,10 @@
   height: 100%;
   user-select: none;
   position: relative;
-  background: #111827;
+  background: var(--admin-surface, #ffffff);
   transition: width .2s ease, min-width .2s ease, flex-basis .2s ease, left .2s ease;
   box-sizing: border-box;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .08);
+  box-shadow: inset -1px 0 0 var(--admin-line, rgba(32, 28, 22, .12));
 
   .el-scrollbar__wrap {
     overflow-x: hidden;
@@ -30,7 +30,7 @@
     padding: 0 14px !important;
     border-radius: 6px;
     line-height: 42px;
-    color: rgba(255, 255, 255, .72);
+    color: var(--admin-ink-soft, #514b42);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -40,7 +40,7 @@
     i {
       width: 20px;
       margin-right: 0;
-      color: rgba(255, 255, 255, .6);
+      color: var(--admin-muted, #8b8377);
       font-size: 17px !important;
       text-align: center;
       line-height: 1;
@@ -57,18 +57,18 @@
     }
 
     &:hover {
-      background: rgba(255, 255, 255, .07);
-      color: #fff;
+      background: var(--admin-surface-hover, #eee8dd);
+      color: var(--admin-ink, #171512);
 
       i,
       span {
-        color: #fff;
+        color: var(--admin-ink, #171512);
       }
     }
 
     &.is-active {
-      background-color: rgba(21, 99, 255, .22);
-      color: #fff;
+      background-color: var(--admin-primary-soft, #f3ead9);
+      color: var(--admin-primary, #171512);
 
       &:before {
         content: '';
@@ -83,7 +83,7 @@
 
       i,
       span {
-        color: #fff;
+        color: var(--admin-primary, #171512);
       }
     }
   }
@@ -95,7 +95,7 @@
   .el-sub-menu__icon-arrow {
     margin-top: -6px;
     right: 14px;
-    color: rgba(255, 255, 255, .45);
+    color: var(--admin-muted, #8b8377);
   }
 
   &--tip {
@@ -107,8 +107,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    color: rgba(255, 255, 255, .68);
-    background-color: rgba(255, 255, 255, .06);
+    color: var(--admin-muted, #8b8377);
+    background-color: var(--admin-surface-subtle, #f5f1ea);
     box-sizing: border-box;
     text-align: center;
     font-size: 13px;

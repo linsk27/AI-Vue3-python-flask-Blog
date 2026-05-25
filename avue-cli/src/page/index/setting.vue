@@ -148,7 +148,7 @@ export default {
       &--side {
         &:before {
           z-index: 1;
-          background-color: #001529;
+          background-color: #ffffff;
           content: "";
         }
         &:after {
@@ -157,7 +157,7 @@ export default {
       }
       &--top {
         &:after {
-          background-color: #001529;
+          background-color: #ffffff;
         }
       }
     }

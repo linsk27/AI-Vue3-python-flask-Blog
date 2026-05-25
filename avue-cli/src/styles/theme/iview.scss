@@ -1,6 +1,6 @@
 .theme-iview {
   .avue-logo {
-    background: #001529;
+    background: var(--admin-surface, #ffffff);
     box-shadow: none;
     text-align: center;
 
@@ -11,10 +11,10 @@
       border-bottom-left-radius: 3px;
       border-bottom-right-radius: 3px;
       font-size: 20px;
-      color: #fff;
+      color: var(--admin-primary, #171512);
       font-weight: 500;
       display: inline;
-      background-color: var(--el-color-primary);
+      background-color: var(--admin-primary-soft, #f3ead9);
     }
   }
 
@@ -52,11 +52,11 @@
   }
 
   .avue-sidebar {
-    background: #001529;
+    background: var(--admin-surface, #ffffff);
 
     .el-menu-item {
       &.is-active {
-        background-color: #000c17;
+        background-color: var(--admin-primary-soft, #f3ead9);
 
         &:before {
           display: none;
@@ -64,7 +64,7 @@
 
         i,
         span {
-          color: var(--el-color-primary);
+          color: var(--admin-primary, #171512);
         }
       }
     }
@@ -72,7 +72,7 @@
     .el-sub-menu {
       .el-menu-item {
         &.is-active {
-          background-color: var(--el-color-primary);
+          background-color: var(--admin-primary-soft, #f3ead9);
 
           &:before {
             display: none;
@@ -80,7 +80,7 @@
 
           i,
           span {
-            color: #fff;
+            color: var(--admin-primary, #171512);
           }
         }
       }

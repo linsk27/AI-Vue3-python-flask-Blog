@@ -1,8 +1,8 @@
 .avue-top {
     position: relative;
-    background-color: #ffffff;
-    box-shadow: inset 0 -1px 0 #dce2ea;
-    color: #4c5563;
+    background-color: var(--admin-surface, #ffffff);
+    box-shadow: inset 0 -1px 0 var(--admin-line, rgba(32, 28, 22, .12));
+    color: var(--admin-ink-soft, #514b42);
     font-size: 14px;
     height: $top_height;
     box-sizing: border-box;
@@ -25,7 +25,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #4c5563;
+    color: var(--admin-ink-soft, #514b42);
     border-radius: 6px;
     font: inherit;
     transition: background .18s ease, color .18s ease;
@@ -34,7 +34,7 @@
     }
     &:hover {
         color: var(--admin-primary, var(--el-color-primary));
-        background: var(--admin-primary-soft, #edf3ff);
+        background: var(--admin-primary-soft, #f3ead9);
     }
     &--active {
         transform:rotate(90deg);
@@ -80,7 +80,7 @@
     height: 30px;
     border-radius: 100%;
     box-sizing: border-box;
-    border: 1px solid #dce2ea;
+    border: 1px solid var(--admin-line, rgba(32, 28, 22, .12));
     vertical-align: middle;
 }
 
@@ -144,11 +144,11 @@
   padding: 0 14px;
   display: flex;
   align-items: center;
-  background-color: #111827;
+  background-color: var(--admin-surface, #ffffff);
   overflow: hidden;
   box-sizing: border-box;
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, .08);
-  color: #fff;
+  box-shadow: inset -1px 0 0 var(--admin-line, rgba(32, 28, 22, .12));
+  color: var(--admin-ink, #171512);
 
   &_brand {
     width: 100%;
@@ -165,8 +165,8 @@
     display: grid;
     place-items: center;
     border-radius: 8px;
-    color: #111827;
-    background: #f8fafc;
+    color: var(--admin-primary, #171512);
+    background: var(--admin-primary-soft, #f3ead9);
     font-size: 15px;
     font-weight: 800;
     line-height: 1;
@@ -179,7 +179,7 @@
     line-height: 1.1;
 
     strong {
-      color: #fff;
+      color: var(--admin-ink, #171512);
       font-size: 15px;
       font-weight: 800;
       letter-spacing: 0;
@@ -190,7 +190,7 @@
 
     small {
       margin-top: 3px;
-      color: rgba(255, 255, 255, .58);
+      color: var(--admin-muted, #8b8377);
       font-size: 11px;
       font-weight: 600;
     }
@@ -199,6 +199,6 @@
   &_title,
   &_subtitle {
     font-size: 0;
-    color: #fff;
+    color: var(--admin-ink, #171512);
   }
 }

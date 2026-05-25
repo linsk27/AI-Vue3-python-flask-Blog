@@ -1,6 +1,63 @@
 import request from '@/axios';
 import { baseUrl } from '@/config/env';
 
+const adminMenus = [{
+  label: '内容运营',
+  path: '/manager/content',
+  icon: 'icon-wenzhang',
+  component: 'page/index/layout',
+  children: [{
+    label: '文章管理',
+    path: 'article',
+    icon: 'icon-wenzhang',
+    component: 'views/manager/article/index'
+  }, {
+    label: '上下文包',
+    path: 'context',
+    icon: 'icon-caidan',
+    component: 'views/manager/context/index'
+  }]
+}, {
+  label: 'AI 治理',
+  path: '/manager/ai-ops',
+  icon: 'icon-shezhi',
+  component: 'page/index/layout',
+  children: [{
+    label: 'AI 配置',
+    path: 'ai',
+    icon: 'icon-shezhi',
+    component: 'views/manager/ai/index'
+  }, {
+    label: 'Embedding',
+    path: 'embedding',
+    icon: 'icon-shezhi',
+    component: 'views/manager/embedding/index'
+  }, {
+    label: '系统自检',
+    path: 'system',
+    icon: 'icon-shezhi',
+    component: 'views/manager/system/index'
+  }]
+}, {
+  label: '权限管理',
+  path: '/manager/access',
+  icon: 'icon-yonghu',
+  component: 'page/index/layout',
+  children: [{
+    label: '账号管理',
+    path: 'user',
+    icon: 'icon-yonghu',
+    component: 'views/manager/user/index'
+  }, {
+    label: '角色权限',
+    path: 'role',
+    icon: 'icon-shezhi',
+    component: 'views/manager/role/index'
+  }]
+}]
+
+const cloneMenus = () => JSON.parse(JSON.stringify(adminMenus))
+
 export const loginByUsername = (username, password, code, redomStr) => request({
   url: '/api/login', // 连接真实后端登录接口
   method: 'post',
@@ -28,17 +85,18 @@ export const refreshToken = () => request({
   method: 'post'
 })
 
-export const getMenu = (type = 0) => request({
-  url: baseUrl + '/user/getMenu',
-  method: 'get',
-  params: {
-    type
+export const getMenu = () => Promise.resolve({
+  data: {
+    status: 0,
+    data: cloneMenus()
   }
 });
 
-export const getTopMenu = () => request({
-  url: baseUrl + '/user/getTopMenu',
-  method: 'get'
+export const getTopMenu = () => Promise.resolve({
+  data: {
+    status: 0,
+    data: cloneMenus()
+  }
 });
 
 export const sendLogs = (list) => request({

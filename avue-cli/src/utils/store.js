@@ -51,7 +51,7 @@ export const getStore = (params = {}) => {
   } else if (obj.dataType == 'number') {
     content = Number(obj.content);
   } else if (obj.dataType == 'boolean') {
-    content = eval(obj.content);
+    content = obj.content === true || obj.content === 'true';
   } else if (obj.dataType == 'object') {
     content = obj.content;
   }

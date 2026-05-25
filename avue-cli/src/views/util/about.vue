@@ -57,6 +57,8 @@
 </template>
 
 <script>
+import pkg from '../../../package.json'
+
 export default {
   data () {
     return {
@@ -64,10 +66,7 @@ export default {
     }
   },
   created () {
-    const modules = import.meta.glob('/**.json')
-    modules['/package.json']().then(mode => {
-      this.dependencies = mode.dependencies
-    })
+    this.dependencies = pkg.dependencies || {}
   },
   computed: {
     list () {
