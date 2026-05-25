@@ -6,14 +6,53 @@ from repositories import ai_config_repo
 from services.context_pack_service import mask_secret
 
 
+DEFAULT_ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
+DEFAULT_ARK_MODEL = "ep-20260125005850-g97x2"
+
+
+def get_env_value(*keys):
+    for key in keys:
+        value = os.environ.get(key, "").strip()
+        if value:
+            return value
+    return ""
+
+
 def get_default_ai_config():
     return {
-        "provider": "volcano",
-        "api_key": os.environ.get("ARK_API_KEY", ""),
-        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
-        "model": "ep-20260125005850-g97x2",
-        "system_prompt": "You are a helpful assistant.",
+        "provider": get_env_value("AI_PROVIDER") or "volcano",
+        "api_key": get_env_value("AI_API_KEY", "ARK_API_KEY"),
+        "base_url": get_env_value("AI_BASE_URL", "ARK_BASE_URL") or DEFAULT_ARK_BASE_URL,
+        "model": get_env_value("AI_MODEL", "ARK_MODEL") or DEFAULT_ARK_MODEL,
+        "system_prompt": get_env_value("AI_SYSTEM_PROMPT") or "You are a helpful assistant.",
     }
+
+
+def merge_ai_config_with_env_fallback(config):
+    config = config or {}
+    default_config = get_default_ai_config()
+    merged = dict(config)
+
+    if not merged.get("api_key"):
+        merged["api_key"] = default_config["api_key"]
+    if not merged.get("base_url"):
+        merged["base_url"] = default_config["base_url"]
+    if not merged.get("provider"):
+        merged["provider"] = default_config["provider"]
+    if not merged.get("system_prompt"):
+        merged["system_prompt"] = default_config["system_prompt"]
+
+    env_model = get_env_value("AI_MODEL", "ARK_MODEL")
+    if env_model and (not merged.get("model") or merged.get("model") == DEFAULT_ARK_MODEL):
+        merged["model"] = env_model
+    elif not merged.get("model"):
+        merged["model"] = default_config["model"]
+
+    env_base_url = get_env_value("AI_BASE_URL", "ARK_BASE_URL")
+    if env_base_url and merged.get("base_url") == DEFAULT_ARK_BASE_URL and not config.get("api_key"):
+        merged["base_url"] = env_base_url
+
+    return merged
 
 
 def get_active_ai_config():
@@ -22,7 +61,7 @@ def get_active_ai_config():
             ensure_ai_config_table(conn)
             result = ai_config_repo.fetch_active_config(conn)
             if result:
-                return dict(result)
+                return merge_ai_config_with_env_fallback(dict(result))
     except Exception as e:
         print(f"Error fetching active config: {e}")
 

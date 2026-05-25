@@ -5,12 +5,46 @@ from services import ai_config_service
 
 def test_default_ai_config_uses_env_key(monkeypatch):
     monkeypatch.setenv("ARK_API_KEY", "ark-test-key")
+    monkeypatch.setenv("ARK_MODEL", "ep-test-model")
 
     config = ai_config_service.get_default_ai_config()
 
     assert config["provider"] == "volcano"
     assert config["api_key"] == "ark-test-key"
-    assert config["model"]
+    assert config["model"] == "ep-test-model"
+
+
+def test_active_config_merges_env_when_database_key_is_empty(monkeypatch):
+    monkeypatch.setenv("ARK_API_KEY", "ark-env-key")
+    monkeypatch.setenv("ARK_MODEL", "ep-env-model")
+
+    config = ai_config_service.merge_ai_config_with_env_fallback({
+        "provider": "volcano",
+        "api_key": "",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "model": ai_config_service.DEFAULT_ARK_MODEL,
+        "system_prompt": "",
+    })
+
+    assert config["api_key"] == "ark-env-key"
+    assert config["model"] == "ep-env-model"
+    assert config["system_prompt"]
+
+
+def test_database_key_is_not_overridden_by_env(monkeypatch):
+    monkeypatch.setenv("ARK_API_KEY", "ark-env-key")
+    monkeypatch.setenv("ARK_MODEL", "ep-env-model")
+
+    config = ai_config_service.merge_ai_config_with_env_fallback({
+        "provider": "volcano",
+        "api_key": "database-key",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "model": "ep-database-model",
+        "system_prompt": "db prompt",
+    })
+
+    assert config["api_key"] == "database-key"
+    assert config["model"] == "ep-database-model"
 
 
 def test_serialize_ai_config_masks_secret_and_dates():

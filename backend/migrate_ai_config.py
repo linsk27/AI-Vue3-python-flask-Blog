@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, text
 from config import DATABASE_URL
+import os
 
 engine = create_engine(DATABASE_URL)
 
@@ -29,13 +30,17 @@ def migrate():
                 INSERT INTO ai_configs (provider, api_key, base_url, model, system_prompt, is_active)
                 VALUES (
                     'volcano',
-                    '450530a8-5088-431d-b482-f2c0611b49b7',
-                    'https://ark.cn-beijing.volces.com/api/v3',
-                    'ep-20260125005850-g97x2',
+                    :api_key,
+                    :base_url,
+                    :model,
                     'You are a helpful assistant. Please respond briefly and directly without deep thinking. Keep answers concise and to the point.',
                     TRUE
                 )
-            """))
+            """), {
+                "api_key": os.getenv("ARK_API_KEY", ""),
+                "base_url": os.getenv("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3"),
+                "model": os.getenv("ARK_MODEL", "ep-20260125005850-g97x2"),
+            })
             
         conn.commit()
         print("Migration completed.")

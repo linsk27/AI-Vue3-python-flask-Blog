@@ -1,19 +1,38 @@
-# Please install OpenAI SDK first: `pip3 install openai`
+"""Manual DeepSeek smoke test.
+
+Run explicitly with:
+    DEEPSEEK_API_KEY=... python backend/test_ai.py
+
+This file intentionally has no pytest test functions and never falls back to a
+hard-coded key.
+"""
+
 import os
+
 from openai import OpenAI
 
-client = OpenAI(
-    api_key=os.environ.get('DEEPSEEK_API_KEY', 'sk-9cc34a9c38e14d1f918f7649e9789c3a'),
-    base_url="https://api.deepseek.com"
-)
 
-response = client.chat.completions.create(
-    model="deepseek-chat",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant"},
-        {"role": "user", "content": "Hello"},
-    ],
-    stream=False
-)
+def main():
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if not api_key:
+        raise SystemExit("DEEPSEEK_API_KEY is required for this manual smoke test.")
 
-print(response.choices[0].message.content)
+    client = OpenAI(
+        api_key=api_key,
+        base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+    )
+
+    response = client.chat.completions.create(
+        model=os.environ.get("DEEPSEEK_MODEL", "deepseek-chat"),
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant"},
+            {"role": "user", "content": "Hello"},
+        ],
+        stream=False,
+    )
+
+    print(response.choices[0].message.content)
+
+
+if __name__ == "__main__":
+    main()

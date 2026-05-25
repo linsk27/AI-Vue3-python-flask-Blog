@@ -1,3 +1,8 @@
 .codex-logs/
 .hallmark/
+.env
+.env.*
+backend/.env
+front/.env
+avue-cli/.env
 docs/xhs/desktop-*.png

@@ -1,4 +1,6 @@
 # 创建AI配置表
+import os
+
 from database import engine
 from sqlalchemy import text
 
@@ -16,9 +18,10 @@ with engine.connect() as conn:
     
     # 插入默认配置
     default_configs = [
-        ('api_key', '450530a8-5088-431d-b482-f2c0611b49b7'),
-        ('default_model', 'ep-20260125005850-g97x2'),
-        ('default_provider', 'volcano')
+        ('api_key', os.getenv('ARK_API_KEY', '')),
+        ('default_model', os.getenv('ARK_MODEL', 'ep-20260125005850-g97x2')),
+        ('default_provider', 'volcano'),
+        ('base_url', os.getenv('ARK_BASE_URL', 'https://ark.cn-beijing.volces.com/api/v3')),
     ]
     
     for config_key, value in default_configs:
