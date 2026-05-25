@@ -1,3 +1,9 @@
 @echo off
-cd D:\代码学习\全栈\login\backend
-python -m app
+setlocal
+cd /d "%~dp0"
+
+if exist ".venv\Scripts\python.exe" (
+    ".venv\Scripts\python.exe" app.py
+) else (
+    python app.py
+)
