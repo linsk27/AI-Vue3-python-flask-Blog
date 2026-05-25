@@ -90,6 +90,35 @@ def test_refresh_pack_embeddings_without_config_returns_before_network(monkeypat
     assert "Embedding 未配置" in error
 
 
+def test_extract_embedding_vector_accepts_multimodal_payload():
+    assert service.extract_embedding_vector({"data": {"embedding": [0.1, 0.2]}}) == [0.1, 0.2]
+    assert service.extract_embedding_vector({"data": [{"embedding": [0.3]}]}) == [0.3]
+    assert service.extract_embedding_vector({"bad": True}) == []
+
+
+def test_volcano_multimodal_fallback_after_openai_endpoint_error(monkeypatch):
+    class FakeEmbeddings:
+        def create(self, **kwargs):
+            raise RuntimeError("does not support this api")
+
+    class FakeOpenAI:
+        def __init__(self, **kwargs):
+            self.embeddings = FakeEmbeddings()
+
+    monkeypatch.setattr(service, "OpenAI", FakeOpenAI)
+    monkeypatch.setattr(service, "create_volcano_multimodal_embedding", lambda text, settings: [0.4, 0.5])
+
+    vector = service.create_embedding("测试", {
+        "configured": True,
+        "provider": "volcano",
+        "api_key": "ark-test",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "model": "ep-test",
+    })
+
+    assert vector == [0.4, 0.5]
+
+
 def test_update_context_pack_fields_normalizes_internal_payload(monkeypatch):
     updated = {}
     refreshed = []

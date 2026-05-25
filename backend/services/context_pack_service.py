@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 
+import httpx
 from openai import OpenAI
 
 from database import engine
@@ -127,6 +128,50 @@ def get_embedding_config(conn=None):
     return get_env_embedding_config()
 
 
+def extract_embedding_vector(response_payload):
+    if not isinstance(response_payload, dict):
+        return []
+
+    data = response_payload.get("data")
+    if isinstance(data, dict) and isinstance(data.get("embedding"), list):
+        return data["embedding"]
+    if isinstance(data, list) and data and isinstance(data[0], dict) and isinstance(data[0].get("embedding"), list):
+        return data[0]["embedding"]
+    if isinstance(response_payload.get("embedding"), list):
+        return response_payload["embedding"]
+    return []
+
+
+def create_volcano_multimodal_embedding(text_value, settings):
+    base_url = (settings.get("base_url") or "https://ark.cn-beijing.volces.com/api/v3").rstrip("/")
+    response = httpx.post(
+        f"{base_url}/embeddings/multimodal",
+        headers={
+            "Authorization": f"Bearer {settings['api_key']}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": settings["model"],
+            "input": [{"type": "text", "text": (text_value or "")[:8000]}],
+        },
+        timeout=60,
+    )
+    response.raise_for_status()
+    return extract_embedding_vector(response.json())
+
+
+def should_try_volcano_multimodal(settings, error):
+    if (settings.get("provider") or "").lower() != "volcano":
+        return False
+
+    error_text = str(error)
+    return (
+        "does not support this api" in error_text
+        or "InvalidEndpointOrModel.NotFound" in error_text
+        or "doubao-embedding-vision" in error_text
+    )
+
+
 def create_embedding(text_value, config=None):
     settings = config or get_embedding_config()
     if not settings["configured"]:
@@ -137,11 +182,16 @@ def create_embedding(text_value, config=None):
         client_kwargs["base_url"] = settings["base_url"]
 
     client = OpenAI(**client_kwargs)
-    response = client.embeddings.create(
-        model=settings["model"],
-        input=(text_value or "")[:8000],
-    )
-    return response.data[0].embedding
+    try:
+        response = client.embeddings.create(
+            model=settings["model"],
+            input=(text_value or "")[:8000],
+        )
+        return response.data[0].embedding
+    except Exception as error:
+        if should_try_volcano_multimodal(settings, error):
+            return create_volcano_multimodal_embedding(text_value, settings)
+        raise
 
 
 def refresh_source_chunks(conn, source_id):
