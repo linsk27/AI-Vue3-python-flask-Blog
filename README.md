@@ -6,6 +6,8 @@
 
 线上体验：[https://ai-vue3-python-flask-blog.vercel.app/](https://ai-vue3-python-flask-blog.vercel.app/)
 
+项目展示页：[linsk27 projects - AI-Vue3-python-flask-Blog](https://linsk27-github-io.vercel.app/projects/#ai-vue3-python-flask-blog)
+
 > 使用声明：本项目仅供学习交流、课程设计、毕业设计和个人非商业二次开发参考使用，禁止商业用途。
 
 如果这个项目对你的学习、毕设选题或二开有帮助，欢迎 Star、Fork 和使用。
